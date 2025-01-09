@@ -9,6 +9,9 @@ struct AnnotationsView: View {
     var nextPage: (() -> Void)?
     var previousPage: (() -> Void)?
     @State private var liveDrawingPath: Path = .init()
+    @ObservedObject var annotationManager: AnnotationManager
+    @Binding var currentZoom: CGFloat
+    @Binding var totalZoom: CGFloat
 
     var body: some View {
         Canvas { context, _ in
@@ -19,15 +22,15 @@ struct AnnotationsView: View {
             }
             if let hPaths = highlightPaths[key] {
                 for path in hPaths {
-                    context.stroke(Path(path.cgPath), with: .color(.yellow.opacity(0.5)), lineWidth: 5)
+                    context.stroke(Path(path.cgPath), with: .color(.yellow.opacity(0.5)), lineWidth: 5 )
                 }
             }
             context.stroke(Path(liveDrawingPath.cgPath),
                            with: selectedScribbleTool == "Highlight" ? .color(.blue.opacity(0.5)) : .color(.blue),
-                           lineWidth: selectedScribbleTool == "Highlight" ? 5 : 2)
+                           lineWidth: (selectedScribbleTool == "Highlight" ? 5 : 2))
         }
         .gesture(
-            DragGesture(minimumDistance: 0)
+            DragGesture(minimumDistance: 0.0001)
                 .onChanged { value in
                     if selectedScribbleTool == "Erase" {
                         erasePath(at: value.location)
@@ -47,8 +50,25 @@ struct AnnotationsView: View {
                             previousPage?()
                         }
                     }
+                    annotationManager.saveAnnotations(
+                        pagePaths: pagePaths,
+                        highlightPaths: highlightPaths
+                    )
                 }
         )
+        .gesture(MagnifyGesture()
+            .onChanged { value in
+                currentZoom = value.magnification - 1
+            }
+            .onEnded { value in
+                totalZoom += currentZoom
+                currentZoom = 0
+            }
+        )
+        .onTapGesture(count : 2) {
+            currentZoom = 0.0
+            totalZoom = 1.0
+        }
     }
 
     private func erasePath(at location: CGPoint) {
@@ -80,4 +100,5 @@ struct AnnotationsView: View {
             liveDrawingPath = Path()
         }
     }
+    
 }

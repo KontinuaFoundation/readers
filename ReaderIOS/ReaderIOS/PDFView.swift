@@ -16,8 +16,10 @@ struct PDFView: View {
     // Digital resources state vars
     @State private var showDigitalResources = false
 
-    @State private var resetZoom = false
-    @State private var zoomedIn = false
+    @State private var currentZoom: CGFloat = 0.0
+    @State private var totalZoom:CGFloat = 1.0
+    @State private var zoomedIn: Bool = false
+    
     @State private var showingFeedback = false
 
     @ObservedObject private var timerManager = TimerManager()
@@ -39,11 +41,10 @@ struct PDFView: View {
                         ZStack {
                             DocumentView(
                                 pdfDocument: pdfDocument,
-                                currentPageIndex: $currentPage,
-                                resetZoom: $resetZoom,
-                                zoomedIn: $zoomedIn
+                                currentPageIndex: $currentPage
                             )
                             .edgesIgnoringSafeArea(.all)
+                            .scaleEffect(max(min(currentZoom + totalZoom, 5.0), 1.2))
                             .gesture(dragGesture())
                             .onChange(of: currentPage) { _ in
                                 loadPathsForPage(currentPage)
@@ -56,8 +57,12 @@ struct PDFView: View {
                                     key: uniqueKey(for: currentPage),
                                     selectedScribbleTool: $selectedScribbleTool,
                                     nextPage: { goToNextPage() },
-                                    previousPage: { goToPreviousPage() }
+                                    previousPage: { goToPreviousPage() },
+                                    annotationManager: annotationManager,
+                                    currentZoom: $currentZoom,
+                                    totalZoom: $totalZoom
                                 )
+                                .scaleEffect(max(min(currentZoom + totalZoom, 5.0), 1.2))
                             }
                         }
                         .toolbar {
@@ -187,7 +192,6 @@ struct PDFView: View {
 
                                 if zoomedIn {
                                     Button("Reset Zoom") {
-                                        resetZoom = true
                                     }
                                 }
                             }
@@ -268,6 +272,10 @@ struct PDFView: View {
         .alert("Are you sure you want to clear your screen?", isPresented: $showClearAlert) {
             Button("Clear", role: .destructive) {
                 clearMarkup()
+                annotationManager.saveAnnotations(
+                    pagePaths: pagePaths,
+                    highlightPaths: highlightPaths
+                )
             }
             Button("Cancel", role: .cancel) {}
         }
