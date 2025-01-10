@@ -1,4 +1,4 @@
-name: SwiftFormat Check
+name: SwiftFormat
 
 on:
   push:
