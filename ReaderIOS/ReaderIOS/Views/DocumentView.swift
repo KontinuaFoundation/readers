@@ -48,6 +48,5 @@ struct DocumentView: UIViewRepresentable {
             self.parent = parent
         }
 
-        
     }
 }

@@ -19,7 +19,6 @@ struct PDFView: View {
     @State private var currentZoom: CGFloat = 0.0
     @State private var totalZoom:CGFloat = 1.0
     @State private var zoomedIn: Bool = false
-    
     @State private var showingFeedback = false
 
     @ObservedObject private var timerManager = TimerManager()

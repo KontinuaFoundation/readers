@@ -100,5 +100,4 @@ struct AnnotationsView: View {
             liveDrawingPath = Path()
         }
     }
-    
 }
