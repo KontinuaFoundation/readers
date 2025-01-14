@@ -22,12 +22,12 @@ struct AnnotationsView: View {
             }
             if let hPaths = highlightPaths[key] {
                 for path in hPaths {
-                    context.stroke(Path(path.cgPath), with: .color(.yellow.opacity(0.5)), lineWidth: 5 )
+                    context.stroke(Path(path.cgPath), with: .color(.yellow.opacity(0.5)), lineWidth: 5)
                 }
             }
             context.stroke(Path(liveDrawingPath.cgPath),
                            with: selectedScribbleTool == "Highlight" ? .color(.blue.opacity(0.5)) : .color(.blue),
-                           lineWidth: (selectedScribbleTool == "Highlight" ? 5 : 2))
+                           lineWidth: selectedScribbleTool == "Highlight" ? 5 : 2)
         }
         .gesture(
             DragGesture(minimumDistance: 0.0001)
@@ -60,12 +60,11 @@ struct AnnotationsView: View {
             .onChanged { value in
                 currentZoom = value.magnification - 1
             }
-            .onEnded { value in
+            .onEnded { _ in
                 totalZoom += currentZoom
                 currentZoom = 0
-            }
-        )
-        .onTapGesture(count : 2) {
+            })
+        .onTapGesture(count: 2) {
             currentZoom = 0.0
             totalZoom = 1.0
         }

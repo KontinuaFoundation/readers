@@ -6,7 +6,7 @@ struct DocumentView: UIViewRepresentable {
     // Binding directly connects the PDF components state with the parent, content view.
     @Binding var currentPageIndex: Int
 
-    func makeUIView(context: Context) -> PDFKit.PDFView {
+    func makeUIView(context _: Context) -> PDFKit.PDFView {
         let pdfView = PDFKit.PDFView()
         configurePDFView(pdfView)
         return pdfView
@@ -47,6 +47,5 @@ struct DocumentView: UIViewRepresentable {
         init(_ parent: DocumentView) {
             self.parent = parent
         }
-
     }
 }

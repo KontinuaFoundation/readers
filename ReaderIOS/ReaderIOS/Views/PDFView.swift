@@ -17,7 +17,7 @@ struct PDFView: View {
     @State private var showDigitalResources = false
 
     @State private var currentZoom: CGFloat = 0.0
-    @State private var totalZoom:CGFloat = 1.0
+    @State private var totalZoom: CGFloat = 1.0
     @State private var zoomedIn: Bool = false
     @State private var showingFeedback = false
 
@@ -190,8 +190,7 @@ struct PDFView: View {
                                 }
 
                                 if zoomedIn {
-                                    Button("Reset Zoom") {
-                                    }
+                                    Button("Reset Zoom") {}
                                 }
                             }
 
