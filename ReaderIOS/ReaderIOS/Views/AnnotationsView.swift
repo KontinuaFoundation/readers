@@ -8,23 +8,37 @@ struct AnnotationsView: View {
     @Binding var selectedScribbleTool: String
     var nextPage: (() -> Void)?
     var previousPage: (() -> Void)?
+
+    // Color and Size Properties
+    let penColor: Color
+    let penSize: CGFloat
+    let highlighterColor: Color
+    let highlighterSize: CGFloat
+
     @State private var liveDrawingPath: Path = .init()
 
     var body: some View {
         Canvas { context, _ in
+            // Draw saved pen paths
             if let paths = pagePaths[key] {
                 for path in paths {
-                    context.stroke(Path(path.cgPath), with: .color(.black), lineWidth: 2)
+                    context.stroke(Path(path.cgPath), with: .color(penColor), style: StrokeStyle(lineWidth: penSize, lineCap: .round, lineJoin: .round))
                 }
             }
+            
+            // Draw saved highlighter paths
             if let hPaths = highlightPaths[key] {
                 for path in hPaths {
-                    context.stroke(Path(path.cgPath), with: .color(.yellow.opacity(0.5)), lineWidth: 5)
+                    context.stroke(Path(path.cgPath), with: .color(highlighterColor.opacity(0.4)), style: StrokeStyle(lineWidth: highlighterSize, lineCap: .round, lineJoin: .round))
                 }
             }
-            context.stroke(Path(liveDrawingPath.cgPath),
-                           with: selectedScribbleTool == "Highlight" ? .color(.blue.opacity(0.5)) : .color(.blue),
-                           lineWidth: selectedScribbleTool == "Highlight" ? 5 : 2)
+            
+            // Draw the live path
+            if selectedScribbleTool == "Highlight" {
+                context.stroke(Path(liveDrawingPath.cgPath), with: .color(highlighterColor.opacity(0.4)), style: StrokeStyle(lineWidth: highlighterSize, lineCap: .round, lineJoin: .round))
+            } else if selectedScribbleTool == "Pen" {
+                context.stroke(Path(liveDrawingPath.cgPath), with: .color(penColor), style: StrokeStyle(lineWidth: penSize, lineCap: .round, lineJoin: .round))
+            }
         }
         .gesture(
             DragGesture(minimumDistance: 0)
@@ -41,6 +55,7 @@ struct AnnotationsView: View {
                     } else if selectedScribbleTool == "Highlight" {
                         finalizeCurrentPath(for: &highlightPaths)
                     } else if selectedScribbleTool == "" {
+                        // Page navigation gestures
                         if value.translation.width < 0 {
                             nextPage?()
                         } else if value.translation.width > 0 {
@@ -52,16 +67,21 @@ struct AnnotationsView: View {
     }
 
     private func erasePath(at location: CGPoint) {
-        if let pagePathsForCurrentPage = pagePaths[key] {
-            for (index, path) in pagePathsForCurrentPage.enumerated() where path.contains(location) {
-                pagePaths[key]?.remove(at: index)
-                break
+        // Iterate through pen paths
+        if var paths = pagePaths[key] {
+            for (index, path) in paths.enumerated().reversed() {
+                if path.contains(location) {
+                    pagePaths[key]?.remove(at: index)
+                }
             }
         }
-        if let highlightPathsForCurrentPage = highlightPaths[key] {
-            for (index, path) in highlightPathsForCurrentPage.enumerated() where path.contains(location) {
-                highlightPaths[key]?.remove(at: index)
-                break
+        
+        // Iterate through highlighter paths
+        if var hPaths = highlightPaths[key] {
+            for (index, path) in hPaths.enumerated().reversed() {
+                if path.contains(location) {
+                    highlightPaths[key]?.remove(at: index)
+                }
             }
         }
     }
