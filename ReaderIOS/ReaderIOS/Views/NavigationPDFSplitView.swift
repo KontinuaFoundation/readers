@@ -338,11 +338,11 @@ struct SearchBar: View {
                 .disableAutocorrection(true)
 
             if !text.isEmpty {
-                Button(action: {text = ""},
-                       label:{
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
-                })
+                Button(action: { text = "" },
+                       label: {
+                           Image(systemName: "xmark.circle.fill")
+                               .foregroundColor(.gray)
+                       })
             }
         }
         .padding(8)
