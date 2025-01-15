@@ -17,7 +17,7 @@ struct PDFView: View {
     @State private var showDigitalResources = false
 
     @State private var currentZoom: CGFloat = 0.0
-    @State private var totalZoom: CGFloat = 1.0
+    @State private var totalZoom: CGFloat = 1.2
     @State private var zoomedIn: Bool = false
     @State private var showingFeedback = false
 
@@ -169,14 +169,13 @@ struct PDFView: View {
                                         .cornerRadius(8)
                                 }
 
-                                Button(action: {
-                                    showDigitalResources = true
-                                }) {
+                                Button(action:{showDigitalResources = true},
+                                       label:{
                                     Text("Digital Resources")
                                         .padding(5)
                                         .foregroundColor((covers?.isEmpty ?? true) ? .gray : .purple)
                                         .cornerRadius(8)
-                                }
+                                })
                                 .disabled(covers?.isEmpty ?? true)
                                 .fullScreenCover(isPresented: $showDigitalResources) {
                                     DigitalResourcesView(covers: covers)

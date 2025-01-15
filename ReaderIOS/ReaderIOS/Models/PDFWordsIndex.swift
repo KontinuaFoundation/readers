@@ -67,8 +67,8 @@ class PDFWordsIndex: ObservableObject {
         var resultPages = wordToPages[searchTerms[0]] ?? []
 
         // Intersect with matches for remaining terms
-        for t in searchTerms.dropFirst() {
-            resultPages = resultPages.intersection(wordToPages[t] ?? [])
+        for term in searchTerms.dropFirst() {
+            resultPages = resultPages.intersection(wordToPages[term] ?? [])
         }
 
         var pageSnippets: [Int: String] = [:]
@@ -108,10 +108,10 @@ class PDFWordsIndex: ObservableObject {
         guard sequence.count <= tokens.count else { return nil }
 
         // A naive approach: scan tokens to find where sequence starts
-        for i in 0 ... (tokens.count - sequence.count) {
-            let slice = tokens[i ..< i + sequence.count]
+        for index in 0 ... (tokens.count - sequence.count) {
+            let slice = tokens[index ..< index + sequence.count]
             if Array(slice) == sequence {
-                return i ... (i + sequence.count - 1)
+                return index ... (index + sequence.count - 1)
             }
         }
 
