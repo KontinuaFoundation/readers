@@ -66,6 +66,8 @@ struct NavigationPDFSplitView: View {
     @State private var currentPage: Int = 0
     @State private var currentPdfFileName: String?
     @State private var isShowingBookmarks: Bool = false
+    
+    @State private var columnVisibility = NavigationSplitViewVisibility.automatic
 
     @State private var bookmarkLookup = [String: Set<Int>]()
 
@@ -90,7 +92,7 @@ struct NavigationPDFSplitView: View {
     }
  
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             if let workbooks = workbooks {
                 List(workbooks, selection: $selectedWorkbookID) { workbook in
                     Text(workbook.id)
@@ -143,6 +145,7 @@ struct NavigationPDFSplitView: View {
                                                 }
                                                 .onTapGesture {
                                                     currentPage = result.page
+                                                    
                                                     if let highlighter {
                                                         print("Highlighting \(searchText) on page \(result.page + 1)")
                                                         highlighter.clearHighlights()
@@ -151,6 +154,7 @@ struct NavigationPDFSplitView: View {
                                                             onPage: result.page)
                                                     }
                                                     
+                                                    columnVisibility = .detailOnly
                                                 }
                                             }
                                         }
