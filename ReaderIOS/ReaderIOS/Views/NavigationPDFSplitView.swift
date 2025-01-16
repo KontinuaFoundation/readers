@@ -73,7 +73,9 @@ struct NavigationPDFSplitView: View {
     @State private var pdfDocument: PDFDocument?
     @State private var searchText = ""
     @State private var wordsIndex = PDFWordsIndex()
-
+    @State private var highlighter: PDFSearchHighlighter?
+    
+    
     var filteredChapters: [SearchResult<Chapter>] {
         ChapterSearch.filter(chapters, by: searchText)
     }
@@ -82,11 +84,11 @@ struct NavigationPDFSplitView: View {
     // Returns pages that contain the searched terms
     var wordSearchResults: [(page: Int, snippet: String)] {
         guard !searchText.isEmpty else { return [] }
-        let pageResults = wordsIndex.search(for: searchText) // Now returns [Int: String]
+        let pageResults = wordsIndex.search(for: searchText)
         // Sort by page number
         return pageResults.sorted { $0.key < $1.key }.map { (page: $0.key, snippet: $0.value) }
     }
-
+ 
     var body: some View {
         NavigationSplitView {
             if let workbooks = workbooks {
@@ -141,6 +143,14 @@ struct NavigationPDFSplitView: View {
                                                 }
                                                 .onTapGesture {
                                                     currentPage = result.page
+                                                    if let highlighter {
+                                                        print("Highlighting \(searchText) on page \(result.page + 1)")
+                                                        highlighter.clearHighlights()
+                                                        highlighter.highlightSearchResult(
+                                                            searchTerm: searchText,
+                                                            onPage: result.page)
+                                                    }
+                                                    
                                                 }
                                             }
                                         }
@@ -220,7 +230,10 @@ struct NavigationPDFSplitView: View {
             // Move indexing code here
             if let currentPDF = newPDFDocument {
                 wordsIndex.indexPDF(from: currentPDF)
-                print(wordsIndex.getAllPageTexts())
+                if let highlighter{
+                    highlighter.clearHighlights()
+                }
+                highlighter = PDFSearchHighlighter(pdfDoc: currentPDF)
             }
         }
     }
