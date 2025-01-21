@@ -37,3 +37,24 @@ ReaderIOS/ReaderIOS.xcodeproj/project.xcworkspace/xcuserdata/
 *.xcuserstate
 *.xcuserdata/
 *.xcworkspace/
+
+# Virtual envs
+backend-virtual-env/
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+#Django files
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+media
+
+
