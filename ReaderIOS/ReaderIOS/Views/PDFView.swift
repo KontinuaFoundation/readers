@@ -16,26 +16,33 @@ struct PDFView: View {
     // Digital resources state vars
     @State private var showDigitalResources = false
 
+    //zoom vars
     @State private var currentZoom: CGFloat = 0.0
     @State private var totalZoom: CGFloat = 1.2
     @State private var zoomedIn: Bool = false
+    
+    //feedback var
     @State private var showingFeedback = false
 
+    //timer vars
     @ObservedObject private var timerManager = TimerManager()
+    
+    //annotation vars
     @State private var annotationsEnabled: Bool = false
     @State private var exitNotSelected: Bool = false
     @State private var selectedScribbleTool: String = ""
     @State private var pageChangeEnabled: Bool = true
     @State private var pagePaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var highlightPaths: [String: [(path: Path, color: Color)]] = [:]
-
-    @State private var selectedPenColor: Color = .black //pen default is black
-    @State private var selectedHighlighterColor: Color = .yellow //highlight default si yellow
+    @State private var selectedPenColor: Color = .black // pen default is black
+    @State private var selectedHighlighterColor: Color = .yellow // highlight default si yellow
+   
     @State private var isPenSubmenuVisible: Bool = false
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
 
+    //big pdf view
     var body: some View {
         NavigationStack {
             ZStack {
@@ -72,9 +79,9 @@ struct PDFView: View {
                         }
                         .toolbar {
                             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                                // Timer Controls (now extracted to TimerControlsView)
+                                // timer controls now in to TimerControlsView
                                 TimerControlsView(timerManager: timerManager)
-                                // Markup Menu
+                                // markup menu now in MarkupView
                                 MarkupMenu(
                                     selectedScribbleTool: $selectedScribbleTool,
                                     annotationsEnabled: $annotationsEnabled,
@@ -112,7 +119,7 @@ struct PDFView: View {
                                 }
                             }
 
-                            // Bottom Bar (now using TimerProgressView)
+                            // bottom bar now using TimerProgressView
                             ToolbarItem(placement: .bottomBar) {
                                 TimerProgressView(timerManager: timerManager, showingFeedback: $showingFeedback)
                             }
@@ -252,7 +259,7 @@ struct PDFView: View {
     }
 }
 
-// MARK: - Markup Menu
+// MARK: - Markup Menu View
 
 struct MarkupMenu: View {
     @Binding var selectedScribbleTool: String
@@ -269,14 +276,14 @@ struct MarkupMenu: View {
 
     var body: some View {
         Menu {
-            // Pen button with submenu
+            //pen submenu
             Menu {
                 Button {
                     selectedPenColor = .black
                     selectScribbleTool("Pen")
                     annotationsEnabled = true
                     exitNotSelected = true
-                    isPenSubmenuVisible = false // Hide submenu after selection
+                    isPenSubmenuVisible = false
                 } label: {
                     Text("Black")
                     if selectedPenColor == .black {
@@ -384,22 +391,16 @@ struct MarkupMenu: View {
                                    Image(systemName: "checkmark")
                                }
                            }
-                       } label: {
-                           HStack {
-                               Text("Highlight")
-                               if selectedScribbleTool == "Highlight" {
-                                   Circle()
-                                       .fill(selectedHighlighterColor)
-                                       .frame(width: 10, height: 10)
-                               }
-                           }
-                       }
-            
-//            Button("Highlight") {
-//                selectScribbleTool("Highlight")
-//                annotationsEnabled = true
-//                exitNotSelected = true
-//            }
+            } label: {
+                HStack {
+                    Text("Highlight")
+                    if selectedScribbleTool == "Highlight" {
+                        Circle()
+                            .fill(selectedHighlighterColor)
+                            .frame(width: 10, height: 10)
+                    }
+                }
+            }
             Button("Erase") {
                 selectScribbleTool("Erase")
                 annotationsEnabled = true

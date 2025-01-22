@@ -15,18 +15,17 @@ struct AnnotationsView: View {
     var nextPage: (() -> Void)?
     var previousPage: (() -> Void)?
     @State private var liveDrawingPath: Path = .init()
-    @State private var liveDrawingColor: Color = .black // Color for the current drawing
-    @State private var liveHighlighterColor: Color = .yellow // Separate color for live highlighter path
+    @State private var liveDrawingColor: Color = .black //pen color default
+    @State private var liveHighlighterColor: Color = .yellow //highlight color default
     @ObservedObject var annotationManager: AnnotationManager
     @Binding var currentZoom: CGFloat
     @Binding var totalZoom: CGFloat
     var selectedColor: Color
-    var selectedHighlighterColor: Color // Now receives highlighter color
-
+    var selectedHighlighterColor: Color
 
     var body: some View {
         Canvas { context, _ in
-            // Existing page paths (retain their original colors)
+            // Existing page paths have their old colors
             if let paths = pagePaths[key] {
                 for pathInfo in paths {
                     context.stroke(Path(pathInfo.path.cgPath), with: .color(pathInfo.color), lineWidth: 2)
@@ -96,7 +95,6 @@ struct AnnotationsView: View {
     }
 
     private func erasePath(at location: CGPoint) {
-        // Existing erase logic remains the same
         if let pagePathsForCurrentPage = pagePaths[key] {
             for (index, pathInfo) in pagePathsForCurrentPage.enumerated() where pathInfo.path.contains(location) {
                 pagePaths[key]?.remove(at: index)
