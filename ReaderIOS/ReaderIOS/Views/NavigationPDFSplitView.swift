@@ -66,7 +66,7 @@ struct NavigationPDFSplitView: View {
     @State private var currentPage: Int = 0
     @State private var currentPdfFileName: String?
     @State private var isShowingBookmarks: Bool = false
-    
+
     @State private var columnVisibility = NavigationSplitViewVisibility.automatic
 
     @State private var bookmarkLookup = [String: Set<Int>]()
@@ -75,9 +75,8 @@ struct NavigationPDFSplitView: View {
     @State private var pdfDocument: PDFDocument?
     @State private var searchText = ""
     @State private var wordsIndex = PDFWordsIndex()
-    @State private var highlighter: PDFSearchHighlighter?
-    
-    
+    @State private var searchHighlighter: PDFSearchHighlighter?
+
     var filteredChapters: [SearchResult<Chapter>] {
         ChapterSearch.filter(chapters, by: searchText)
     }
@@ -90,7 +89,7 @@ struct NavigationPDFSplitView: View {
         // Sort by page number
         return pageResults.sorted { $0.key < $1.key }.map { (page: $0.key, snippet: $0.value) }
     }
- 
+
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             if let workbooks = workbooks {
@@ -145,15 +144,18 @@ struct NavigationPDFSplitView: View {
                                                 }
                                                 .onTapGesture {
                                                     currentPage = result.page
-                                                    
-                                                    if let highlighter {
-                                                        print("Highlighting \(searchText) on page \(result.page + 1)")
-                                                        highlighter.clearHighlights()
-                                                        highlighter.highlightSearchResult(
-                                                            searchTerm: searchText,
-                                                            onPage: result.page)
+
+                                                    if let searchHighlighter {
+                                                        print(
+                                                            "Highlighting \(result.snippet) on page \(result.page + 1)"
+                                                        )
+                                                        searchHighlighter.clearHighlights()
+                                                        searchHighlighter.highlightSearchResult(
+                                                            searchTerm: result.snippet,
+                                                            onPage: result.page
+                                                        )
                                                     }
-                                                    
+
                                                     columnVisibility = .detailOnly
                                                 }
                                             }
@@ -234,10 +236,10 @@ struct NavigationPDFSplitView: View {
             // Move indexing code here
             if let currentPDF = newPDFDocument {
                 wordsIndex.indexPDF(from: currentPDF)
-                if let highlighter{
-                    highlighter.clearHighlights()
+                if let searchHighlighter {
+                    searchHighlighter.clearHighlights()
                 }
-                highlighter = PDFSearchHighlighter(pdfDoc: currentPDF)
+                searchHighlighter = PDFSearchHighlighter(pdfDoc: currentPDF)
             }
         }
     }
