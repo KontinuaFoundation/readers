@@ -12,7 +12,7 @@ class AnnotationManager: ObservableObject {
     struct AnnotationData: Codable {
         let key: String
         let paths: [[CGPoint]]
-        let colors: [CodableColor] //stores colors available
+        let colors: [CodableColor] // stores colors available
         let isHighlight: Bool
     }
 
@@ -23,22 +23,26 @@ class AnnotationManager: ObservableObject {
         var alpha: CGFloat
 
         init(_ color: Color) {
-            //initialize the properties to default values first bc it breaks otherwise
+            // initialize the properties to default values first bc it breaks otherwise
             red = 0
             green = 0
             blue = 0
             alpha = 0
-            
+
             let uiColor = UIColor(color)
             uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         }
+
         var color: Color {
             Color(UIColor(red: red, green: green, blue: blue, alpha: alpha))
         }
     }
-    
-    //saves new paths
-    func saveAnnotations(pagePaths: [String: [(path: Path, color: Color)]], highlightPaths: [String: [(path: Path, color: Color)]]) {
+
+    // saves new paths
+    func saveAnnotations(
+        pagePaths: [String: [(path: Path, color: Color)]],
+        highlightPaths: [String: [(path: Path, color: Color)]]
+    ) {
         var annotationData: [AnnotationData] = []
 
         for (key, pathsWithColors) in pagePaths {
@@ -70,19 +74,22 @@ class AnnotationManager: ObservableObject {
     }
 
     // update this function to load paths with colors actually correctly
-    func loadAnnotations(pagePaths: inout [String: [(path: Path, color: Color)]], highlightPaths: inout [String: [(path: Path, color: Color)]]) {        let url = getAnnotationsFileURL()
+    func loadAnnotations(
+        pagePaths: inout [String: [(path: Path, color: Color)]],
+        highlightPaths: inout [String: [(path: Path, color: Color)]]
+    ) { let url = getAnnotationsFileURL()
 
         do {
             let data = try Data(contentsOf: url)
             let annotationData = try JSONDecoder().decode([AnnotationData].self, from: data)
 
-            //clear current paths
+            // clear current paths
             pagePaths.removeAll()
             highlightPaths.removeAll()
 
             for annotation in annotationData {
-                let pathsWithColors = zip(annotation.paths, annotation.colors).map { (pathPoints, color) in
-                    return (path: Path(points: pathPoints), color: color.color)
+                let pathsWithColors = zip(annotation.paths, annotation.colors).map { pathPoints, color in
+                    (path: Path(points: pathPoints), color: color.color)
                 }
                 if annotation.isHighlight {
                     highlightPaths[annotation.key] = pathsWithColors

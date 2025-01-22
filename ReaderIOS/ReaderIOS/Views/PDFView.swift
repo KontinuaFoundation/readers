@@ -16,18 +16,18 @@ struct PDFView: View {
     // Digital resources state vars
     @State private var showDigitalResources = false
 
-    //zoom vars
+    // zoom vars
     @State private var currentZoom: CGFloat = 0.0
     @State private var totalZoom: CGFloat = 1.2
     @State private var zoomedIn: Bool = false
-    
-    //feedback var
+
+    // feedback var
     @State private var showingFeedback = false
 
-    //timer vars
+    // timer vars
     @ObservedObject private var timerManager = TimerManager()
-    
-    //annotation vars
+
+    // annotation vars
     @State private var annotationsEnabled: Bool = false
     @State private var exitNotSelected: Bool = false
     @State private var selectedScribbleTool: String = ""
@@ -36,13 +36,13 @@ struct PDFView: View {
     @State private var highlightPaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var selectedPenColor: Color = .black // pen default is black
     @State private var selectedHighlighterColor: Color = .yellow // highlight default si yellow
-   
+
     @State private var isPenSubmenuVisible: Bool = false
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
 
-    //big pdf view
+    // big pdf view
     var body: some View {
         NavigationStack {
             ZStack {
@@ -276,7 +276,7 @@ struct MarkupMenu: View {
 
     var body: some View {
         Menu {
-            //pen submenu
+            // pen submenu
             Menu {
                 Button {
                     selectedPenColor = .black
@@ -340,57 +340,57 @@ struct MarkupMenu: View {
                 }
             }
             Menu {
-                           Button {
-                               selectedHighlighterColor = .yellow
-                               selectScribbleTool("Highlight")
-                               annotationsEnabled = true
-                               exitNotSelected = true
-                               isPenSubmenuVisible = false
-                           } label: {
-                               Text("Yellow")
-                               if selectedHighlighterColor == .yellow {
-                                   Image(systemName: "checkmark")
-                               }
-                           }
+                Button {
+                    selectedHighlighterColor = .yellow
+                    selectScribbleTool("Highlight")
+                    annotationsEnabled = true
+                    exitNotSelected = true
+                    isPenSubmenuVisible = false
+                } label: {
+                    Text("Yellow")
+                    if selectedHighlighterColor == .yellow {
+                        Image(systemName: "checkmark")
+                    }
+                }
 
-                           Button {
-                               selectedHighlighterColor = .pink
-                               selectScribbleTool("Highlight")
-                               annotationsEnabled = true
-                               exitNotSelected = true
-                               isPenSubmenuVisible = false
-                           } label: {
-                               Text("Pink")
-                               if selectedHighlighterColor == .pink {
-                                   Image(systemName: "checkmark")
-                               }
-                           }
+                Button {
+                    selectedHighlighterColor = .pink
+                    selectScribbleTool("Highlight")
+                    annotationsEnabled = true
+                    exitNotSelected = true
+                    isPenSubmenuVisible = false
+                } label: {
+                    Text("Pink")
+                    if selectedHighlighterColor == .pink {
+                        Image(systemName: "checkmark")
+                    }
+                }
 
-                           Button {
-                               selectedHighlighterColor = .blue
-                               selectScribbleTool("Highlight")
-                               annotationsEnabled = true
-                               exitNotSelected = true
-                               isPenSubmenuVisible = false
-                           } label: {
-                               Text("Blue")
-                               if selectedHighlighterColor == .blue {
-                                   Image(systemName: "checkmark")
-                               }
-                           }
+                Button {
+                    selectedHighlighterColor = .blue
+                    selectScribbleTool("Highlight")
+                    annotationsEnabled = true
+                    exitNotSelected = true
+                    isPenSubmenuVisible = false
+                } label: {
+                    Text("Blue")
+                    if selectedHighlighterColor == .blue {
+                        Image(systemName: "checkmark")
+                    }
+                }
 
-                           Button {
-                               selectedHighlighterColor = .green
-                               selectScribbleTool("Highlight")
-                               annotationsEnabled = true
-                               exitNotSelected = true
-                               isPenSubmenuVisible = false
-                           } label: {
-                               Text("Green")
-                               if selectedHighlighterColor == .green {
-                                   Image(systemName: "checkmark")
-                               }
-                           }
+                Button {
+                    selectedHighlighterColor = .green
+                    selectScribbleTool("Highlight")
+                    annotationsEnabled = true
+                    exitNotSelected = true
+                    isPenSubmenuVisible = false
+                } label: {
+                    Text("Green")
+                    if selectedHighlighterColor == .green {
+                        Image(systemName: "checkmark")
+                    }
+                }
             } label: {
                 HStack {
                     Text("Highlight")
@@ -429,7 +429,7 @@ struct MarkupMenu: View {
                 .cornerRadius(8)
         }
     }
-    
+
     private func selectScribbleTool(_ tool: String) {
         selectedScribbleTool = tool
     }

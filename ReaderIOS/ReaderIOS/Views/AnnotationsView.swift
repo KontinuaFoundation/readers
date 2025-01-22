@@ -15,8 +15,8 @@ struct AnnotationsView: View {
     var nextPage: (() -> Void)?
     var previousPage: (() -> Void)?
     @State private var liveDrawingPath: Path = .init()
-    @State private var liveDrawingColor: Color = .black //pen color default
-    @State private var liveHighlighterColor: Color = .yellow //highlight color default
+    @State private var liveDrawingColor: Color = .black // pen color default
+    @State private var liveHighlighterColor: Color = .yellow // highlight color default
     @ObservedObject var annotationManager: AnnotationManager
     @Binding var currentZoom: CGFloat
     @Binding var totalZoom: CGFloat
@@ -40,7 +40,8 @@ struct AnnotationsView: View {
 
             // Live drawing path (use liveDrawingColor)
             context.stroke(Path(liveDrawingPath.cgPath),
-                           with: selectedScribbleTool == "Highlight" ? .color(liveHighlighterColor.opacity(0.2)) : .color(liveDrawingColor),
+                           with: selectedScribbleTool == "Highlight" ? .color(liveHighlighterColor.opacity(0.2)) :
+                               .color(liveDrawingColor),
                            lineWidth: selectedScribbleTool == "Highlight" ? 15 : 2)
         }
         .gesture(
@@ -87,11 +88,11 @@ struct AnnotationsView: View {
             liveHighlighterColor = selectedHighlighterColor
         }
         .onChange(of: selectedColor) { newColor in
-                    liveDrawingColor = newColor
-                }
-                .onChange(of: selectedHighlighterColor) { newColor in
-                    liveHighlighterColor = newColor
-                }
+            liveDrawingColor = newColor
+        }
+        .onChange(of: selectedHighlighterColor) { newColor in
+            liveHighlighterColor = newColor
+        }
     }
 
     private func erasePath(at location: CGPoint) {
@@ -117,11 +118,11 @@ struct AnnotationsView: View {
         }
     }
 
-    private func finalizeCurrentPath(for pathDirectory: inout [String: [(path: Path, color: Color)]], color: Color) {
-            if !liveDrawingPath.isEmpty {
-                let pathColor = selectedScribbleTool == "Highlight" ? liveHighlighterColor : liveDrawingColor
-                pathDirectory[key, default: []].append((path: liveDrawingPath, color: pathColor))
-                liveDrawingPath = Path()
-            }
+    private func finalizeCurrentPath(for pathDirectory: inout [String: [(path: Path, color: Color)]], color _: Color) {
+        if !liveDrawingPath.isEmpty {
+            let pathColor = selectedScribbleTool == "Highlight" ? liveHighlighterColor : liveDrawingColor
+            pathDirectory[key, default: []].append((path: liveDrawingPath, color: pathColor))
+            liveDrawingPath = Path()
         }
+    }
 }
