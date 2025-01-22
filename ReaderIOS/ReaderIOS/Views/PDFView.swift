@@ -165,7 +165,7 @@ struct PDFView: View {
                                 } label: {
                                     Text(selectedScribbleTool.isEmpty ? "Markup" : "Markup: " + selectedScribbleTool)
                                         .padding(5)
-                                        .foregroundColor(exitNotSelected ? Color.pink : Color.gray)
+                                        .foregroundColor(exitNotSelected ? Color.pink : Color.blue)
                                         .cornerRadius(8)
                                 }
 
