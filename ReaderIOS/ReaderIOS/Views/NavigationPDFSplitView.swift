@@ -91,8 +91,13 @@ struct NavigationPDFSplitView: View {
         NavigationSplitView {
             if let workbooks = workbooks {
                 List(workbooks, selection: $selectedWorkbookID) { workbook in
-                    Text(workbook.id)
-                        .tag(workbook.id)
+                    HStack {
+                        Image(systemName: "icloud.and.arrow.down") // Download icon
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        Text(workbook.id)
+                            .tag(workbook.id)
+                    }
                 }
             } else {
                 ProgressView("Fetching Workbooks")
