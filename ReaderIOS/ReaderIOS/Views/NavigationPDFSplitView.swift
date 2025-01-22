@@ -115,7 +115,7 @@ struct NavigationPDFSplitView: View {
                             .padding(.horizontal)
 
                         // Combine chapters and word matches into one list
-                        if let chapters = chapters {
+                        if chapters != nil {
                             List(selection: $selectedChapterID) {
                                 // Chapter search results
                                 Section(header: Text("Chapters: ")) {
@@ -221,7 +221,7 @@ struct NavigationPDFSplitView: View {
                 print("Updated covers: \(covers?.map(\.desc) ?? [])")
             }
         }
-        .onChange(of: pdfDocument) { newPDFDocument in
+        .onChange(of: pdfDocument) { _, newPDFDocument in
             // Move indexing code here
             if let currentPDF = newPDFDocument {
                 wordsIndex.indexPDF(from: currentPDF)

@@ -74,10 +74,10 @@ struct DigitalResourcesView: View {
                     }
                 }
                 .fullScreenCover(item: $selectedLink, onDismiss: {
-                    print("WebView dismissed. Cleaning up resources.")
-                    print("showWebView: \(showWebView)") // Debugging
+                    print("Content view dismissed. Cleaning up resources.")
+                    showWebView = false
                 }, content: { linkItem in
-                    FullScreenWebView(url: linkItem.url)
+                    AdaptiveContentView(url: linkItem.url)
                 })
 
             } else {
