@@ -18,10 +18,9 @@ struct AnnotationsView: View {
     @State private var liveDrawingColor: Color = .black // pen color default
     @State private var liveHighlighterColor: Color = .yellow // highlight color default
     @ObservedObject var annotationManager: AnnotationManager
-    @Binding var currentZoom: CGFloat
-    @Binding var totalZoom: CGFloat
     var selectedColor: Color
     var selectedHighlighterColor: Color
+    var zoomedIn: Bool
 
     var body: some View {
         Canvas { context, _ in
@@ -58,7 +57,7 @@ struct AnnotationsView: View {
                         finalizeCurrentPath(for: &pagePaths, color: liveDrawingColor)
                     } else if selectedScribbleTool == "Highlight" {
                         finalizeCurrentPath(for: &highlightPaths, color: liveDrawingColor)
-                    } else if selectedScribbleTool == "" {
+                    } else if selectedScribbleTool == "", !zoomedIn {
                         if value.translation.width < 0 {
                             nextPage?()
                         } else if value.translation.width > 0 {
@@ -71,18 +70,6 @@ struct AnnotationsView: View {
                     )
                 }
         )
-        .gesture(MagnifyGesture()
-            .onChanged { value in
-                currentZoom = value.magnification - 1
-            }
-            .onEnded { _ in
-                totalZoom += currentZoom
-                currentZoom = 0
-            })
-        .onTapGesture(count: 2) {
-            currentZoom = 0.0
-            totalZoom = 1.0
-        }
         .onAppear {
             liveDrawingColor = selectedColor
             liveHighlighterColor = selectedHighlighterColor
