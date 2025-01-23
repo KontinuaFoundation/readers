@@ -73,6 +73,8 @@ struct NavigationPDFSplitView: View {
     @State private var pdfDocument: PDFDocument?
     @State private var searchText = ""
     @State private var wordsIndex = PDFWordsIndex()
+    
+    @State private var chapterManager: ChapterManager?
 
     var filteredChapters: [SearchResult<Chapter>] {
         ChapterSearch.filter(chapters, by: searchText)
@@ -214,12 +216,8 @@ struct NavigationPDFSplitView: View {
 
             fetchChapters()
         }
-        .onChange(of: selectedChapterID) {
-            if let chapter = selectedChapter {
-                currentPage = chapter.startPage - 1
-                covers = chapter.covers
-                print("Updated covers: \(covers?.map(\.desc) ?? [])")
-            }
+        .onChange(of: currentPage) { _, _ in
+            updateSelectedChapter()
         }
         .onChange(of: pdfDocument) { _, newPDFDocument in
             // Move indexing code here
@@ -234,10 +232,11 @@ struct NavigationPDFSplitView: View {
         workbooks?.first(where: { $0.id == selectedWorkbookID })
     }
 
+    /*
     // TODO: Selected chapter should be based on the current page number.
     var selectedChapter: Chapter? {
         chapters?.first(where: { $0.id == selectedChapterID })
-    }
+    }*/
 
     func fetchChapters() {
         guard let fileName = selectedWorkbook?.metaName else {
@@ -275,6 +274,7 @@ struct NavigationPDFSplitView: View {
                 DispatchQueue.main.async {
                     chapters = chapterResponse
                     selectedChapterID = chapters?.first?.id
+                    setupChapterManager()
                 }
 
             } catch {
@@ -327,6 +327,24 @@ struct NavigationPDFSplitView: View {
         }
 
         task.resume()
+    }
+    
+    func setupChapterManager() {
+        if let chapters = chapters {
+            let chapterManager = ChapterManager(chapters: chapters)
+            // Update selectedChapterID whenever currentPage changes
+            self.chapterManager = chapterManager
+        }
+    }
+    
+    func updateSelectedChapter() {
+        if let chapterManager = chapterManager {
+            if let newChapter = chapterManager.getChapter(forPage: currentPage){
+                selectedChapterID = newChapter.id
+                covers = newChapter.covers
+                print("Updated covers: \(covers?.map(\.desc) ?? [])")
+            }
+        }
     }
 }
 
