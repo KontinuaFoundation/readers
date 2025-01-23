@@ -75,7 +75,7 @@ struct NavigationPDFSplitView: View {
     @State private var pdfDocument: PDFDocument?
     @State private var searchText = ""
     @State private var wordsIndex = PDFWordsIndex()
-    
+
     @State private var chapterManager: ChapterManager?
     @State private var searchHighlighter: PDFSearchHighlighter?
 
@@ -130,6 +130,7 @@ struct NavigationPDFSplitView: View {
                                 set: { newPage in
                                     if let page = newPage {
                                         currentPage = page
+                                        columnVisibility = .detailOnly
                                     }
                                 }
                             )) {
@@ -160,10 +161,9 @@ struct NavigationPDFSplitView: View {
                                                         .font(.caption)
                                                         .foregroundColor(.secondary)
                                                 }
-
-                                                .tag(result.page)  // Add tag for selection
-
- /*                                               .onTapGesture {
+                                                // .tag(result.page) Add tag for selection
+                                                // TODO: Make this section work with .tag
+                                                .onTapGesture {
                                                     currentPage = result.page
 
                                                     if let searchHighlighter {
@@ -178,7 +178,7 @@ struct NavigationPDFSplitView: View {
                                                     }
 
                                                     columnVisibility = .detailOnly
-                                                }*/
+                                                }
                                             }
                                         }
                                     }
@@ -266,10 +266,10 @@ struct NavigationPDFSplitView: View {
     }
 
     /*
-    // TODO: Selected chapter should be based on the current page number.
-    var selectedChapter: Chapter? {
-        chapters?.first(where: { $0.id == selectedChapterID })
-    }*/
+     // TODO: Selected chapter should be based on the current page number.
+     var selectedChapter: Chapter? {
+         chapters?.first(where: { $0.id == selectedChapterID })
+     }*/
 
     func fetchChapters() {
         guard let fileName = selectedWorkbook?.metaName else {
@@ -361,7 +361,7 @@ struct NavigationPDFSplitView: View {
 
         task.resume()
     }
-    
+
     func setupChapterManager() {
         if let chapters = chapters {
             let chapterManager = ChapterManager(chapters: chapters)
@@ -369,10 +369,10 @@ struct NavigationPDFSplitView: View {
             self.chapterManager = chapterManager
         }
     }
-    
+
     func updateSelectedChapter() {
         if let chapterManager = chapterManager {
-            if let newChapter = chapterManager.getChapter(forPage: currentPage){
+            if let newChapter = chapterManager.getChapter(forPage: currentPage) {
                 selectedChapterID = newChapter.id
                 covers = newChapter.covers
                 print("Updated covers: \(covers?.map(\.desc) ?? [])")

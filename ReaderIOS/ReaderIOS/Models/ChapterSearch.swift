@@ -18,7 +18,7 @@ extension Chapter: ChapterSearchable {
     var searchableText: String {
         title
     }
-    
+
     var pageNumber: Int {
         startPage - 1
     }
