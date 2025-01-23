@@ -1,10 +1,3 @@
-//
-//  PDFWordsIndex.swift
-//  ReaderIOS
-//
-//  Created by Ethan Handelman on 12/11/24.
-//
-
 import PDFKit
 
 class PDFWordsIndex: ObservableObject {
@@ -14,14 +7,17 @@ class PDFWordsIndex: ObservableObject {
     // Original page texts for reference
     @Published private var pageTexts: [Int: String] = [:]
 
-    // Tokenized page text for context retrieval
+    // Tokenized page text for searching
     @Published private var pageTokens: [Int: [String]] = [:]
 
+    // Store token ranges to map back to original text
+    @Published private var tokenRanges: [Int: [Range<String.Index>]] = [:]
+
     func indexPDF(from pdf: PDFDocument) {
-        // Clear existing index when loading new document
         wordToPages.removeAll()
         pageTexts.removeAll()
         pageTokens.removeAll()
+        tokenRanges.removeAll()
 
         for pageIndex in 0 ..< pdf.pageCount {
             guard let page = pdf.page(at: pageIndex) else { continue }
@@ -33,29 +29,42 @@ class PDFWordsIndex: ObservableObject {
             // Store original page text
             pageTexts[pageNumber] = plainText
 
-            // Tokenize
-            let words = plainText.lowercased()
-                .components(separatedBy: .whitespacesAndNewlines)
-                .filter { !$0.isEmpty }
+            // Create scanner for tokenization while preserving ranges
+            var ranges: [Range<String.Index>] = []
+            var tokens: [String] = []
 
-            pageTokens[pageNumber] = words
+            let scanner = Scanner(string: plainText)
+            scanner.charactersToBeSkipped = .whitespacesAndNewlines
+
+            while !scanner.isAtEnd {
+                if let token = scanner.scanCharacters(from: .alphanumerics) {
+                    let startIndex = plainText.index(
+                        plainText.startIndex,
+                        offsetBy: scanner.currentIndex.utf16Offset(in: plainText) - token.count
+                    )
+                    let endIndex = plainText.index(
+                        plainText.startIndex,
+                        offsetBy: scanner.currentIndex.utf16Offset(in: plainText)
+                    )
+                    ranges.append(startIndex ..< endIndex)
+                    tokens.append(token.lowercased())
+                } else {
+                    // Skip non-alphanumeric character
+                    _ = scanner.scanCharacter()
+                }
+            }
+
+            // Store token ranges and lowercase tokens
+            tokenRanges[pageNumber] = ranges
+            pageTokens[pageNumber] = tokens
 
             // Index words
-            for word in words {
-                wordToPages[word, default: []].insert(pageNumber)
+            for token in tokens {
+                wordToPages[token, default: []].insert(pageNumber)
             }
         }
     }
 
-    /// Search method to find pages containing all of the search terms,
-    /// and return contextual snippets as well.
-    ///
-    /// The returned dictionary maps page numbers to a snippet of text
-    /// around the first occurrence of the search terms on that page.
-    ///
-    /// If multiple search terms are provided, we look for the first place
-    /// on the page where they appear in sequence. If any term cannot be
-    /// found in sequence, that page is skipped.
     func search(for term: String, contextWindow: Int = 2) -> [Int: String] {
         let searchTerms = term.lowercased()
             .components(separatedBy: .whitespacesAndNewlines)
@@ -63,29 +72,37 @@ class PDFWordsIndex: ObservableObject {
 
         guard !searchTerms.isEmpty else { return [:] }
 
-        // Get matches for first term
         var resultPages = wordToPages[searchTerms[0]] ?? []
 
-        // Intersect with matches for remaining terms
         for term in searchTerms.dropFirst() {
             resultPages = resultPages.intersection(wordToPages[term] ?? [])
         }
 
         var pageSnippets: [Int: String] = [:]
 
-        // For each page in results, find the first occurrence of the terms in sequence
         for pageNumber in resultPages {
-            guard let tokens = pageTokens[pageNumber] else { continue }
+            guard let tokens = pageTokens[pageNumber],
+                  let ranges = tokenRanges[pageNumber],
+                  let originalText = pageTexts[pageNumber] else { continue }
 
-            // If there's only one term, just find that term
-            if searchTerms.count == 1, let idx = tokens.firstIndex(of: searchTerms[0]) {
-                let snippet = makeSnippet(tokens: tokens, indexRange: idx ... idx, window: contextWindow)
+            if searchTerms.count == 1,
+               let idx = tokens.firstIndex(of: searchTerms[0])
+            {
+                let snippet = makeSnippet(
+                    originalText: originalText,
+                    tokenRanges: ranges,
+                    matchRange: idx ... idx,
+                    window: contextWindow
+                )
                 pageSnippets[pageNumber] = snippet
             } else {
-                // Multiple terms: we need to find a sequence
                 if let range = findSequence(in: tokens, sequence: searchTerms) {
-                    // Construct a snippet around this range
-                    let snippet = makeSnippet(tokens: tokens, indexRange: range, window: contextWindow)
+                    let snippet = makeSnippet(
+                        originalText: originalText,
+                        tokenRanges: ranges,
+                        matchRange: range,
+                        window: contextWindow
+                    )
                     pageSnippets[pageNumber] = snippet
                 }
             }
@@ -94,22 +111,31 @@ class PDFWordsIndex: ObservableObject {
         return pageSnippets
     }
 
-    // Utility to create a snippet around a given range of tokens
-    private func makeSnippet(tokens: [String], indexRange: ClosedRange<Int>, window: Int) -> String {
-        let startIndex = max(indexRange.lowerBound - window, 0)
-        let endIndex = min(indexRange.upperBound + window, tokens.count - 1)
-        let snippetTokens = tokens[startIndex ... endIndex]
-        return snippetTokens.joined(separator: " ")
+    private func makeSnippet(
+        originalText: String,
+        tokenRanges: [Range<String.Index>],
+        matchRange: ClosedRange<Int>,
+        window: Int
+    ) -> String {
+        let startTokenIdx = max(matchRange.lowerBound - window, 0)
+        let endTokenIdx = min(matchRange.upperBound + window, tokenRanges.count - 1)
+
+        // Get the text range from the first token to the last token
+        let snippetStart = tokenRanges[startTokenIdx].lowerBound
+        let snippetEnd = tokenRanges[endTokenIdx].upperBound
+
+        // Extract the original text with proper formatting
+        return String(originalText[snippetStart ..< snippetEnd])
+            .replacingOccurrences(of: "\n", with: " ")
+            .components(separatedBy: .newlines)
+            .joined(separator: " ")
     }
 
-    // Find the first occurrence of a sequence of terms in tokens
-    // This checks if the terms appear in order and contiguously.
     private func findSequence(in tokens: [String], sequence: [String]) -> ClosedRange<Int>? {
         guard sequence.count <= tokens.count else { return nil }
 
-        // A naive approach: scan tokens to find where sequence starts
         for index in 0 ... (tokens.count - sequence.count) {
-            let slice = tokens[index ..< index + sequence.count]
+            let slice = tokens[index ..< (index + sequence.count)]
             if Array(slice) == sequence {
                 return index ... (index + sequence.count - 1)
             }
@@ -118,12 +144,10 @@ class PDFWordsIndex: ObservableObject {
         return nil
     }
 
-    // Get text for a specific page
     func getText(for page: Int) -> String? {
         pageTexts[page]
     }
 
-    // Get all indexed text
     func getAllPageTexts() -> [Int: String] {
         pageTexts
     }
