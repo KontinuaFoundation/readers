@@ -11,11 +11,16 @@ import SwiftUI
 // ChapterSearchable protocol to make searching more generic
 protocol ChapterSearchable {
     var searchableText: String { get }
+    var pageNumber: Int { get }
 }
 
 extension Chapter: ChapterSearchable {
     var searchableText: String {
         title
+    }
+    
+    var pageNumber: Int {
+        startPage - 1
     }
 }
 

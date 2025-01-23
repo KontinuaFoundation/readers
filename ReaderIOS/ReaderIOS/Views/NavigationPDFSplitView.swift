@@ -118,16 +118,23 @@ struct NavigationPDFSplitView: View {
 
                         // Combine chapters and word matches into one list
                         if chapters != nil {
-                            List(selection: $selectedChapterID) {
+                            List(selection: Binding(
+                                get: { currentPage },
+                                set: { newPage in
+                                    if let page = newPage {
+                                        currentPage = page
+                                    }
+                                }
+                            )) {
                                 // Chapter search results
                                 Section(header: Text("Chapters: ")) {
                                     if filteredChapters.isEmpty, !searchText.isEmpty {
                                         Text("No chapters found")
                                             .foregroundColor(.gray)
                                     } else {
-                                        ForEach(filteredChapters, id: \.item.id) { searchResult in
+                                        ForEach(filteredChapters, id: \.item.pageNumber) { searchResult in
                                             searchResult.highlightedTitleView()
-                                                .tag(searchResult.item.id)
+                                                .tag(searchResult.item.pageNumber)
                                         }
                                     }
                                 }
@@ -146,9 +153,7 @@ struct NavigationPDFSplitView: View {
                                                         .font(.caption)
                                                         .foregroundColor(.secondary)
                                                 }
-                                                .onTapGesture {
-                                                    currentPage = result.page
-                                                }
+                                                .tag(result.page)  // Add tag for selection
                                             }
                                         }
                                     }
