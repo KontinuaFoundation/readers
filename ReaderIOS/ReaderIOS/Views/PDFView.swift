@@ -39,126 +39,133 @@ struct PDFView: View {
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
-
     // big pdf view
     var body: some View {
-        NavigationStack {
-            ZStack {
-                VStack {
-                    if let pdfDocument = pdfDocument {
-                        ZStack {
-                            DocumentView(
-                                pdfDocument: pdfDocument,
-                                currentPageIndex: $currentPage
-                            )
-                            .edgesIgnoringSafeArea(.all)
-                            .scaleEffect(max(min(zoomManager.newZoomLevel(), 5.0), 1.2))
-                            .onChange(of: currentPage) { _, newValue in
-                                loadPathsForPage(newValue)
-                            }
-                            if annotationsEnabled {
-                                AnnotationsView(
-                                    pagePaths: $pagePaths,
-                                    highlightPaths: $highlightPaths,
-                                    key: uniqueKey(for: currentPage),
-                                    selectedScribbleTool: $selectedScribbleTool,
-                                    nextPage: { goToNextPage() },
-                                    previousPage: { goToPreviousPage() },
-                                    annotationManager: annotationManager,
-                                    selectedColor: selectedPenColor,
-                                    selectedHighlighterColor: selectedHighlighterColor,
-                                    zoomedIn: zoomManager.zoomedIn
+        GeometryReader { geometry in
+            NavigationStack {
+                ZStack {
+                    VStack {
+                        if let pdfDocument = pdfDocument {
+                            ZStack {
+                                DocumentView(
+                                    pdfDocument: pdfDocument,
+                                    currentPageIndex: $currentPage
                                 )
-                                .scaleEffect(max(min(zoomManager.newZoomLevel(), 5.0), 1.2))
-                                .gesture(zoomManager.zoomin())
-                                .gesture(zoomManager.zoomout())
-                            }
-                        }
-                        .toolbar {
-                            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                                // timer controls now in to TimerControlsView
-                                TimerControlsView(timerManager: timerManager)
-                                // markup menu now in MarkupView
-                                MarkupMenu(
-                                    selectedScribbleTool: $selectedScribbleTool,
-                                    annotationsEnabled: $annotationsEnabled,
-                                    exitNotSelected: $exitNotSelected,
-                                    showClearAlert: $showClearAlert,
-                                    selectedPenColor: $selectedPenColor,
-                                    selectedHighlighterColor: $selectedHighlighterColor,
-                                    isPenSubmenuVisible: $isPenSubmenuVisible,
-                                    annotationManager: annotationManager,
-                                    pagePaths: pagePaths,
-                                    highlightPaths: highlightPaths
-                                )
-
-                                Button(action: { showDigitalResources = true },
-                                       label: {
-                                           Text("Digital Resources")
-                                               .padding(5)
-                                               .foregroundColor((covers?.isEmpty ?? true) ? .gray : .purple)
-                                               .cornerRadius(8)
-                                       })
-                                       .disabled(covers?.isEmpty ?? true)
-                                       .fullScreenCover(isPresented: $showDigitalResources) {
-                                           DigitalResourcesView(covers: covers)
-                                       }
-
-                                Button {
-                                    toggleCurrentPageInBookmarks()
-                                } label: {
-                                    Image(systemName: isCurrentPageBookmarked ? "bookmark.fill" : "bookmark")
-                                        .foregroundColor(.yellow)
+                                .edgesIgnoringSafeArea(.all)
+                                .scaleEffect(zoomManager.newZoomLevel(), anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center)
+                                .onChange(of: currentPage) { _, newValue in
+                                    loadPathsForPage(newValue)
                                 }
-
-                                if zoomManager.zoomedIn {
-                                    Button("Reset Zoom") {
-                                        zoomManager.resetZoom()
+                                if annotationsEnabled {
+                                    AnnotationsView(
+                                        pagePaths: $pagePaths,
+                                        highlightPaths: $highlightPaths,
+                                        key: uniqueKey(for: currentPage),
+                                        selectedScribbleTool: $selectedScribbleTool,
+                                        nextPage: { goToNextPage() },
+                                        previousPage: { goToPreviousPage() },
+                                        annotationManager: annotationManager,
+                                        selectedColor: selectedPenColor,
+                                        selectedHighlighterColor: selectedHighlighterColor,
+                                        zoomedIn: zoomManager.zoomedIn
+                                    )
+                                    .scaleEffect(zoomManager.newZoomLevel(), anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center)
+                                    .gesture(zoomManager.zoomin())
+                                    .gesture(zoomManager.zoomout())
+                                    .onTapGesture(count: 1, coordinateSpace: .local) { location in
+                                        zoomManager.newZoomPoint(
+                                            newPoint: location,
+                                            width: geometry.size.width,
+                                            height: geometry.size.height)
                                     }
                                 }
                             }
+                            .toolbar {
+                                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                                    // timer controls now in to TimerControlsView
+                                    TimerControlsView(timerManager: timerManager)
+                                    // markup menu now in MarkupView
+                                    MarkupMenu(
+                                        selectedScribbleTool: $selectedScribbleTool,
+                                        annotationsEnabled: $annotationsEnabled,
+                                        exitNotSelected: $exitNotSelected,
+                                        showClearAlert: $showClearAlert,
+                                        selectedPenColor: $selectedPenColor,
+                                        selectedHighlighterColor: $selectedHighlighterColor,
+                                        isPenSubmenuVisible: $isPenSubmenuVisible,
+                                        annotationManager: annotationManager,
+                                        pagePaths: pagePaths,
+                                        highlightPaths: highlightPaths
+                                    )
 
-                            // bottom bar now using TimerProgressView
-                            ToolbarItem(placement: .bottomBar) {
-                                TimerProgressView(timerManager: timerManager, showingFeedback: $showingFeedback)
-                            }
-                        }
-                    } else {
-                        ProgressView("Getting Workbook")
-                            .onAppear {
-                                loadPDFFromURL()
-                                annotationManager.loadAnnotations(
-                                    pagePaths: &pagePaths,
-                                    highlightPaths: &highlightPaths
-                                )
-                                if !pagePaths.isEmpty || !highlightPaths.isEmpty {
-                                    annotationsEnabled = true
+                                    Button(action: { showDigitalResources = true },
+                                           label: {
+                                               Text("Digital Resources")
+                                                   .padding(5)
+                                                   .foregroundColor((covers?.isEmpty ?? true) ? .gray : .purple)
+                                                   .cornerRadius(8)
+                                           })
+                                           .disabled(covers?.isEmpty ?? true)
+                                           .fullScreenCover(isPresented: $showDigitalResources) {
+                                               DigitalResourcesView(covers: covers)
+                                           }
+
+                                    Button {
+                                        toggleCurrentPageInBookmarks()
+                                    } label: {
+                                        Image(systemName: isCurrentPageBookmarked ? "bookmark.fill" : "bookmark")
+                                            .foregroundColor(.yellow)
+                                    }
+
+                                    if zoomManager.zoomedIn {
+                                        Button("Reset Zoom") {
+                                            zoomManager.resetZoom()
+                                        }
+                                    }
+                                }
+
+                                // bottom bar now using TimerProgressView
+                                ToolbarItem(placement: .bottomBar) {
+                                    TimerProgressView(timerManager: timerManager, showingFeedback: $showingFeedback)
                                 }
                             }
+                        } else {
+                            ProgressView("Getting Workbook")
+                                .onAppear {
+                                    loadPDFFromURL()
+                                    annotationManager.loadAnnotations(
+                                        pagePaths: &pagePaths,
+                                        highlightPaths: &highlightPaths
+                                    )
+                                    if !pagePaths.isEmpty || !highlightPaths.isEmpty {
+                                        annotationsEnabled = true
+                                    }
+                                }
+                        }
                     }
                 }
             }
-        }
-        .alert("Are you sure you want to clear your screen?", isPresented: $showClearAlert) {
-            Button("Clear", role: .destructive) {
-                clearMarkup()
-                annotationManager.saveAnnotations(
-                    pagePaths: pagePaths,
-                    highlightPaths: highlightPaths
-                )
+            .alert("Are you sure you want to clear your screen?", isPresented: $showClearAlert) {
+                Button("Clear", role: .destructive) {
+                    clearMarkup()
+                    annotationManager.saveAnnotations(
+                        pagePaths: pagePaths,
+                        highlightPaths: highlightPaths
+                    )
+                }
+                Button("Cancel", role: .cancel) {}
             }
-            Button("Cancel", role: .cancel) {}
-        }
-        .sheet(isPresented: $showingFeedback) {
-            FeedbackView()
-        }
-        .onChange(of: fileName) { _, _ in
-            loadPDFFromURL()
+            .sheet(isPresented: $showingFeedback) {
+                FeedbackView()
+            }
+            .onChange(of: fileName) { _, _ in
+                loadPDFFromURL()
+            }
         }
     }
 
     private func dragGesture() -> some Gesture {
-        if pageChangeEnabled{
+        if pageChangeEnabled {
             return DragGesture().onEnded { value in
                 if value.translation.width < 0 {
                     goToNextPage()
