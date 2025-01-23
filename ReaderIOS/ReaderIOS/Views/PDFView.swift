@@ -52,7 +52,10 @@ struct PDFView: View {
                                     currentPageIndex: $currentPage
                                 )
                                 .edgesIgnoringSafeArea(.all)
-                                .scaleEffect(zoomManager.newZoomLevel(), anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center)
+                                .scaleEffect(
+                                    zoomManager.newZoomLevel(),
+                                    anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center
+                                )
                                 .onChange(of: currentPage) { _, newValue in
                                     loadPathsForPage(newValue)
                                 }
@@ -69,14 +72,18 @@ struct PDFView: View {
                                         selectedHighlighterColor: selectedHighlighterColor,
                                         zoomedIn: zoomManager.zoomedIn
                                     )
-                                    .scaleEffect(zoomManager.newZoomLevel(), anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center)
+                                    .scaleEffect(
+                                        zoomManager.newZoomLevel(),
+                                        anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center
+                                    )
                                     .gesture(zoomManager.zoomin())
                                     .gesture(zoomManager.zoomout())
                                     .onTapGesture(count: 1, coordinateSpace: .local) { location in
                                         zoomManager.newZoomPoint(
                                             newPoint: location,
                                             width: geometry.size.width,
-                                            height: geometry.size.height)
+                                            height: geometry.size.height
+                                        )
                                     }
                                 }
                             }
