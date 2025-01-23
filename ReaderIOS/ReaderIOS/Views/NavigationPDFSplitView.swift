@@ -94,8 +94,13 @@ struct NavigationPDFSplitView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             if let workbooks = workbooks {
                 List(workbooks, selection: $selectedWorkbookID) { workbook in
-                    Text(workbook.id)
-                        .tag(workbook.id)
+                    HStack {
+                        Image(systemName: "icloud.and.arrow.down") // Download icon
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        Text(workbook.id)
+                            .tag(workbook.id)
+                    }
                 }
             } else {
                 ProgressView("Fetching Workbooks")
@@ -117,7 +122,7 @@ struct NavigationPDFSplitView: View {
                         .padding(.horizontal)
 
                         // Combine chapters and word matches into one list
-                        if let chapters = chapters {
+                        if chapters != nil {
                             List(selection: $selectedChapterID) {
                                 // Chapter search results
                                 Section(header: Text("Chapters: ")) {
@@ -236,7 +241,7 @@ struct NavigationPDFSplitView: View {
                 print("Updated covers: \(covers?.map(\.desc) ?? [])")
             }
         }
-        .onChange(of: pdfDocument) { newPDFDocument in
+        .onChange(of: pdfDocument) { _, newPDFDocument in
             // Move indexing code here
             if let currentPDF = newPDFDocument {
                 wordsIndex.indexPDF(from: currentPDF)

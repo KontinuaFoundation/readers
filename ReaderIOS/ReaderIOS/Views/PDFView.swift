@@ -45,10 +45,9 @@ struct PDFView: View {
                             .edgesIgnoringSafeArea(.all)
                             .scaleEffect(max(min(currentZoom + totalZoom, 5.0), 1.2))
                             .gesture(dragGesture())
-                            .onChange(of: currentPage) { _ in
-                                loadPathsForPage(currentPage)
+                            .onChange(of: currentPage) { _, newValue in
+                                loadPathsForPage(newValue)
                             }
-
                             if annotationsEnabled {
                                 AnnotationsView(
                                     pagePaths: $pagePaths,
@@ -165,7 +164,7 @@ struct PDFView: View {
                                 } label: {
                                     Text(selectedScribbleTool.isEmpty ? "Markup" : "Markup: " + selectedScribbleTool)
                                         .padding(5)
-                                        .foregroundColor(exitNotSelected ? Color.pink : Color.gray)
+                                        .foregroundColor(exitNotSelected ? Color.pink : Color.blue)
                                         .cornerRadius(8)
                                 }
 
@@ -279,7 +278,7 @@ struct PDFView: View {
         .sheet(isPresented: $showingFeedback) {
             FeedbackView()
         }
-        .onChange(of: fileName) { _ in
+        .onChange(of: fileName) { _, _ in
             loadPDFFromURL()
         }
     }
