@@ -67,12 +67,15 @@ struct NavigationPDFSplitView: View {
     @State private var currentPdfFileName: String?
     @State private var isShowingBookmarks: Bool = false
 
+    @State private var columnVisibility = NavigationSplitViewVisibility.automatic
+
     @State private var bookmarkLookup = [String: Set<Int>]()
 
     // State vars for search
     @State private var pdfDocument: PDFDocument?
     @State private var searchText = ""
     @State private var wordsIndex = PDFWordsIndex()
+    @State private var searchHighlighter: PDFSearchHighlighter?
 
     var filteredChapters: [SearchResult<Chapter>] {
         ChapterSearch.filter(chapters, by: searchText)
@@ -82,13 +85,13 @@ struct NavigationPDFSplitView: View {
     // Returns pages that contain the searched terms
     var wordSearchResults: [(page: Int, snippet: String)] {
         guard !searchText.isEmpty else { return [] }
-        let pageResults = wordsIndex.search(for: searchText) // Now returns [Int: String]
+        let pageResults = wordsIndex.search(for: searchText)
         // Sort by page number
         return pageResults.sorted { $0.key < $1.key }.map { (page: $0.key, snippet: $0.value) }
     }
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             if let workbooks = workbooks {
                 List(workbooks, selection: $selectedWorkbookID) { workbook in
                     HStack {
@@ -111,8 +114,12 @@ struct NavigationPDFSplitView: View {
                 if !isShowingBookmarks {
                     VStack {
                         // Add search bar
-                        SearchBar(text: $searchText)
-                            .padding(.horizontal)
+                        SearchBar(text: $searchText, onClear: {
+                            if let searchHighlighter {
+                                searchHighlighter.clearHighlights()
+                            }
+                        })
+                        .padding(.horizontal)
 
                         // Combine chapters and word matches into one list
                         if chapters != nil {
@@ -131,7 +138,7 @@ struct NavigationPDFSplitView: View {
                                 }
 
                                 // Word matches (appear directly after chapter results)
-                                if !searchText.isEmpty {
+                                if searchText.count > 1 {
                                     Section(header: Text("Word Matches:")) {
                                         if wordSearchResults.isEmpty {
                                             Text("No word matches found")
@@ -146,6 +153,19 @@ struct NavigationPDFSplitView: View {
                                                 }
                                                 .onTapGesture {
                                                     currentPage = result.page
+
+                                                    if let searchHighlighter {
+                                                        print(
+                                                            "Highlighting \(result.snippet) on page \(result.page + 1)"
+                                                        )
+                                                        searchHighlighter.clearHighlights()
+                                                        searchHighlighter.highlightSearchResult(
+                                                            searchTerm: result.snippet,
+                                                            onPage: result.page
+                                                        )
+                                                    }
+
+                                                    columnVisibility = .detailOnly
                                                 }
                                             }
                                         }
@@ -225,7 +245,10 @@ struct NavigationPDFSplitView: View {
             // Move indexing code here
             if let currentPDF = newPDFDocument {
                 wordsIndex.indexPDF(from: currentPDF)
-                print(wordsIndex.getAllPageTexts())
+                if let searchHighlighter {
+                    searchHighlighter.clearHighlights()
+                }
+                searchHighlighter = PDFSearchHighlighter(pdfDoc: currentPDF)
             }
         }
     }
@@ -332,6 +355,7 @@ struct NavigationPDFSplitView: View {
 
 struct SearchBar: View {
     @Binding var text: String
+    var onClear: (() -> Void)? // Optional closure to be called on clear
 
     var body: some View {
         HStack {
@@ -343,11 +367,13 @@ struct SearchBar: View {
                 .disableAutocorrection(true)
 
             if !text.isEmpty {
-                Button(action: { text = "" },
-                       label: {
-                           Image(systemName: "xmark.circle.fill")
-                               .foregroundColor(.gray)
-                       })
+                Button(action: {
+                    text = "" // Clear the text
+                    onClear?() // Call the optional clear function if it exists
+                }, label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                })
             }
         }
         .padding(8)
