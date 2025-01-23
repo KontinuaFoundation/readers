@@ -74,30 +74,4 @@ class PDFSearchHighlighter: ObservableObject {
             options: .caseInsensitive
         )
     }
-    /*
-     /// Highlight multiple search results on a page
-     func highlightAllResults(searchTerm: String, onPage pageNumber: Int, color: UIColor = .yellow) {
-         guard let page = pdfView.document?.page(at: pageNumber) else { return }
-         guard let pageContent = page.string?.lowercased() else { return }
-
-         let searchTerms = searchTerm.lowercased()
-             .components(separatedBy: .whitespacesAndNewlines)
-             .filter { !$0.isEmpty }
-
-         let searchPhrase = searchTerms.joined(separator: " ")
-         var searchRange = pageContent.startIndex..<pageContent.endIndex
-
-         while let range = pageContent.range(of: searchPhrase, options: .caseInsensitive, range: searchRange) {
-             if let selection = page.selection(for: range) {
-                 let highlight = PDFAnnotation(bounds: selection.bounds(for: page),
-                                             forType: .highlight,
-                                             withProperties: nil)
-
-                 highlight.color = color.withAlphaComponent(0.3)
-                 page.addAnnotation(highlight)
-                 currentHighlights.append(highlight)
-             }
-             searchRange = range.upperBound..<pageContent.endIndex
-         }
-     }*/
 }

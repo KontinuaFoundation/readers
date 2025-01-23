@@ -109,8 +109,12 @@ struct NavigationPDFSplitView: View {
                 if !isShowingBookmarks {
                     VStack {
                         // Add search bar
-                        SearchBar(text: $searchText)
-                            .padding(.horizontal)
+                        SearchBar(text: $searchText, onClear: {
+                            if let searchHighlighter {
+                                searchHighlighter.clearHighlights()
+                            }
+                        })
+                        .padding(.horizontal)
 
                         // Combine chapters and word matches into one list
                         if let chapters = chapters {
@@ -129,7 +133,7 @@ struct NavigationPDFSplitView: View {
                                 }
 
                                 // Word matches (appear directly after chapter results)
-                                if !searchText.isEmpty {
+                                if searchText.count > 1 {
                                     Section(header: Text("Word Matches:")) {
                                         if wordSearchResults.isEmpty {
                                             Text("No word matches found")
@@ -346,6 +350,7 @@ struct NavigationPDFSplitView: View {
 
 struct SearchBar: View {
     @Binding var text: String
+    var onClear: (() -> Void)? // Optional closure to be called on clear
 
     var body: some View {
         HStack {
@@ -357,11 +362,13 @@ struct SearchBar: View {
                 .disableAutocorrection(true)
 
             if !text.isEmpty {
-                Button(action: { text = "" },
-                       label: {
-                           Image(systemName: "xmark.circle.fill")
-                               .foregroundColor(.gray)
-                       })
+                Button(action: {
+                    text = "" // Clear the text
+                    onClear?() // Call the optional clear function if it exists
+                }, label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                })
             }
         }
         .padding(8)
