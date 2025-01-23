@@ -17,9 +17,7 @@ struct PDFView: View {
     @State private var showDigitalResources = false
 
     // zoom vars
-    @State private var currentZoom: CGFloat = 0.0
-    @State private var totalZoom: CGFloat = 1.2
-    @State private var zoomedIn: Bool = false
+    @ObservedObject private var zoomManager = ZoomManager()
 
     // feedback var
     @State private var showingFeedback = false
@@ -54,8 +52,7 @@ struct PDFView: View {
                                 currentPageIndex: $currentPage
                             )
                             .edgesIgnoringSafeArea(.all)
-                            .scaleEffect(max(min(currentZoom + totalZoom, 5.0), 1.2))
-                            .gesture(dragGesture())
+                            .scaleEffect(max(min(zoomManager.newZoomLevel(), 5.0), 1.2))
                             .onChange(of: currentPage) { _, newValue in
                                 loadPathsForPage(newValue)
                             }
@@ -68,12 +65,13 @@ struct PDFView: View {
                                     nextPage: { goToNextPage() },
                                     previousPage: { goToPreviousPage() },
                                     annotationManager: annotationManager,
-                                    currentZoom: $currentZoom,
-                                    totalZoom: $totalZoom,
                                     selectedColor: selectedPenColor,
-                                    selectedHighlighterColor: selectedHighlighterColor
+                                    selectedHighlighterColor: selectedHighlighterColor,
+                                    zoomedIn: zoomManager.zoomedIn
                                 )
-                                .scaleEffect(max(min(currentZoom + totalZoom, 5.0), 1.2))
+                                .scaleEffect(max(min(zoomManager.newZoomLevel(), 5.0), 1.2))
+                                .gesture(zoomManager.zoomin())
+                                .gesture(zoomManager.zoomout())
                             }
                         }
                         .toolbar {
@@ -113,8 +111,10 @@ struct PDFView: View {
                                         .foregroundColor(.yellow)
                                 }
 
-                                if zoomedIn {
-                                    Button("Reset Zoom") {}
+                                if zoomManager.zoomedIn {
+                                    Button("Reset Zoom") {
+                                        zoomManager.resetZoom()
+                                    }
                                 }
                             }
 
@@ -158,7 +158,7 @@ struct PDFView: View {
     }
 
     private func dragGesture() -> some Gesture {
-        if pageChangeEnabled, !zoomedIn {
+        if pageChangeEnabled{
             return DragGesture().onEnded { value in
                 if value.translation.width < 0 {
                     goToNextPage()
