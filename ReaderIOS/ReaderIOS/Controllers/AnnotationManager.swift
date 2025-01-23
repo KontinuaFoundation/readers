@@ -4,6 +4,7 @@
 //
 //  Created by Luis Rodriguez Jr. on 11/19/24.
 //
+
 import PDFKit
 import SwiftUI
 
@@ -11,25 +12,51 @@ class AnnotationManager: ObservableObject {
     struct AnnotationData: Codable {
         let key: String
         let paths: [[CGPoint]]
+        let colors: [CodableColor] // stores colors available
         let isHighlight: Bool
     }
 
-    func saveAnnotations(pagePaths: [String: [Path]], highlightPaths: [String: [Path]]) {
+    struct CodableColor: Codable, Equatable {
+        var red: CGFloat
+        var green: CGFloat
+        var blue: CGFloat
+        var alpha: CGFloat
+
+        init(_ color: Color) {
+            // initialize the properties to default values first bc it breaks otherwise
+            red = 0
+            green = 0
+            blue = 0
+            alpha = 0
+
+            let uiColor = UIColor(color)
+            uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        }
+
+        var color: Color {
+            Color(UIColor(red: red, green: green, blue: blue, alpha: alpha))
+        }
+    }
+
+    // saves new paths
+    func saveAnnotations(
+        pagePaths: [String: [(path: Path, color: Color)]],
+        highlightPaths: [String: [(path: Path, color: Color)]]
+    ) {
         var annotationData: [AnnotationData] = []
 
-        // Serialize paths
-        for (key, paths) in pagePaths {
-            let pathPoints = paths.map { $0.toPoints() }
-            annotationData.append(AnnotationData(key: key, paths: pathPoints, isHighlight: false))
+        for (key, pathsWithColors) in pagePaths {
+            let pathPoints = pathsWithColors.map { $0.path.toPoints() }
+            let colors = pathsWithColors.map { CodableColor($0.color) }
+            annotationData.append(AnnotationData(key: key, paths: pathPoints, colors: colors, isHighlight: false))
         }
 
-        // Serialize highlight paths
-        for (key, paths) in highlightPaths {
-            let pathPoints = paths.map { $0.toPoints() }
-            annotationData.append(AnnotationData(key: key, paths: pathPoints, isHighlight: true))
+        for (key, pathsWithColors) in highlightPaths {
+            let pathPoints = pathsWithColors.map { $0.path.toPoints() }
+            let colors = pathsWithColors.map { CodableColor($0.color) }
+            annotationData.append(AnnotationData(key: key, paths: pathPoints, colors: colors, isHighlight: true))
         }
 
-        // Convert to JSON
         do {
             let jsonData = try JSONEncoder().encode(annotationData)
             let url = getAnnotationsFileURL()
@@ -46,24 +73,28 @@ class AnnotationManager: ObservableObject {
         return documentsURL.appendingPathComponent("annotations.json")
     }
 
-    func loadAnnotations(pagePaths: inout [String: [Path]], highlightPaths: inout [String: [Path]]) {
-        let url = getAnnotationsFileURL()
+    // update this function to load paths with colors actually correctly
+    func loadAnnotations(
+        pagePaths: inout [String: [(path: Path, color: Color)]],
+        highlightPaths: inout [String: [(path: Path, color: Color)]]
+    ) { let url = getAnnotationsFileURL()
 
         do {
             let data = try Data(contentsOf: url)
             let annotationData = try JSONDecoder().decode([AnnotationData].self, from: data)
 
-            // Clear current paths
+            // clear current paths
             pagePaths.removeAll()
             highlightPaths.removeAll()
 
-            // Restore paths
             for annotation in annotationData {
-                let paths = annotation.paths.map { Path(points: $0) }
+                let pathsWithColors = zip(annotation.paths, annotation.colors).map { pathPoints, color in
+                    (path: Path(points: pathPoints), color: color.color)
+                }
                 if annotation.isHighlight {
-                    highlightPaths[annotation.key] = paths
+                    highlightPaths[annotation.key] = pathsWithColors
                 } else {
-                    pagePaths[annotation.key] = paths
+                    pagePaths[annotation.key] = pathsWithColors
                 }
             }
             print("Annotations loaded from \(url)")
