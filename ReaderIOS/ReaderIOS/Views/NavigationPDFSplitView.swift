@@ -75,6 +75,8 @@ struct NavigationPDFSplitView: View {
     @State private var pdfDocument: PDFDocument?
     @State private var searchText = ""
     @State private var wordsIndex = PDFWordsIndex()
+
+    @State private var chapterManager: ChapterManager?
     @State private var searchHighlighter: PDFSearchHighlighter?
 
     var filteredChapters: [SearchResult<Chapter>] {
@@ -123,16 +125,24 @@ struct NavigationPDFSplitView: View {
 
                         // Combine chapters and word matches into one list
                         if chapters != nil {
-                            List(selection: $selectedChapterID) {
+                            List(selection: Binding(
+                                get: { currentPage },
+                                set: { newPage in
+                                    if let page = newPage {
+                                        currentPage = page
+                                        columnVisibility = .detailOnly
+                                    }
+                                }
+                            )) {
                                 // Chapter search results
                                 Section(header: Text("Chapters: ")) {
                                     if filteredChapters.isEmpty, !searchText.isEmpty {
                                         Text("No chapters found")
                                             .foregroundColor(.gray)
                                     } else {
-                                        ForEach(filteredChapters, id: \.item.id) { searchResult in
+                                        ForEach(filteredChapters, id: \.item.pageNumber) { searchResult in
                                             searchResult.highlightedTitleView()
-                                                .tag(searchResult.item.id)
+                                                .tag(searchResult.item.pageNumber)
                                         }
                                     }
                                 }
@@ -151,6 +161,8 @@ struct NavigationPDFSplitView: View {
                                                         .font(.caption)
                                                         .foregroundColor(.secondary)
                                                 }
+                                                // .tag(result.page) Add tag for selection
+                                                // TODO: Make this section work with .tag
                                                 .onTapGesture {
                                                     currentPage = result.page
 
@@ -234,12 +246,8 @@ struct NavigationPDFSplitView: View {
 
             fetchChapters()
         }
-        .onChange(of: selectedChapterID) {
-            if let chapter = selectedChapter {
-                currentPage = chapter.startPage - 1
-                covers = chapter.covers
-                print("Updated covers: \(covers?.map(\.desc) ?? [])")
-            }
+        .onChange(of: currentPage) { _, _ in
+            updateSelectedChapter()
         }
         .onChange(of: pdfDocument) { _, newPDFDocument in
             // Move indexing code here
@@ -257,10 +265,11 @@ struct NavigationPDFSplitView: View {
         workbooks?.first(where: { $0.id == selectedWorkbookID })
     }
 
-    // TODO: Selected chapter should be based on the current page number.
-    var selectedChapter: Chapter? {
-        chapters?.first(where: { $0.id == selectedChapterID })
-    }
+    /*
+     // TODO: Selected chapter should be based on the current page number.
+     var selectedChapter: Chapter? {
+         chapters?.first(where: { $0.id == selectedChapterID })
+     }*/
 
     func fetchChapters() {
         guard let fileName = selectedWorkbook?.metaName else {
@@ -298,6 +307,7 @@ struct NavigationPDFSplitView: View {
                 DispatchQueue.main.async {
                     chapters = chapterResponse
                     selectedChapterID = chapters?.first?.id
+                    setupChapterManager()
                 }
 
             } catch {
@@ -350,6 +360,24 @@ struct NavigationPDFSplitView: View {
         }
 
         task.resume()
+    }
+
+    func setupChapterManager() {
+        if let chapters = chapters {
+            let chapterManager = ChapterManager(chapters: chapters)
+            // Update selectedChapterID whenever currentPage changes
+            self.chapterManager = chapterManager
+        }
+    }
+
+    func updateSelectedChapter() {
+        if let chapterManager = chapterManager {
+            if let newChapter = chapterManager.getChapter(forPage: currentPage) {
+                selectedChapterID = newChapter.id
+                covers = newChapter.covers
+                print("Updated covers: \(covers?.map(\.desc) ?? [])")
+            }
+        }
     }
 }
 
