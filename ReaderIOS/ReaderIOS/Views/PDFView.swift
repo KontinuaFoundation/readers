@@ -39,6 +39,11 @@ struct PDFView: View {
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
+    
+    // App storage for saved page
+    @AppStorage("savedPage") private var savedPage: Int = 0
+    @AppStorage("savedFileName") private var savedFileName: String = ""
+    
     // big pdf view
     var body: some View {
         GeometryReader { geometry in
@@ -58,6 +63,9 @@ struct PDFView: View {
                                 )
                                 .onChange(of: currentPage) { _, newValue in
                                     loadPathsForPage(newValue)
+                                    // Save the current page when it changes
+                                    savedPage = currentPage
+                                    
                                 }
                                 if annotationsEnabled {
                                     AnnotationsView(
@@ -137,16 +145,26 @@ struct PDFView: View {
                                 }
                             }
                         } else {
+                            HStack {
+                            Spacer()
                             ProgressView("Getting Workbook")
-                                .onAppear {
-                                    loadPDFFromURL()
-                                    annotationManager.loadAnnotations(
-                                        pagePaths: &pagePaths,
-                                        highlightPaths: &highlightPaths
-                                    )
-                                    if !pagePaths.isEmpty || !highlightPaths.isEmpty {
-                                        annotationsEnabled = true
+                                    .onAppear {
+                                        loadPDFFromURL()
+                                        annotationManager.loadAnnotations(
+                                            pagePaths: &pagePaths,
+                                            highlightPaths: &highlightPaths
+                                        )
+                                        if !pagePaths.isEmpty || !highlightPaths.isEmpty {
+                                            annotationsEnabled = true
+                                        }
+                                        // Load the saved page if the file names match
+                                        if savedFileName == fileName {
+                                            currentPage = savedPage
+                                        } else {
+                                            currentPage = 0
+                                        }
                                     }
+                                Spacer()
                                 }
                         }
                     }
@@ -165,8 +183,19 @@ struct PDFView: View {
             .sheet(isPresented: $showingFeedback) {
                 FeedbackView()
             }
-            .onChange(of: fileName) { _, _ in
+            .onChange(of: fileName) { _, newValue in
                 loadPDFFromURL()
+                
+                // Load the saved page if the file names match
+                if savedFileName == newValue {
+                    currentPage = savedPage
+                } else {
+                    currentPage = 0
+                }
+            }
+            .onDisappear{
+                savedFileName = fileName ?? ""
+                savedPage = currentPage
             }
         }
     }
