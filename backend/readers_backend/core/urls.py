@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
+from core.views import  DestroyAuthTokenView
 
 urlpatterns = [
-    path('token/', obtain_auth_token, name='token-retrieve')
+    path("token/", obtain_auth_token, name="token-obtain"),
+    path("token/destroy/", DestroyAuthTokenView.as_view(), name="token-destroy"),
 ]
-

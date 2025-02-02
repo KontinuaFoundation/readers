@@ -6,7 +6,6 @@
 ### POST /api/token/
 Retrieves token given username and password in access body.
 
-Authentication is only required for uploading new workbooks or deleting existing ones.
 
 **Example Request**
 
@@ -25,6 +24,14 @@ Authentication is only required for uploading new workbooks or deleting existing
 }
  ```
 ---
+
+### DELETE /api/token/destroy
+Deletes the currently authenticated users authorization token.
+
+
+### **Authentication**
+This endpoint requires the inclusion of a valid **DRF TokenAuthentication** token in the `Authorization` header. This can be retrieved from POST /api/token/.
+
 
 ## Collections
 
