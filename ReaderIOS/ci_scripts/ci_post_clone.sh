@@ -10,5 +10,6 @@
 # Print start of setup
 echo "Starting CI setup..."
 
-# Install SwiftLint using Homebrew
-brew install swiftlint
+defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
+defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
