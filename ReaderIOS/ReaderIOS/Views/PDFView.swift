@@ -26,7 +26,6 @@ struct PDFView: View {
     @ObservedObject private var timerManager = TimerManager()
 
     // annotation vars
-    @State private var annotationsEnabled: Bool = false
     @State private var exitNotSelected: Bool = false
     @State private var selectedScribbleTool: String = ""
     @State private var pageChangeEnabled: Bool = true
@@ -36,6 +35,13 @@ struct PDFView: View {
     @State private var selectedHighlighterColor: Color = .yellow // highlight default si yellow
 
     @State private var isPenSubmenuVisible: Bool = false
+
+    // text vars
+    @State var textBoxes: [String: [TextBoxData]] = [:]
+    @ObservedObject private var textManager = TextManager()
+    @State var deleteTextBox: Bool = false
+    @State var currentTextBox: Int = -1
+    @State var moveEnabled: Bool = false
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
@@ -54,36 +60,74 @@ struct PDFView: View {
                                 .edgesIgnoringSafeArea(.all)
                                 .scaleEffect(
                                     zoomManager.newZoomLevel(),
-                                    anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center
+                                    anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center
                                 )
                                 .onChange(of: currentPage) { _, newValue in
                                     loadPathsForPage(newValue)
                                 }
-                                if annotationsEnabled {
-                                    AnnotationsView(
-                                        pagePaths: $pagePaths,
-                                        highlightPaths: $highlightPaths,
-                                        key: uniqueKey(for: currentPage),
-                                        selectedScribbleTool: $selectedScribbleTool,
-                                        nextPage: { goToNextPage() },
-                                        previousPage: { goToPreviousPage() },
-                                        annotationManager: annotationManager,
-                                        selectedColor: selectedPenColor,
-                                        selectedHighlighterColor: selectedHighlighterColor,
-                                        zoomedIn: zoomManager.zoomedIn
+                                AnnotationsView(
+                                    pagePaths: $pagePaths,
+                                    highlightPaths: $highlightPaths,
+                                    key: uniqueKey(for: currentPage),
+                                    selectedScribbleTool: $selectedScribbleTool,
+                                    nextPage: { goToNextPage() },
+                                    previousPage: { goToPreviousPage() },
+                                    annotationManager: annotationManager,
+                                    textManager: textManager,
+                                    textBoxes: $textBoxes,
+                                    selectedColor: selectedPenColor,
+                                    selectedHighlighterColor: selectedHighlighterColor,
+                                    zoomedIn: zoomManager.getZoomedIn()
+                                )
+                                .scaleEffect(
+                                    zoomManager.newZoomLevel(),
+                                    anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center
+                                )
+                                .gesture(zoomManager.zoomin())
+                                .gesture(zoomManager.zoomout())
+                                .onTapGesture(count: 1, coordinateSpace: .local) { location in
+                                    zoomManager.newZoomPoint(
+                                        newPoint: location,
+                                        width: geometry.size.width,
+                                        height: geometry.size.height
                                     )
-                                    .scaleEffect(
-                                        zoomManager.newZoomLevel(),
-                                        anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center
-                                    )
-                                    .gesture(zoomManager.zoomin())
-                                    .gesture(zoomManager.zoomout())
-                                    .onTapGesture(count: 1, coordinateSpace: .local) { location in
-                                        zoomManager.newZoomPoint(
-                                            newPoint: location,
+                                    if selectedScribbleTool == "Text" {
+                                        textManager.addText(
+                                            textBoxes: $textBoxes,
+                                            key: uniqueKey(for: currentPage),
                                             width: geometry.size.width,
                                             height: geometry.size.height
                                         )
+                                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                                    }
+                                }
+                                if selectedScribbleTool == "Text" {
+                                    TextView(
+                                        textManager: textManager,
+                                        textBoxes: $textBoxes,
+                                        key: uniqueKey(for: currentPage),
+                                        deleteTextBox: $deleteTextBox,
+                                        currentTextBoxIndex: $currentTextBox,
+                                        width: geometry.size.width,
+                                        height: geometry.size.height,
+                                        moveEnabled: moveEnabled
+                                    )
+                                    .alert(
+                                        "Are you sure you want to delete the text box?",
+                                        isPresented: $deleteTextBox
+                                    ) {
+                                        Button("Delete", role: .destructive) {
+                                            textManager.deleteText(
+                                                textBoxes: $textBoxes,
+                                                key: uniqueKey(for: currentPage),
+                                                index: currentTextBox
+                                            )
+                                            textManager.saveTextBoxes(textBoxes: textBoxes)
+                                            currentTextBox = -1
+                                        }
+                                        Button("Cancel", role: .cancel) {
+                                            currentTextBox = -1
+                                        }
                                     }
                                 }
                             }
@@ -94,13 +138,14 @@ struct PDFView: View {
                                     // markup menu now in MarkupView
                                     MarkupMenu(
                                         selectedScribbleTool: $selectedScribbleTool,
-                                        annotationsEnabled: $annotationsEnabled,
                                         exitNotSelected: $exitNotSelected,
                                         showClearAlert: $showClearAlert,
                                         selectedPenColor: $selectedPenColor,
                                         selectedHighlighterColor: $selectedHighlighterColor,
                                         isPenSubmenuVisible: $isPenSubmenuVisible,
                                         annotationManager: annotationManager,
+                                        textManager: textManager,
+                                        textBoxes: $textBoxes,
                                         pagePaths: pagePaths,
                                         highlightPaths: highlightPaths
                                     )
@@ -124,10 +169,16 @@ struct PDFView: View {
                                             .foregroundColor(.yellow)
                                     }
 
-                                    if zoomManager.zoomedIn {
+                                    if zoomManager.getZoomedIn() {
                                         Button("Reset Zoom") {
                                             zoomManager.resetZoom()
                                         }
+                                    }
+                                    if selectedScribbleTool == "Text" {
+                                        Button("Move") {
+                                            moveEnabled.toggle()
+                                        }
+                                        .foregroundColor(moveEnabled ? Color.pink : Color.blue)
                                     }
                                 }
 
@@ -144,12 +195,14 @@ struct PDFView: View {
                                         pagePaths: &pagePaths,
                                         highlightPaths: &highlightPaths
                                     )
-                                    if !pagePaths.isEmpty || !highlightPaths.isEmpty {
-                                        annotationsEnabled = true
-                                    }
+                                    textManager.loadTextBoxes(textBoxes: &textBoxes)
                                 }
                         }
                     }
+                }
+                .onDisappear {
+                    textManager.saveTextBoxes(textBoxes: textBoxes)
+                    annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
                 }
             }
             .alert("Are you sure you want to clear your screen?", isPresented: $showClearAlert) {
@@ -168,20 +221,6 @@ struct PDFView: View {
             .onChange(of: fileName) { _, _ in
                 loadPDFFromURL()
             }
-        }
-    }
-
-    private func dragGesture() -> some Gesture {
-        if pageChangeEnabled {
-            return DragGesture().onEnded { value in
-                if value.translation.width < 0 {
-                    goToNextPage()
-                } else if value.translation.width > 0 {
-                    goToPreviousPage()
-                }
-            }
-        } else {
-            return DragGesture().onEnded { _ in }
         }
     }
 
@@ -276,13 +315,14 @@ struct PDFView: View {
 
 struct MarkupMenu: View {
     @Binding var selectedScribbleTool: String
-    @Binding var annotationsEnabled: Bool
     @Binding var exitNotSelected: Bool
     @Binding var showClearAlert: Bool
     @Binding var selectedPenColor: Color
     @Binding var selectedHighlighterColor: Color
     @Binding var isPenSubmenuVisible: Bool
     @ObservedObject var annotationManager: AnnotationManager
+    @ObservedObject var textManager: TextManager
+    @Binding var textBoxes: [String: [TextBoxData]]
 
     var pagePaths: [String: [(path: Path, color: Color)]]
     var highlightPaths: [String: [(path: Path, color: Color)]]
@@ -294,7 +334,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedPenColor = .black
                     selectScribbleTool("Pen")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -307,7 +346,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedPenColor = .green
                     selectScribbleTool("Pen")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -320,7 +358,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedPenColor = .red
                     selectScribbleTool("Pen")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -333,7 +370,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedPenColor = .blue
                     selectScribbleTool("Pen")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -356,7 +392,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedHighlighterColor = .yellow
                     selectScribbleTool("Highlight")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -369,7 +404,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedHighlighterColor = .pink
                     selectScribbleTool("Highlight")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -382,7 +416,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedHighlighterColor = .blue
                     selectScribbleTool("Highlight")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -395,7 +428,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedHighlighterColor = .green
                     selectScribbleTool("Highlight")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -416,12 +448,10 @@ struct MarkupMenu: View {
             }
             Button("Erase") {
                 selectScribbleTool("Erase")
-                annotationsEnabled = true
                 exitNotSelected = true
             }
             Button("Text") {
                 selectScribbleTool("Text")
-                annotationsEnabled = true
                 exitNotSelected = true
             }
             Button("Clear Screen") {
@@ -434,6 +464,7 @@ struct MarkupMenu: View {
                     pagePaths: pagePaths,
                     highlightPaths: highlightPaths
                 )
+                textManager.saveTextBoxes(textBoxes: textBoxes)
             }
         } label: {
             Text(selectedScribbleTool.isEmpty ? "Markup" : "Markup: " + selectedScribbleTool)
