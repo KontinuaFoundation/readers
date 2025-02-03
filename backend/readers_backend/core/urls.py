@@ -16,9 +16,16 @@ Including another URLconf
 """
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
-from core.views import  DestroyAuthTokenView
+from rest_framework.routers import DefaultRouter
+
+from core.views import DestroyAuthTokenView, CollectionViewSet
+
+router = DefaultRouter()
+router.register('collections', CollectionViewSet, basename='collection')
 
 urlpatterns = [
     path("token/", obtain_auth_token, name="token-obtain"),
     path("token/destroy/", DestroyAuthTokenView.as_view(), name="token-destroy"),
 ]
+
+urlpatterns += router.urls
