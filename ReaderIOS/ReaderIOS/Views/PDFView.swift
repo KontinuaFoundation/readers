@@ -35,8 +35,6 @@ struct PDFView: View {
     @State private var selectedHighlighterColor: Color = .yellow // highlight default si yellow
 
     @State private var isPenSubmenuVisible: Bool = false
-
-    // text vars
     @State var textBoxes: [String: [TextBoxData]] = [:]
     @ObservedObject private var textManager = TextManager()
     @State var deleteTextBox: Bool = false
