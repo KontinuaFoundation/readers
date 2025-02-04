@@ -10,6 +10,8 @@ class Collection(models.Model):
 
     class Meta:
         unique_together = ('major_version', 'minor_version', 'localization')
+        # default ordering...
+        ordering = ["-major_version", "-minor_version", "localization"]
 
 
 # Create your models here.

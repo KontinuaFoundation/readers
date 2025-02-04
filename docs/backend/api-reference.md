@@ -54,14 +54,23 @@ Used to organize workbooks by version and localization
 Retrieves a list of collections based on the specified filters. This endpoint is used to fetch collections organized by major and minor versions, as well as localization.
 
 #### **Query Parameters**
-1. **`major_version`** (string, optional):
+1. **`major_version`** (int, optional):
    - Filters collections by the specified major version. If not provided, collections of all major versions are returned.
 
-2. **`minor_version`** (string, optional):
+2. **`minor_version`** (int, optional):
    - Filters collections by the specified minor version. If not provided, collections of all minor versions are returned.
 
 3. **`localization`** (string, optional):
    - Filters collections by the specified localization. If not provided, collections of all localizations are returned.
+
+4. **`is_released`** (boolean, optional):
+   - Filters collection by if they are released or not.
+   - true or false
+
+**NOTES:** 
+- If invalid query params are passed, they will simply not be considered. 
+- By default, collections are ordered by major version then minor version meaning latest versions will be on top.
+
 ---
 
 #### **Response**
@@ -71,22 +80,24 @@ Retrieves a list of collections based on the specified filters. This endpoint is
   [
       {
         "id": 1,
-        "major_version": "1",
-        "minor_version": "0",
+        "major_version": 1,
+        "minor_version": 0,
         "localization": "en-US",
         "created_at": "2023-10-01T12:00:00Z",
-        "updated_at": "2023-10-01T12:00:00Z"
+         "is_released": True,
       },
       {
         "id": 2,
-        "major_version": "1",
-        "minor_version": "1",
+        "major_version": 1,
+        "minor_version": 1,
         "localization": "fr-FR",
         "created_at": "2023-10-02T12:00:00Z",
-        "updated_at": "2023-10-02T12:00:00Z"
+         "is_released": True,
       }
     ]
 
+### DELETE /api/collections/<int: pk>
+Deletes a collection *and all its workbooks*!
 
 ---
 
