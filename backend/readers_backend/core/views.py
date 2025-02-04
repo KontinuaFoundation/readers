@@ -9,12 +9,14 @@ from rest_framework.viewsets import GenericViewSet
 from core.models import Collection
 from core.serializers import CollectionSerializer
 
+
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request):
         Token.objects.filter(user=request.user).delete()
         return Response({"message": "Token deleted."}, status=status.HTTP_204_NO_CONTENT)
+
 
 class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin):
     serializer_class = CollectionSerializer
@@ -53,5 +55,3 @@ class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyM
             queryset = queryset.filter(is_released=is_released_bool)
 
         return queryset
-
-

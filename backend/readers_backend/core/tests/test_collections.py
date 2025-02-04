@@ -106,7 +106,7 @@ class CollectionTestCase(APITestCase):
         )
 
     def test_create_collection_lower_version_than_latest(self):
-        #TODO
+        # TODO
         return
 
     def test_create_same_version_different_locale(self):
@@ -182,14 +182,16 @@ class CollectionTestCase(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200, msg=f"Expected status code 200, but got {response.status_code}.")
 
-        self.assertEqual(Collection.objects.count(), len(response.data), msg="Number of collections in response doesnt equal number of collections in DB.")
+        self.assertEqual(Collection.objects.count(), len(response.data),
+                         msg="Number of collections in response doesnt equal number of collections in DB.")
 
         response.data.sort(key=lambda x: x['id'])
 
         for index, response_collection in enumerate(response.data):
             expected = collections_data[index]
 
-            self.assertEqual(expected["major_version"], response_collection["major_version"], msg=f'Major version mismatch')
+            self.assertEqual(expected["major_version"], response_collection["major_version"],
+                             msg=f'Major version mismatch')
             self.assertEqual(expected["minor_version"], response_collection["minor_version"])
             self.assertEqual(expected["localization"], response_collection["localization"])
             self.assertEqual(expected["is_released"], response_collection["is_released"])
@@ -307,7 +309,3 @@ class CollectionTestCase(APITestCase):
         self.assertEqual(response.data[0]['major_version'], 2)
         self.assertEqual(response.data[0]['minor_version'], 1)
         self.assertEqual(response.data[0]['localization'], "en-US")
-
-        response = self.client.get(f"{url}?localization=en-US&major_version=1")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)

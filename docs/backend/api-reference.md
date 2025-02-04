@@ -1,209 +1,159 @@
-
+# API Reference
 
 ## Authentication
 
+All authenticated endpoints require a valid **DRF TokenAuthentication** token in the `Authorization` header.
 
-### POST /api/token/
-Retrieves token given username and password in access body.
+### Token Management
 
+#### Get Token
 
-**Example Request**
+- **POST** `/api/token/`
+- **Description**: Obtains authentication token
+- **Request Body**:
 
-``` json
+```json
 {
-  "username": "Administrator",
-  "password": "A-Very-Secure-Passoword"
+  "username": "string",
+  "password": "string"
 }
- ```
+```
 
-**Example Response**
+- **Response**:
 
-``` json
+```json
 {
-    "token": "54598435h34jhk5hkj43kjh54hkjhkj543hkj54hkj4"
+  "token": "string"
 }
- ```
----
+```
 
-### DELETE /api/token/destroy
-Deletes the currently authenticated users authorization token.
+#### Delete Token
 
-
-### **Authentication**
-This endpoint requires the inclusion of a valid **DRF TokenAuthentication** token in the `Authorization` header. This can be retrieved from POST /api/token/.
-
+- **DELETE** `/api/token/destroy`
+- **Description**: Invalidates current user's token
+- **Authentication**: Required
 
 ## Collections
 
-### POST /api/collections/
+### Collection Operations
 
-Creates a new collection with a given major and minor version along with the localization.
-Used to organize workbooks by version and localization
+#### Create Collection
 
-#### **Request Parameters**
-1. **`major_version`** (int, required):
-   - An integer representing the major version of the collection.
+- **POST** `/api/collections/`
+- **Description**: Creates a new collection
+- **Authentication**: Required
+- **Request Body**:
 
-2. **`minor_version`** (int, required):
-   - An integer representing the minor version of the collection.
+```json
+{
+  "major_version": "integer",
+  "minor_version": "integer",
+  "localization": "string"
+}
+```
 
-3. **`localization`** (string, required):
-   - The localization of the collection.
+#### List Collections
 
-### **GET /api/collections/**
-Retrieves a list of collections based on the specified filters. This endpoint is used to fetch collections organized by major and minor versions, as well as localization.
+- **GET** `/api/collections/`
+- **Description**: Retrieves filtered collections list
+- **Query Parameters**:
+    - `major_version` (integer, optional)
+    - `minor_version` (integer, optional)
+    - `localization` (string, optional)
+    - `is_released` (boolean, optional)
+- **Notes**:
+    - Invalid parameters are ignored
+    - Results ordered by major_version DESC, minor_version DESC
+- **Response**:
 
-#### **Query Parameters**
-1. **`major_version`** (int, optional):
-   - Filters collections by the specified major version. If not provided, collections of all major versions are returned.
+```json
+[
+  {
+    "id": "integer",
+    "major_version": "integer",
+    "minor_version": "integer",
+    "localization": "string",
+    "created_at": "datetime",
+    "is_released": "boolean"
+  }
+]
+```
 
-2. **`minor_version`** (int, optional):
-   - Filters collections by the specified minor version. If not provided, collections of all minor versions are returned.
+#### Get Collection
 
-3. **`localization`** (string, optional):
-   - Filters collections by the specified localization. If not provided, collections of all localizations are returned.
+- **GET** `/api/collections/{id}`
+- **Description**: Retrieves a single collection with workbooks
+- **Response**:
 
-4. **`is_released`** (boolean, optional):
-   - Filters collection by if they are released or not.
-   - true or false
+```json
+{
+  "id": "integer",
+  "major_version": "integer",
+  "minor_version": "integer",
+  "localization": "string",
+  "created_at": "datetime",
+  "is_released": "boolean",
+  "workbooks": [
+    {
+      "collection": "integer",
+      "number": "integer",
+      "id": "integer"
+    }
+  ]
+}
+```
 
-**NOTES:** 
-- If invalid query params are passed, they will simply not be considered. 
-- By default, collections are ordered by major version then minor version meaning latest versions will be on top.
+#### Delete Collection
 
----
-
-#### **Response**
-
-- **Response Body**:
-  ```json
-  [
-      {
-        "id": 1,
-        "major_version": 1,
-        "minor_version": 0,
-        "localization": "en-US",
-        "created_at": "2023-10-01T12:00:00Z",
-         "is_released": True,
-      },
-      {
-        "id": 2,
-        "major_version": 1,
-        "minor_version": 1,
-        "localization": "fr-FR",
-        "created_at": "2023-10-02T12:00:00Z",
-         "is_released": True,
-      }
-    ]
-
-### DELETE /api/collections/<int: pk>
-Deletes a collection *and all its workbooks*!
-
----
+- **DELETE** `/api/collections/{id}`
+- **Description**: Deletes collection and associated workbooks
+- **Authentication**: Required
 
 ## Workbooks
 
+### Workbook Operations
 
-### POST /api/workbooks/
+#### Create Workbook
 
-Adds a new workbook to a given collection.
+- **POST** `/api/workbooks/`
+- **Description**: Creates workbook in collection
+- **Authentication**: Required
+- **Content-Type**: multipart/form-data
+- **Request Parameters**:
+    - `number` (string, required)
+    - `collection` (integer, required): Collection ID
+    - `chapters` (JSON string, required): Workbook metadata
+    - `pdf` (file, required): Workbook PDF file
 
-Expects collecton ID, chapter data, and pdf file for a single workbook.
 
-### **Multipart/Form-Data Upload**
+#### Get Workbook Details
 
-This endpoint allows uploading a workbook's metadata and PDF file together. The request must use the `multipart/form-data` format.
+- **GET** `/api/workbooks/{id}`
+- **Description**: Retrieves workbook metadata and PDF link
+- **Response**:
 
-### **Authentication**
-
-This endpoint requires the inclusion of a valid **DRF TokenAuthentication** token in the `Authorization` header. This can be retrieved from POST /api/token/.
-
-Authorization: Token {your_token_here}
-
-#### **Request Parameters**
-
-1. **`number`** (string, required):
-   - The sequence number of the workbook.
-
-2. **`collection`** (string, required):
-   - The **Primary Key (ID)** of the given collection it belongs to. Note that /api/collections/ will most likely need to be called before to get said PK.
-
-3. **`chapters`** (string, required):
-    
-    - A JSON string representing the workbook's metadata.
-        
-    - Must include the workbook's title, identifier, and chapters information.
-        
-    - { "chapters": \[ { "title": "Introduction to the Kontinua Sequence", "start_page": 3, "requires": \[\], "metadata": { "description": "Introduction to Kontinua", "videos": \[\], "references": \[\] } } \]}
-        
-4. **`pdf`** (file, required):
-    
-    - The binary PDF file representing the workbook.
-        
-    - Example: A file named `workbook-01.pdf`.
-        
-
-## GET /api/workbooks/
-Lists the latest version of all workbooks including their name, identifier, and version number.
-
-#### **Query Parameters**
-1. **`collection`** (int, required):
-   - The **Primary Key (ID)** of the collection the workbooks belong to.
-
-``` json
+```json
 {
-version: 1.0
-workbooks: [
-  {"collection": 2, "number": 1, "id": 92},
-  {"collection": 2, "number": 2, "id": 93},
-  {"collection": 2, "number": 3, "id": 94}
-  ...
-]
+  "collection": "integer",
+  "number": "integer",
+  "pdf": "string",
+  "chapters": [
+    {
+      "title": "string",
+      "start_page": "integer",
+      "requires": "array",
+      "metadata": {
+        "description": "string",
+        "videos": "array",
+        "references": "array"
+      }
+    }
+  ]
 }
+```
 
- ```
+#### Delete Workbook
 
-## GET /api/workbooks/{id}/
-
-Returns all the metadata and pdf download link for a given workbook.
-
-If no version provided, endpoint will return the latest version.
-
-**Example response**
-
-``` json
-{
-    "collection": 1,
-    "number": 3,
-    "pdf": "https://s3.amazonaws.com/bucket-name/workbooks/workbook-01.pdf",
-    "chapters": [
-        {
-            "title": "Introduction to the Kontinua Sequence",
-            "start_page": 3,
-            "requires": [],
-            "metadata": {
-                "description": "Introduction to Kontinua",
-                "videos": [],
-                "references": []
-            }
-        }
-    ]
-}
-
- ```
-
-## DELETE /api/workbooks/{id}/
-
-Given the id of a workbook, delete it.
-
-### **Authentication**
-
-This endpoint requires the inclusion of a valid **DRF TokenAuthentication** token in the `Authorization` header. This can be retrieved from POST /api/token/.
-
-Authorization: Token {your token here!}
-
----
-
-
-
-
+- **DELETE** `/api/workbooks/{id}`
+- **Description**: Removes workbook
+- **Authentication**: Required
