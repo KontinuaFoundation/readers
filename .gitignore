@@ -32,12 +32,11 @@ google-services.json
 
 # Android Profiling
 *.hprof
-ReaderIOS/ReaderIOS.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Ignore Xcode user-specific files
 *.xcuserstate
-*.xcuserdata/
-*.xcworkspace/
+**/*.xcuserdata/
+**/xcuserdata/
 
 # Virtual envs
 backend-virtual-env/
