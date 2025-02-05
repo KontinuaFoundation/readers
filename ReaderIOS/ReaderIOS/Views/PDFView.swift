@@ -12,19 +12,19 @@ struct PDFView: View {
     @Binding var bookmarkLookup: [String: Set<Int>]
     @Binding var covers: [Cover]?
     @Binding var pdfDocument: PDFDocument?
-    
+
     // Digital resources state vars
     @State private var showDigitalResources = false
-    
+
     // zoom vars
     @ObservedObject private var zoomManager = ZoomManager()
-    
+
     // feedback var
     @State private var showingFeedback = false
-    
+
     // timer vars
     @ObservedObject private var timerManager = TimerManager()
-    
+
     // annotation vars
     @State private var annotationsEnabled: Bool = false
     @State private var exitNotSelected: Bool = false
@@ -34,15 +34,15 @@ struct PDFView: View {
     @State private var highlightPaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var selectedPenColor: Color = .black // pen default is black
     @State private var selectedHighlighterColor: Color = .yellow // highlight default si yellow
-    
+
     @State private var isPenSubmenuVisible: Bool = false
-    
+
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
-    
-    // App storage for saved page
-    @AppStorage("savedPages") private var savedPagesData: Data = Data()
-    @State private var savedPages: [String: Int] = [:]
+
+    // Persistence Keys
+    private let lastFileNameKey = "lastFileName"
+    private let lastPageKey = "lastPage"
 
     // big pdf view
     var body: some View {
@@ -61,7 +61,10 @@ struct PDFView: View {
                                     zoomManager.newZoomLevel(),
                                     anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center
                                 )
-                                
+                                .onChange(of: currentPage) { _, newValue in
+                                    loadPathsForPage(newValue)
+                                    saveLastState() // Save the current page when it changes
+                                }
                                 if annotationsEnabled {
                                     AnnotationsView(
                                         pagePaths: $pagePaths,
@@ -107,83 +110,55 @@ struct PDFView: View {
                                         pagePaths: pagePaths,
                                         highlightPaths: highlightPaths
                                     )
+
                                     Button(action: { showDigitalResources = true },
                                            label: {
-                                        Text("Digital Resources")
-                                            .padding(5)
-                                            .foregroundColor((covers?.isEmpty ?? true) ? .gray : .purple)
-                                            .cornerRadius(8)
-                                    })
-                                    .disabled(covers?.isEmpty ?? true)
-                                    .fullScreenCover(isPresented: $showDigitalResources) {
-                                        DigitalResourcesView(covers: covers)
-                                    }
+                                               Text("Digital Resources")
+                                                   .padding(5)
+                                                   .foregroundColor((covers?.isEmpty ?? true) ? .gray : .purple)
+                                                   .cornerRadius(8)
+                                           })
+                                           .disabled(covers?.isEmpty ?? true)
+                                           .fullScreenCover(isPresented: $showDigitalResources) {
+                                               DigitalResourcesView(covers: covers)
+                                           }
+
                                     Button {
                                         toggleCurrentPageInBookmarks()
                                     } label: {
                                         Image(systemName: isCurrentPageBookmarked ? "bookmark.fill" : "bookmark")
                                             .foregroundColor(.yellow)
                                     }
+
                                     if zoomManager.zoomedIn {
                                         Button("Reset Zoom") {
                                             zoomManager.resetZoom()
                                         }
                                     }
                                 }
+
                                 // bottom bar now using TimerProgressView
                                 ToolbarItem(placement: .bottomBar) {
                                     TimerProgressView(timerManager: timerManager, showingFeedback: $showingFeedback)
                                 }
                             }
                         } else {
-                            HStack {
-                                Spacer()
-                                ProgressView("Getting Workbook")
-                                    .onAppear {
-                                        loadPDFFromURL()
-                                        annotationManager.loadAnnotations(
-                                            pagePaths: &pagePaths,
-                                            highlightPaths: &highlightPaths
-                                        )
-                                        if !pagePaths.isEmpty || !highlightPaths.isEmpty {
-                                            annotationsEnabled = true
-                                        }
-                                        
-                                        // Load the saved page for the current workbook
-                                        if let currentFileName = fileName, let savedPage = savedPages[currentFileName] {
-                                               currentPage = savedPage
-                                            } else {
-                                                currentPage = 0
-                                            }
-                                        }
-                                Spacer()
-                            }
-                        }
-                    }
-                    .onChange(of: fileName) { _, newValue in
-                                            // Save current page for the old workbook
-                                            if let oldFileName = fileName {
-                                                savedPages[oldFileName] = currentPage
-                                                updateSavedPagesData()
-                                            }
-
-                                            // Load or reset current page for the new workbook
-                                            loadPDFFromURL()
-                                            if let newFileName = newValue, let savedPage = savedPages[newFileName] {
-                                                currentPage = savedPage
-                                            } else {
-                                                currentPage = 0
-                                            }
-                                        }
-                                        .onDisappear {
-                                            // Save current page for the current workbook
-                                            if let currentFileName = fileName {
-                                                savedPages[currentFileName] = currentPage
-                                                updateSavedPagesData()
-                                            }
-                                        }
+                            ProgressView("Getting Workbook")
+                                .onAppear {
+                                    loadLastState() // Load the last file and page
+                                    loadPDFFromURL()
+                                    annotationManager.loadAnnotations(
+                                        pagePaths: &pagePaths,
+                                        highlightPaths: &highlightPaths
+                                    )
+                                    if !pagePaths.isEmpty || !highlightPaths.isEmpty {
+                                        annotationsEnabled = true
                                     }
                                 }
+                        }
+                    }
+                }
+            }
             .alert("Are you sure you want to clear your screen?", isPresented: $showClearAlert) {
                 Button("Clear", role: .destructive) {
                     clearMarkup()
@@ -197,28 +172,14 @@ struct PDFView: View {
             .sheet(isPresented: $showingFeedback) {
                 FeedbackView()
             }
-        }
-        .onAppear {
-            // Load saved pages on view appearance
-            loadSavedPages()
+            .onChange(of: fileName) { _, _ in
+                loadPDFFromURL()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+                saveLastState() // save current page when app is closed
+            }
         }
     }
-    
-    // Helper functions to load and update saved pages
-        private func loadSavedPages() {
-            guard let decoded = try? JSONDecoder().decode([String: Int].self, from: savedPagesData) else {
-                savedPages = [:] // Initialize with an empty dictionary if no data is found
-                return
-            }
-            savedPages = decoded
-        }
-
-        private func updateSavedPagesData() {
-            guard let encoded = try? JSONEncoder().encode(savedPages) else {
-                return // Handle encoding error if necessary
-            }
-            savedPagesData = encoded
-        }
 
     private func dragGesture() -> some Gesture {
         if pageChangeEnabled {
@@ -249,7 +210,7 @@ struct PDFView: View {
     private func loadPDFFromURL() {
         guard let fileName = fileName else { return }
 
-        let baseURL = "http://localhost:8000/pdfs/"
+        let baseURL = "http://192.168.101.223:8000/pdfs/"
         let urlString = baseURL + fileName
         guard let url = URL(string: urlString) else {
             print("Invalid URL for file: \(fileName)")
@@ -317,6 +278,20 @@ struct PDFView: View {
             } else {
                 bookmarkLookup[fileName] = Set([currentPage])
             }
+        }
+    }
+
+    // MARK: - Persistence Methods
+
+    private func saveLastState() {
+        UserDefaults.standard.set(fileName, forKey: lastFileNameKey)
+        UserDefaults.standard.set(currentPage, forKey: lastPageKey)
+    }
+
+    private func loadLastState() {
+        if let lastFileName = UserDefaults.standard.string(forKey: lastFileNameKey) {
+            fileName = lastFileName
+            currentPage = UserDefaults.standard.integer(forKey: lastPageKey)
         }
     }
 }
