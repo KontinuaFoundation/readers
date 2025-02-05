@@ -89,6 +89,7 @@ struct PDFView: View {
                             }
                             .toolbar {
                                 ToolbarItemGroup(placement: .navigationBarTrailing) {
+                                    PageControlView(currentPage: $currentPage, totalPages: pdfDocument.pageCount)
                                     // timer controls now in to TimerControlsView
                                     TimerControlsView(timerManager: timerManager)
                                     // markup menu now in MarkupView
