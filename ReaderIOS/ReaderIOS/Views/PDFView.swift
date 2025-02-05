@@ -12,17 +12,10 @@ struct PDFView: View {
     @Binding var bookmarkLookup: [String: Set<Int>]
     @Binding var covers: [Cover]?
     @Binding var pdfDocument: PDFDocument?
-
     // Digital resources state vars
     @State private var showDigitalResources = false
-
-    // zoom vars
     @ObservedObject private var zoomManager = ZoomManager()
-
-    // feedback var
     @State private var showingFeedback = false
-
-    // timer vars
     @ObservedObject private var timerManager = TimerManager()
 
     // annotation vars
@@ -32,8 +25,7 @@ struct PDFView: View {
     @State private var pagePaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var highlightPaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var selectedPenColor: Color = .black // pen default is black
-    @State private var selectedHighlighterColor: Color = .yellow // highlight default si yellow
-
+    @State private var selectedHighlighterColor: Color = .yellow
     @State private var isPenSubmenuVisible: Bool = false
     @State var textBoxes: [String: [TextBoxData]] = [:]
     @ObservedObject private var textManager = TextManager()
