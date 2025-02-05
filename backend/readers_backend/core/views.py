@@ -6,8 +6,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
-from core.models import Collection
-from core.serializers import CollectionSerializer
+from core.models import Collection, Workbook
+from core.serializers import CollectionListSerializer, WorkbookCreateSerializer, CollectionCreateSerializer, \
+    CollectionRetrieveSerializer, WorkbookRetrieveSerializer
 
 
 class DestroyAuthTokenView(APIView):
@@ -17,14 +18,20 @@ class DestroyAuthTokenView(APIView):
         Token.objects.filter(user=request.user).delete()
         return Response({"message": "Token deleted."}, status=status.HTTP_204_NO_CONTENT)
 
+class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin):
 
-class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin):
-    serializer_class = CollectionSerializer
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CollectionCreateSerializer
+        elif self.action == 'list':
+            return CollectionListSerializer
+        elif self.action == 'retrieve':
+            return CollectionRetrieveSerializer
+        return None
 
     def get_permissions(self):
-        if self.action in ['list']:
+        if self.action in ['list', 'retrieve']:
             return []
-
         return [IsAuthenticated()]
 
     def get_queryset(self):
@@ -55,3 +62,19 @@ class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyM
             queryset = queryset.filter(is_released=is_released_bool)
 
         return queryset
+
+class WorkbookViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.RetrieveModelMixin):
+    queryset = Workbook.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return WorkbookCreateSerializer
+        if self.action == 'retrieve':
+            return WorkbookRetrieveSerializer
+        return None
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return []
+
+        return [IsAuthenticated()]

@@ -10,19 +10,19 @@ class Collection(models.Model):
 
     class Meta:
         unique_together = ('major_version', 'minor_version', 'localization')
-        # default ordering...
         ordering = ["-major_version", "-minor_version", "localization"]
 
 
 # Create your models here.
 class Workbook(models.Model):
     number = models.IntegerField(blank=False, null=False)
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="workbooks")
     chapters = models.JSONField(blank=False, null=False)
     pdf = models.FileField(blank=False, null=False)
 
     class Meta:
         unique_together = ('number', 'collection')
+        ordering = ["number", "collection"]
 
 
 class Feedback(models.Model):

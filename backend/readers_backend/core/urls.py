@@ -18,10 +18,11 @@ from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 
-from core.views import DestroyAuthTokenView, CollectionViewSet
+from core.views import DestroyAuthTokenView, CollectionViewSet, WorkbookViewSet
 
 router = DefaultRouter()
 router.register('collections', CollectionViewSet, basename='collection')
+router.register('workbooks', WorkbookViewSet, basename='workbook')
 
 urlpatterns = [
     path("token/", obtain_auth_token, name="token-obtain"),

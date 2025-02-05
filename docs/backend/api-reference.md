@@ -125,7 +125,6 @@ All authenticated endpoints require a valid **DRF TokenAuthentication** token in
     - `chapters` (JSON string, required): Workbook metadata
     - `pdf` (file, required): Workbook PDF file
 
-
 #### Get Workbook Details
 
 - **GET** `/api/workbooks/{id}`
@@ -139,14 +138,29 @@ All authenticated endpoints require a valid **DRF TokenAuthentication** token in
   "pdf": "string",
   "chapters": [
     {
+      "requires": "array of strings",
       "title": "string",
+      "id": "string",
+      "chap_num": "integer",
       "start_page": "integer",
-      "requires": "array",
-      "metadata": {
-        "description": "string",
-        "videos": "array",
-        "references": "array"
-      }
+      "covers": [
+        {
+          "id": "string",
+          "desc": "string",
+          "videos": [
+            {
+              "link": "string",
+              "title": "string"
+            }
+          ],
+          "references": [
+            {
+              "link": "string",
+              "title": "string"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
