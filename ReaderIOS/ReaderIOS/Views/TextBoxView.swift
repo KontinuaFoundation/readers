@@ -8,7 +8,7 @@ struct TextView: View {
     @Binding var currentTextBoxIndex: Int
     var width: CGFloat
     var height: CGFloat
-    
+
     var body: some View {
         ZStack {
             if let keys = textBoxes[key]?.indices {
@@ -85,7 +85,7 @@ struct TextBox: View {
                         }
                 )
                 .position(x: data.position.x + 100 * (data.size.width / 200),
-                          y:  data.position.y + 100 * (data.size.height / 100))
+                          y: data.position.y + 100 * (data.size.height / 100))
             Rectangle()
                 .frame(width: 15, height: 15)
                 .foregroundColor(.gray)
@@ -104,7 +104,7 @@ struct TextBox: View {
                             textManager.saveTextBoxes(textBoxes: textBoxes)
                         }
                 )
-                .position(x: data.position.x, y:  data.position.y)
+                .position(x: data.position.x, y: data.position.y)
         }
     }
 }
