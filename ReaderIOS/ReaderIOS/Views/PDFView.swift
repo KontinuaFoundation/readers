@@ -110,6 +110,10 @@ struct PDFView: View {
                                         height: geometry.size.height,
                                         moveEnabled: moveEnabled
                                     )
+                                    .scaleEffect(
+                                        zoomManager.newZoomLevel(),
+                                        anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center
+                                    )
                                     .alert(
                                         "Are you sure you want to delete the text box?",
                                         isPresented: $deleteTextBox

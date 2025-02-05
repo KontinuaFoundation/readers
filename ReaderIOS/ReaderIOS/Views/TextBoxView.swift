@@ -49,10 +49,27 @@ struct TextBox: View {
 
     var body: some View {
         ZStack {
-            TextEditor(text: $data.text)
-                .frame(width: data.size.width, height: data.size.height)
-                .border(Color.black, width: 1)
-                .background(Color(.white))
+            VStack {
+                TextEditor(text: $data.text)
+                    .frame(width: data.size.width, height: data.size.height)
+                    .border(Color.black, width: 3)
+                    .foregroundColor(Color.clear)
+                    .background(Color.clear)
+                    .cornerRadius(8)
+                    .onTapGesture(count: 2) {
+                        deleteTextBox = true
+                        currentTextBoxIndex = index
+                    }
+                    .onChange(of: data.text) { _, _ in
+                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                    }
+            }
+            .position(x: data.position.x, y: data.position.y)
+            Rectangle()
+                .frame(width: 15, height: 15)
+                .foregroundColor(.gray)
+                .cornerRadius(3)
+                .offset(x: 0, y: -50 * (data.size.height / 100))
                 .gesture(
                     DragGesture()
                         .onChanged { value in
@@ -60,11 +77,17 @@ struct TextBox: View {
                                 let newX = data.position.x + value.location.x
                                 let newY = data.position.y + value.location.y
                                 let clampedX = min(max(newX, 0), width - 100)
-                                let clampedY = min(max(newY, 0 + 50), height - 50)
+                                let clampedY = min(max(newY, 0 + 50 + data.size.height), height - 50)
                                 data.position = CGPoint(x: clampedX, y: clampedY)
                             } else {
-                                let newWidth = max(min(data.size.width + (value.translation.width * 0.005), 400), 100)
-                                let newHeight = max(min(data.size.height + (value.translation.height * 0.005), 200), 50)
+                                let newWidth = max(
+                                    min(data.size.width + value.translation.width, 400),
+                                    100
+                                )
+                                let newHeight = max(
+                                    min(data.size.height + value.translation.height, 200),
+                                    50
+                                )
                                 data.size = CGSize(width: newWidth, height: newHeight)
                             }
                         }
@@ -72,13 +95,6 @@ struct TextBox: View {
                             textManager.saveTextBoxes(textBoxes: textBoxes)
                         }
                 )
-                .onTapGesture(count: 2) {
-                    deleteTextBox = true
-                    currentTextBoxIndex = index
-                }
-                .onChange(of: data.text) { _, _ in
-                    textManager.saveTextBoxes(textBoxes: textBoxes)
-                }
                 .position(x: data.position.x, y: data.position.y)
         }
     }
