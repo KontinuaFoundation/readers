@@ -8,8 +8,7 @@ struct TextView: View {
     @Binding var currentTextBoxIndex: Int
     var width: CGFloat
     var height: CGFloat
-    var moveEnabled: Bool
-
+    
     var body: some View {
         ZStack {
             if let keys = textBoxes[key]?.indices {
@@ -25,8 +24,7 @@ struct TextView: View {
                             textBoxes: $textBoxes,
                             textManager: textManager,
                             width: width,
-                            height: height,
-                            moveEnabled: moveEnabled
+                            height: height
                         )
                     }
                 }
@@ -45,7 +43,6 @@ struct TextBox: View {
     @ObservedObject var textManager: TextManager
     var width: CGFloat
     var height: CGFloat
-    var moveEnabled: Bool
 
     var body: some View {
         ZStack {
@@ -53,8 +50,8 @@ struct TextBox: View {
                 TextEditor(text: $data.text)
                     .frame(width: data.size.width, height: data.size.height)
                     .border(Color.black, width: 3)
-                    .foregroundColor(Color.clear)
-                    .background(Color.clear)
+                    .scrollContentBackground(.hidden)
+                    .foregroundStyle(Color.black)
                     .cornerRadius(8)
                     .onTapGesture(count: 2) {
                         deleteTextBox = true
@@ -73,29 +70,41 @@ struct TextBox: View {
                 .gesture(
                     DragGesture()
                         .onChanged { value in
-                            if moveEnabled {
-                                let newX = data.position.x + value.location.x
-                                let newY = data.position.y + value.location.y
-                                let clampedX = min(max(newX, 0), width - 100)
-                                let clampedY = min(max(newY, 0 + 50 + data.size.height), height - 50)
-                                data.position = CGPoint(x: clampedX, y: clampedY)
-                            } else {
-                                let newWidth = max(
-                                    min(data.size.width + value.translation.width, 400),
-                                    100
-                                )
-                                let newHeight = max(
-                                    min(data.size.height + value.translation.height, 200),
-                                    50
-                                )
-                                data.size = CGSize(width: newWidth, height: newHeight)
-                            }
+                            let newWidth = max(
+                                min(data.size.width + value.translation.width, 400),
+                                100
+                            )
+                            let newHeight = max(
+                                min(data.size.height + value.translation.height, 200),
+                                50
+                            )
+                            data.size = CGSize(width: newWidth, height: newHeight)
                         }
                         .onEnded { _ in
                             textManager.saveTextBoxes(textBoxes: textBoxes)
                         }
                 )
-                .position(x: data.position.x, y: data.position.y)
+                .position(x: data.position.x + 100 * (data.size.width / 200),
+                          y:  data.position.y + 100 * (data.size.height / 100))
+            Rectangle()
+                .frame(width: 15, height: 15)
+                .foregroundColor(.gray)
+                .cornerRadius(3)
+                .offset(x: 0, y: -50 * (data.size.height / 100))
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            let newX = data.position.x + value.location.x
+                            let newY = data.position.y + value.location.y
+                            let clampedX = min(max(newX, 0), width - 100)
+                            let clampedY = min(max(newY, 0 + 50 + data.size.height), height - 50)
+                            data.position = CGPoint(x: clampedX, y: clampedY)
+                        }
+                        .onEnded { _ in
+                            textManager.saveTextBoxes(textBoxes: textBoxes)
+                        }
+                )
+                .position(x: data.position.x, y:  data.position.y)
         }
     }
 }

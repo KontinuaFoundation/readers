@@ -31,7 +31,6 @@ struct PDFView: View {
     @ObservedObject private var textManager = TextManager()
     @State var deleteTextBox: Bool = false
     @State var currentTextBox: Int = -1
-    @State var moveEnabled: Bool = false
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
@@ -99,8 +98,7 @@ struct PDFView: View {
                                         deleteTextBox: $deleteTextBox,
                                         currentTextBoxIndex: $currentTextBox,
                                         width: geometry.size.width,
-                                        height: geometry.size.height,
-                                        moveEnabled: moveEnabled
+                                        height: geometry.size.height
                                     )
                                     .scaleEffect(
                                         zoomManager.newZoomLevel(),
@@ -167,12 +165,6 @@ struct PDFView: View {
                                         Button("Reset Zoom") {
                                             zoomManager.resetZoom()
                                         }
-                                    }
-                                    if selectedScribbleTool == "Text" {
-                                        Button("Move") {
-                                            moveEnabled.toggle()
-                                        }
-                                        .foregroundColor(moveEnabled ? Color.pink : Color.blue)
                                     }
                                 }
 
