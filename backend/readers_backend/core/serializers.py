@@ -25,7 +25,7 @@ class WorkbookRetrieveSerializer(serializers.ModelSerializer):
 class WorkbooksListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workbook
-        fields = ['id', 'number', 'collection']
+        fields = ['id', 'number']
 
 '''
 All serializers pertaining to actions performed on Collections resource.
@@ -38,7 +38,7 @@ class CollectionListSerializer(serializers.ModelSerializer):
 class CollectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
-        fields = ['major_version', 'minor_version', 'localization']
+        fields = ['major_version', 'minor_version', 'localization', 'id']
 
     def validate_major_version(self, value):
         # TODO: Must be greater than or equal to the current major version?

@@ -412,8 +412,6 @@ class CollectionTestCase(APITestCase):
 
         for i in range(3):
             workbook_response = response.data['workbooks'][i]
-            self.assertEqual(collection.id, workbook_response['collection'],
-                             msg=f"Expected workbook collection ID to be {collection.id}, but got {workbook_response['collection']}.")
             self.assertEqual(i + 1, workbook_response['number'],
                              msg=f"Expected workbook number to be {i + 1}, but got {workbook_response['number']}.")
 
