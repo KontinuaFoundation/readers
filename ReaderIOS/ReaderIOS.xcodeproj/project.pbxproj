@@ -31,6 +31,7 @@
 		8B6234AE2D4F04FB000A68D1 /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
 		8BA9E1682CFFEA5700F722E3 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		8BC7F62D2D000DE500CB2871 /* .swiftformat.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftformat.yml; sourceTree = "<group>"; };
+		A03A38B42D549D3E00C9E600 /* DS_Store */ = {isa = PBXFileReference; lastKnownFileType = file; path = DS_Store; sourceTree = "<group>"; };
 		FE19153D2CC7FC37009C2AA1 /* ReaderIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReaderIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE19154D2CC7FC39009C2AA1 /* ReaderIOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReaderIOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE1915572CC7FC39009C2AA1 /* ReaderIOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReaderIOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,6 +101,7 @@
 			children = (
 				8B6234AD2D4F0462000A68D1 /* ci_scripts */,
 				8BC7F62D2D000DE500CB2871 /* .swiftformat.yml */,
+				A03A38B42D549D3E00C9E600 /* DS_Store */,
 				8BA9E1682CFFEA5700F722E3 /* .swiftlint.yml */,
 				FE19153F2CC7FC37009C2AA1 /* ReaderIOS */,
 				FE1915502CC7FC39009C2AA1 /* ReaderIOSTests */,
