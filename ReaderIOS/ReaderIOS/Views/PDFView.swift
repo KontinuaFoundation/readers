@@ -5,6 +5,7 @@ struct URLItem: Identifiable {
     let id = UUID()
     let url: URL
 }
+
 struct PDFView: View {
     @Binding var fileName: String?
     @Binding var currentPage: Int
@@ -35,7 +36,6 @@ struct PDFView: View {
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
 
-    // big pdf view
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
