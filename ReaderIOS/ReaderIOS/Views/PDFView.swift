@@ -271,7 +271,6 @@ struct PDFView: View {
             }
         }
     }
-
 }
 
 // MARK: - Markup Menu View
