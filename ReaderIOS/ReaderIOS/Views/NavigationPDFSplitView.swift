@@ -245,9 +245,13 @@ struct NavigationPDFSplitView: View {
             }
 
             fetchChapters()
+
+            persistState()
         }
         .onChange(of: currentPage) { _, _ in
             updateSelectedChapter()
+
+            persistState()
         }
         .onChange(of: pdfDocument) { _, newPDFDocument in
             // Move indexing code here
@@ -265,11 +269,11 @@ struct NavigationPDFSplitView: View {
         workbooks?.first(where: { $0.id == selectedWorkbookID })
     }
 
-    /*
-     // TODO: Selected chapter should be based on the current page number.
-     var selectedChapter: Chapter? {
-         chapters?.first(where: { $0.id == selectedChapterID })
-     }*/
+    func persistState() {
+        if let selectedWorkbookID {
+            StateRestoreManager.shared.saveState(workbookID: selectedWorkbookID, pageNumber: currentPage)
+        }
+    }
 
     func fetchChapters() {
         guard let fileName = selectedWorkbook?.metaName else {
@@ -350,8 +354,20 @@ struct NavigationPDFSplitView: View {
 
                 DispatchQueue.main.async {
                     workbooks = workbookResponse
-                    if let id = workbooks?.first?.id {
-                        selectedWorkbookID = id
+
+                    // Try to load saved state now that workbooks are available.
+                    if let savedState = StateRestoreManager.shared.loadState() {
+                        // Check if the saved PDF (workbook) exists in the fetched list.
+                        if workbookResponse.first(where: { $0.id == savedState.workbookID }) != nil {
+                            selectedWorkbookID = savedState.workbookID
+                            currentPage = savedState.pageNumber
+                        } else {
+                            // Fallback: default to the first workbook if the saved one isn't found.
+                            selectedWorkbookID = workbookResponse.first?.id
+                        }
+                    } else {
+                        // No saved state, so select the first workbook by default.
+                        selectedWorkbookID = workbookResponse.first?.id
                     }
                 }
             } catch {

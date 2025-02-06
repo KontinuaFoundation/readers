@@ -39,6 +39,7 @@ struct PDFView: View {
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
+
     // big pdf view
     var body: some View {
         GeometryReader { geometry in
