@@ -5,7 +5,6 @@ struct URLItem: Identifiable {
     let id = UUID()
     let url: URL
 }
-
 struct PDFView: View {
     @Binding var fileName: String?
     @Binding var currentPage: Int
