@@ -57,6 +57,9 @@ struct TextBox: View {
                     .foregroundStyle(Color.black)
                     .cornerRadius(8)
                     .focused($isFocused)
+                    .onChange(of: data.text) {
+                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                    }
                     .onChange(of: isFocused) {
                         if isFocused {
                             textOpened = isFocused
@@ -77,9 +80,6 @@ struct TextBox: View {
                     .onTapGesture(count: 2) {
                         deleteTextBox = true
                         currentTextBoxIndex = index
-                    }
-                    .onChange(of: data.text) { _, _ in
-                        textManager.saveTextBoxes(textBoxes: textBoxes)
                     }
             }
             .position(x: data.position.x, y: data.position.y)
