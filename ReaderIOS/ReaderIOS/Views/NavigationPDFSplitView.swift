@@ -308,6 +308,7 @@ struct NavigationPDFSplitView: View {
                     chapters = chapterResponse
                     selectedChapterID = chapters?.first?.id
                     setupChapterManager()
+                    currentPage = 0
                 }
 
             } catch {

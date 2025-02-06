@@ -210,7 +210,7 @@ struct PDFView: View {
     private func loadPDFFromURL() {
         guard let fileName = fileName else { return }
 
-        let baseURL = "http://192.168.101.223:8000/pdfs/"
+        let baseURL = "http://localhost:8000/pdfs/"
         let urlString = baseURL + fileName
         guard let url = URL(string: urlString) else {
             print("Invalid URL for file: \(fileName)")
