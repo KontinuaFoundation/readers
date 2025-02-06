@@ -245,9 +245,13 @@ struct NavigationPDFSplitView: View {
             }
 
             fetchChapters()
+            
+            persistState()
         }
         .onChange(of: currentPage) { _, _ in
             updateSelectedChapter()
+            
+            persistState()
         }
         .onChange(of: pdfDocument) { _, newPDFDocument in
             // Move indexing code here
@@ -263,6 +267,12 @@ struct NavigationPDFSplitView: View {
 
     var selectedWorkbook: Workbook? {
         workbooks?.first(where: { $0.id == selectedWorkbookID })
+    }
+    
+    func persistState() {
+        if let currentPdfFileName{
+            StateRestoreManager.shared.saveState(workbookID: currentPdfFileName, pageNumber: currentPage)
+        }
     }
 
     /*

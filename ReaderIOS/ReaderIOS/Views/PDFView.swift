@@ -40,10 +40,6 @@ struct PDFView: View {
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
 
-    // Persistence Keys
-    private let lastFileNameKey = "lastFileName"
-    private let lastPageKey = "lastPage"
-
     // big pdf view
     var body: some View {
         GeometryReader { geometry in
@@ -63,7 +59,6 @@ struct PDFView: View {
                                 )
                                 .onChange(of: currentPage) { _, newValue in
                                     loadPathsForPage(newValue)
-                                    saveLastState() // Save the current page when it changes
                                 }
                                 if annotationsEnabled {
                                     AnnotationsView(
@@ -145,7 +140,6 @@ struct PDFView: View {
                         } else {
                             ProgressView("Getting Workbook")
                                 .onAppear {
-                                    loadLastState() // Load the last file and page
                                     loadPDFFromURL()
                                     annotationManager.loadAnnotations(
                                         pagePaths: &pagePaths,
@@ -174,9 +168,6 @@ struct PDFView: View {
             }
             .onChange(of: fileName) { _, _ in
                 loadPDFFromURL()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
-                saveLastState() // save current page when app is closed
             }
         }
     }
@@ -281,19 +272,6 @@ struct PDFView: View {
         }
     }
 
-    // MARK: - Persistence Methods
-
-    private func saveLastState() {
-        UserDefaults.standard.set(fileName, forKey: lastFileNameKey)
-        UserDefaults.standard.set(currentPage, forKey: lastPageKey)
-    }
-
-    private func loadLastState() {
-        if let lastFileName = UserDefaults.standard.string(forKey: lastFileNameKey) {
-            fileName = lastFileName
-            currentPage = UserDefaults.standard.integer(forKey: lastPageKey)
-        }
-    }
 }
 
 // MARK: - Markup Menu View
