@@ -58,3 +58,7 @@ db.sqlite3
 media
 
 
+#pdfs
+*.pdf
+
+
