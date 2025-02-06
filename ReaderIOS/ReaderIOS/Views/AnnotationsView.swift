@@ -23,6 +23,7 @@ struct AnnotationsView: View {
     var selectedColor: Color
     var selectedHighlighterColor: Color
     var zoomedIn: Bool
+    @Binding var textOpened: Bool
 
     var body: some View {
         Canvas { context, _ in
@@ -65,6 +66,7 @@ struct AnnotationsView: View {
                         } else if value.translation.width > 0 {
                             previousPage?()
                         }
+                        textOpened = false
                     }
                     annotationManager.saveAnnotations(
                         pagePaths: pagePaths,

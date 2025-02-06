@@ -8,12 +8,12 @@ struct TextView: View {
     @Binding var currentTextBoxIndex: Int
     var width: CGFloat
     var height: CGFloat
+    @Binding var textOpened: Bool
 
     var body: some View {
         ZStack {
             if let keys = textBoxes[key]?.indices {
                 ForEach(keys, id: \.self) { index in
-                    // Pass a binding to each TextBoxData element
                     if let binding = textManager.bindingForTextBox(textBoxes: $textBoxes, key: key, index: index) {
                         TextBox(
                             data: binding,
@@ -24,7 +24,8 @@ struct TextView: View {
                             textBoxes: $textBoxes,
                             textManager: textManager,
                             width: width,
-                            height: height
+                            height: height,
+                            textOpened: $textOpened
                         )
                     }
                 }
@@ -43,16 +44,36 @@ struct TextBox: View {
     @ObservedObject var textManager: TextManager
     var width: CGFloat
     var height: CGFloat
+    @Binding var textOpened: Bool
+    @FocusState private var isFocused: Bool
 
     var body: some View {
         ZStack {
             VStack {
                 TextEditor(text: $data.text)
                     .frame(width: data.size.width, height: data.size.height)
-                    .border(Color.black, width: 3)
+                    .border(isFocused ? Color.blue : Color.black, width: 3)
                     .scrollContentBackground(.hidden)
                     .foregroundStyle(Color.black)
                     .cornerRadius(8)
+                    .focused($isFocused)
+                    .onChange(of: isFocused) {
+                        if isFocused {
+                            textOpened = isFocused
+                        }
+                    }
+                    .onChange(of: textOpened) {
+                        if !textOpened {
+                            isFocused = textOpened
+                        }
+                    }
+                    .onAppear {
+                        if textOpened {
+                            isFocused = true
+                        } else {
+                            isFocused = false
+                        }
+                    }
                     .onTapGesture(count: 2) {
                         deleteTextBox = true
                         currentTextBoxIndex = index
@@ -63,10 +84,9 @@ struct TextBox: View {
             }
             .position(x: data.position.x, y: data.position.y)
             Rectangle()
-                .frame(width: 15, height: 15)
+                .frame(width: 20, height: 20)
                 .foregroundColor(.gray)
                 .cornerRadius(3)
-                .offset(x: 0, y: -50 * (data.size.height / 100))
                 .gesture(
                     DragGesture()
                         .onChanged { value in
@@ -85,12 +105,11 @@ struct TextBox: View {
                         }
                 )
                 .position(x: data.position.x + 100 * (data.size.width / 200),
-                          y: data.position.y + 100 * (data.size.height / 100))
+                          y: data.position.y + 50 * (data.size.height / 100))
             Rectangle()
-                .frame(width: 15, height: 15)
+                .frame(width: 30, height: 20)
                 .foregroundColor(.gray)
                 .cornerRadius(3)
-                .offset(x: 0, y: -50 * (data.size.height / 100))
                 .gesture(
                     DragGesture()
                         .onChanged { value in
@@ -104,7 +123,7 @@ struct TextBox: View {
                             textManager.saveTextBoxes(textBoxes: textBoxes)
                         }
                 )
-                .position(x: data.position.x, y: data.position.y)
+                .position(x: data.position.x, y: data.position.y - 50 * (data.size.height / 100))
         }
     }
 }

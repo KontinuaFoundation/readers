@@ -31,6 +31,7 @@ struct PDFView: View {
     @ObservedObject private var textManager = TextManager()
     @State var deleteTextBox: Bool = false
     @State var currentTextBox: Int = -1
+    @State var textOpened: Bool = false
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
@@ -66,7 +67,8 @@ struct PDFView: View {
                                     textBoxes: $textBoxes,
                                     selectedColor: selectedPenColor,
                                     selectedHighlighterColor: selectedHighlighterColor,
-                                    zoomedIn: zoomManager.getZoomedIn()
+                                    zoomedIn: zoomManager.getZoomedIn(),
+                                    textOpened: $textOpened
                                 )
                                 .scaleEffect(
                                     zoomManager.newZoomLevel(),
@@ -81,13 +83,18 @@ struct PDFView: View {
                                         height: geometry.size.height
                                     )
                                     if selectedScribbleTool == "Text" {
-                                        textManager.addText(
-                                            textBoxes: $textBoxes,
-                                            key: uniqueKey(for: currentPage),
-                                            width: geometry.size.width,
-                                            height: geometry.size.height
-                                        )
-                                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                                        if !textOpened {
+                                            textOpened = true
+                                            textManager.addText(
+                                                textBoxes: $textBoxes,
+                                                key: uniqueKey(for: currentPage),
+                                                width: geometry.size.width,
+                                                height: geometry.size.height
+                                            )
+                                            textManager.saveTextBoxes(textBoxes: textBoxes)
+                                        } else {
+                                            textOpened = false
+                                        }
                                     }
                                 }
                                 if selectedScribbleTool == "Text" {
@@ -98,7 +105,8 @@ struct PDFView: View {
                                         deleteTextBox: $deleteTextBox,
                                         currentTextBoxIndex: $currentTextBox,
                                         width: geometry.size.width,
-                                        height: geometry.size.height
+                                        height: geometry.size.height,
+                                        textOpened: $textOpened
                                     )
                                     .scaleEffect(
                                         zoomManager.newZoomLevel(),
@@ -109,6 +117,7 @@ struct PDFView: View {
                                         isPresented: $deleteTextBox
                                     ) {
                                         Button("Delete", role: .destructive) {
+                                            textOpened = false
                                             textManager.deleteText(
                                                 textBoxes: $textBoxes,
                                                 key: uniqueKey(for: currentPage),
@@ -141,7 +150,6 @@ struct PDFView: View {
                                         pagePaths: pagePaths,
                                         highlightPaths: highlightPaths
                                     )
-
                                     Button(action: { showDigitalResources = true },
                                            label: {
                                                Text("Digital Resources")
