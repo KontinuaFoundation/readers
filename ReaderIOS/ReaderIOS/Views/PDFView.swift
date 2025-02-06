@@ -35,6 +35,7 @@ struct PDFView: View {
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
+
     // big pdf view
     var body: some View {
         GeometryReader { geometry in
@@ -133,6 +134,11 @@ struct PDFView: View {
                                 }
                             }
                             .toolbar {
+                                ToolbarItemGroup(placement: .navigationBarLeading) {
+                                    PageControlView(currentPage: $currentPage, totalPages: pdfDocument.pageCount)
+                                        .padding(.leading, 10)
+                                }
+
                                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                                     // timer controls now in to TimerControlsView
                                     TimerControlsView(timerManager: timerManager)
