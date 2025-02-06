@@ -28,8 +28,8 @@ struct PageControlView: View {
                         isTextFieldFocused = false
                     }
                 }
-            
-            HStack(spacing: 8){
+
+            HStack(spacing: 8) {
                 // Left arrow: Decrement the current page.
                 Button(action: decrementPage) {
                     Image(systemName: "chevron.left")
@@ -51,7 +51,7 @@ struct PageControlView: View {
                     .frame(width: 50)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.numberPad)
-                    //change keyboard hide to "go" button
+                    // change keyboard hide to "go" button
                     .submitLabel(.go)
                     // Bind the text field’s focus to the FocusState variable.
                     .focused($isTextFieldFocused)
@@ -73,11 +73,11 @@ struct PageControlView: View {
         }
         // When the view appears, initialize the text field with the current page.
         .onAppear {
-            self.textFieldValue = "\(self.currentPage + 1)"
+            textFieldValue = "\(currentPage + 1)"
         }
         // When the external currentPage changes, update the text field to match.
         .onChange(of: currentPage) { newValue in
-            self.textFieldValue = "\(newValue + 1)"
+            textFieldValue = "\(newValue + 1)"
         }
     }
 
@@ -104,9 +104,8 @@ struct PageControlView: View {
             // If the input is invalid, reset the text field to the current page.
             print("invalid page number")
             DispatchQueue.main.async {
-                self.textFieldValue = "\(self.currentPage + 1)"
+                textFieldValue = "\(currentPage + 1)"
             }
         }
     }
 }
-
