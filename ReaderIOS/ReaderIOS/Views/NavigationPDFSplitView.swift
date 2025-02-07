@@ -246,6 +246,10 @@ struct NavigationPDFSplitView: View {
 
             fetchChapters()
 
+            if let selectedWorkbookID {
+                currentPage = StateRestoreManager.shared.loadPageNumber(for: selectedWorkbookID)
+            }
+
             persistState()
         }
         .onChange(of: currentPage) { _, _ in

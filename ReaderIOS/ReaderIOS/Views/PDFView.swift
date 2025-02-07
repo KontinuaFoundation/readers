@@ -454,7 +454,6 @@ struct MarkupMenu: View {
     }
 }
 
-
 #Preview {
     NavigationPDFSplitView()
 }
