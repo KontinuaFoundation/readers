@@ -23,7 +23,7 @@ struct PDFView: View {
     @State private var showingFeedback = false
 
     // timer vars
-    @ObservedObject private var timerManager = TimerManager()
+    @StateObject private var timerManager = TimerManager()
 
     // annotation vars
     @State private var annotationsEnabled: Bool = false
@@ -513,9 +513,6 @@ struct TimerControlsView: View {
                 }
                 Button("25 Minutes") {
                     timerManager.startTimer(duration: 25 * 60)
-                }
-                Button("Clear Timer") {
-                    timerManager.cancelTimer()
                 }
             } label: {
                 Text("Timer")
