@@ -45,7 +45,7 @@ struct PDFViewer: View {
                                 selectedScribbleTool: $selectedScribbleTool,
                                 selectedPenColor: selectedPenColor,
                                 selectedHighlighterColor: selectedHighlighterColor
-                            )
+                                )
                             .onChange(of: viewModel.currentPage) { newValue in
                                 viewModel.loadPathsForPage(newValue)
                             }

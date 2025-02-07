@@ -13,11 +13,11 @@ struct ZoomableModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .scaleEffect(zoomManager.newZoomLevel(), anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center)
-            .gesture(zoomManager.zoomin())
-            .gesture(zoomManager.zoomout())
-            .onTapGesture(count: 1, coordinateSpace: .local) { location in
-                zoomManager.newZoomPoint(newPoint: location, width: geometrySize.width, height: geometrySize.height)
-            }
+                    .scaleEffect(zoomManager.newZoomLevel(), anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center)
+                    .simultaneousGesture(zoomManager.zoomin())
+                    .simultaneousGesture(zoomManager.zoomout())
+                    .onTapGesture(count: 1, coordinateSpace: .local) { location in
+                        zoomManager.newZoomPoint(newPoint: location, width: geometrySize.width, height: geometrySize.height)
+                    }
     }
 }

@@ -163,8 +163,8 @@ struct MarkupMenuView: View {
             }
 
             Button("Clear Screen") {
-                showClearAlert = true
-            }
+                            showClearAlert = true
+                        }
 
             Button("Exit Markup") {
                 selectScribbleTool("")

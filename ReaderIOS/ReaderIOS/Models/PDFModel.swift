@@ -53,8 +53,16 @@ final class PDFViewModel: ObservableObject {
 
     func clearMarkup() {
         let key = uniqueKey(for: currentPage)
-        highlightPaths.removeValue(forKey: key)
-        pagePaths.removeValue(forKey: key)
+        
+        // Remove all paths for the current page
+        pagePaths[key] = []
+        highlightPaths[key] = []
+        
+        // Make sure changes are published
+        objectWillChange.send()
+        
+        // Clear any cached data for this page
+        loadPathsForPage(currentPage)
     }
 
     func toggleCurrentPageInBookmarks() {

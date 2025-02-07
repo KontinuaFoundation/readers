@@ -36,15 +36,35 @@ struct ZoomableContent: View {
                     highlightPaths: $highlightPaths,
                     key: "\(currentPage)",
                     selectedScribbleTool: $selectedScribbleTool,
-                    nextPage: { /* Implement if needed */ },
-                    previousPage: { /* Implement if needed */ },
+                    nextPage: {
+                        if currentPage < pdfDocument.pageCount - 1 {
+                            currentPage += 1
+                        }
+                    },
+                    previousPage: {
+                        if currentPage > 0 {
+                            currentPage -= 1
+                        }
+                    },
                     annotationManager: annotationManager,
                     selectedColor: selectedPenColor,
                     selectedHighlighterColor: selectedHighlighterColor,
                     zoomedIn: zoomManager.zoomedIn
                 )
-                .modifier(ZoomableModifier(zoomManager: zoomManager, geometrySize: geometrySize))
+                .allowsHitTesting(selectedScribbleTool != "")
             }
         }
+        .gesture(
+            DragGesture(minimumDistance: 20)
+                .onEnded { value in
+                    if !zoomManager.zoomedIn && selectedScribbleTool.isEmpty {
+                        if value.translation.width < 0 && currentPage < pdfDocument.pageCount - 1 {
+                            currentPage += 1
+                        } else if value.translation.width > 0 && currentPage > 0 {
+                            currentPage -= 1
+                        }
+                    }
+                }
+        )
     }
 }
