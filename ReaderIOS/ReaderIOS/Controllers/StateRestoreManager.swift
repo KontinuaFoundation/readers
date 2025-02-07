@@ -57,7 +57,6 @@ final class StateRestoreManager {
         {
             return (workbookID, pageNumber)
         } else {
-            // If there is no saved page for the workbook, you might want to default to 0.
             return (workbookID, 0)
         }
     }
