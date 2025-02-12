@@ -1,6 +1,7 @@
 from rest_framework import mixins
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -37,6 +38,10 @@ class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyM
     def get_queryset(self):
         queryset = Collection.objects.all()
 
+        # Unauthenticated users should never have access to unreleased collections.
+        if not self.request.user.is_authenticated:
+            queryset = queryset.filter(is_released=True)
+
         # Query param filtering only applies for listing collections.
         if self.action != 'list':
             return queryset
@@ -57,11 +62,26 @@ class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyM
         if localization:
             queryset = queryset.filter(localization=localization)
 
+        # We've already filtered for released collections if the user is not authenticated so doesn't matter if we apply this here.
         if is_released is not None:
             is_released_bool = is_released.lower() == 'true'
             queryset = queryset.filter(is_released=is_released_bool)
 
         return queryset
+
+    @action(detail=True, methods=['patch'])
+    def release(self, request, pk=None):
+        collection = self.get_object()
+        collection.is_released = True
+        collection.save()
+        return Response({"message": "Collection released."}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['patch'])
+    def unrelease(self, request, pk=None):
+        collection = self.get_object()
+        collection.is_released = False
+        collection.save()
+        return Response({"message": "Collection un-released."}, status=status.HTTP_200_OK)
 
 class WorkbookViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.RetrieveModelMixin):
     queryset = Workbook.objects.all()
