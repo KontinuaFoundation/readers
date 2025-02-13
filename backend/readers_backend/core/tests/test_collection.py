@@ -109,6 +109,56 @@ class CollectionTestCase(APITestCase):
         self.assertEqual("The fields major_version, minor_version, localization must make a unique set.",
                          response.data['non_field_errors'][0])
 
+    def test_cant_create_with_major_version_lower_than_current_max_major(self):
+        Collection.objects.create(major_version=2, minor_version=0, localization="en-US")
+
+        url = reverse('collection-list')
+
+        bad_body = {
+            "major_version": 1,
+            "minor_version": 0,
+            "localization": "en-US"
+        }
+
+        response = self.client.post(url, bad_body)
+
+        self.assertEqual(
+            response.status_code, 400,
+            msg=f"Expected status code 400, but got {response.status_code}."
+        )
+
+        self.assertIn("major_version", response.data, msg="Expected 'major_version' error in response.")
+        self.assertEqual(
+            response.data["major_version"],
+            ["Must be at least 2 (latest: 2.0)."],
+            msg=f"Unexpected error message: {response.data}"
+        )
+
+    def test_cant_create_with_minor_version_lower_than_current_max_minor(self):
+
+        Collection.objects.create(major_version=1, minor_version=1, localization="en-US")
+
+        url = reverse('collection-list')
+
+        bad_body = {
+            "major_version": 1,
+            "minor_version": 0,
+            "localization": "en-US"
+        }
+
+        response = self.client.post(url, bad_body)
+
+        self.assertEqual(
+            response.status_code, 400,
+            msg=f"Expected status code 400, but got {response.status_code}."
+        )
+
+        self.assertIn("minor_version", response.data, msg="Expected 'minor_version' error in response.")
+        self.assertEqual(
+            response.data["minor_version"],
+            ["Must be greater than 1 (latest: 1.1)."],
+            msg=f"Unexpected error message: {response.data}"
+        )
     def test_create_same_locale_different_version(self):
         url = reverse('collection-list')
 
