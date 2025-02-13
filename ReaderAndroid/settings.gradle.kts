@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "ReaderAndroid"
 include(":app")
+
  
