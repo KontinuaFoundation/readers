@@ -9,6 +9,7 @@ struct TextView: View {
     var width: CGFloat
     var height: CGFloat
     @Binding var textOpened: Bool
+    @Binding var isHidden: Bool
 
     var body: some View {
         ZStack {
@@ -25,7 +26,8 @@ struct TextView: View {
                             textManager: textManager,
                             width: width,
                             height: height,
-                            textOpened: $textOpened
+                            textOpened: $textOpened,
+                            isHidden: $isHidden
                         )
                     }
                 }
@@ -46,15 +48,17 @@ struct TextBox: View {
     var height: CGFloat
     @Binding var textOpened: Bool
     @FocusState private var isFocused: Bool
+    @Binding var isHidden: Bool
 
     var body: some View {
         ZStack {
             VStack {
                 TextEditor(text: $data.text)
-                    .frame(width: data.size.width, height: data.size.height)
-                    .border(isFocused ? Color.blue : Color.black, width: 3)
-                    .scrollContentBackground(.hidden)
+                    .frame(width: isHidden ? 0 : data.size.width, height: isHidden ? 0 : data.size.height)
+                    .border(Color.blue, width: isFocused ? 3 : 0)
                     .foregroundStyle(Color.black)
+                    .background(Color.yellow)
+                    .opacity(isFocused ? 0.7 : 0.3)
                     .cornerRadius(8)
                     .focused($isFocused)
                     .onChange(of: data.text) {
@@ -84,8 +88,22 @@ struct TextBox: View {
             }
             .position(x: data.position.x, y: data.position.y)
             Rectangle()
-                .frame(width: 20, height: 20)
-                .foregroundColor(.gray)
+                .frame(width: isFocused ? 20 : 0, height: isFocused ? 20 : 0)
+                .foregroundColor(Color.blue)
+                .cornerRadius(3)
+                .position(
+                    x: data.position.x - 100 * (data.size.width / 200),
+                    y: data.position.y - 50 * (data.size.height / 100)
+                )
+            Rectangle()
+                .frame(width: isFocused ? 20 : 0, height: isFocused ? 20 : 0)
+                .foregroundColor(Color.blue)
+                .cornerRadius(3)
+                .position(x: data.position.x + 100 * (data.size.width / 200),
+                          y: data.position.y + 50 * (data.size.height / 100))
+            Image(systemName: "arrow.up.backward.and.arrow.down.forward")
+                .frame(width: isFocused ? 20 : 0, height: isFocused ? 20 : 0)
+                .foregroundColor(Color.white)
                 .cornerRadius(3)
                 .gesture(
                     DragGesture()
@@ -106,9 +124,9 @@ struct TextBox: View {
                 )
                 .position(x: data.position.x + 100 * (data.size.width / 200),
                           y: data.position.y + 50 * (data.size.height / 100))
-            Rectangle()
-                .frame(width: 30, height: 20)
-                .foregroundColor(.gray)
+            Image(systemName: "arrow.up.left.and.down.right.and.arrow.up.right.and.down.left")
+                .frame(width: isFocused ? 20 : 0, height: isFocused ? 20 : 0)
+                .foregroundColor(Color.white)
                 .cornerRadius(3)
                 .gesture(
                     DragGesture()
@@ -116,14 +134,24 @@ struct TextBox: View {
                             let newX = data.position.x + value.location.x
                             let newY = data.position.y + value.location.y
                             let clampedX = min(max(newX, 0), width - 100)
-                            let clampedY = min(max(newY, 0 + 50 + data.size.height), height - 50)
+                            let clampedY = min(max(newY, 50 + data.size.height), height - 50)
                             data.position = CGPoint(x: clampedX, y: clampedY)
                         }
                         .onEnded { _ in
                             textManager.saveTextBoxes(textBoxes: textBoxes)
                         }
                 )
-                .position(x: data.position.x, y: data.position.y - 50 * (data.size.height / 100))
+                .position(
+                    x: data.position.x - 100 * (data.size.width / 200),
+                    y: data.position.y - 50 * (data.size.height / 100)
+                )
+            Image(systemName: "eye")
+                .foregroundStyle(Color.blue)
+                .opacity(0.5)
+                .position(x: data.position.x, y: data.position.y + 50 * (data.size.height / 100))
+                .onTapGesture(count: 1) {
+                    isHidden.toggle()
+                }
         }
     }
 }

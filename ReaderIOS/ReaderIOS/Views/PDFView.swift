@@ -32,6 +32,7 @@ struct PDFView: View {
     @State var deleteTextBox: Bool = false
     @State var currentTextBox: Int = -1
     @State var textOpened: Bool = false
+    @State var isHidden: Bool = false
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
@@ -82,53 +83,50 @@ struct PDFView: View {
                                         width: geometry.size.width,
                                         height: geometry.size.height
                                     )
-                                    if selectedScribbleTool == "Text" {
-                                        if !textOpened {
-                                            textOpened = true
-                                            textManager.addText(
-                                                textBoxes: $textBoxes,
-                                                key: uniqueKey(for: currentPage),
-                                                width: geometry.size.width,
-                                                height: geometry.size.height
-                                            )
-                                            textManager.saveTextBoxes(textBoxes: textBoxes)
-                                        } else {
-                                            textOpened = false
-                                        }
+                                    if !textOpened, selectedScribbleTool == "Text" {
+                                        textOpened = true
+                                        textManager.addText(
+                                            textBoxes: $textBoxes,
+                                            key: uniqueKey(for: currentPage),
+                                            width: geometry.size.width,
+                                            height: geometry.size.height
+                                        )
+                                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                                    } else {
+                                        textOpened = false
                                     }
                                 }
-                                if selectedScribbleTool == "Text" {
-                                    TextView(
-                                        textManager: textManager,
-                                        textBoxes: $textBoxes,
-                                        key: uniqueKey(for: currentPage),
-                                        deleteTextBox: $deleteTextBox,
-                                        currentTextBoxIndex: $currentTextBox,
-                                        width: geometry.size.width,
-                                        height: geometry.size.height,
-                                        textOpened: $textOpened
-                                    )
-                                    .scaleEffect(
-                                        zoomManager.newZoomLevel(),
-                                        anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center
-                                    )
-                                    .alert(
-                                        "Are you sure you want to delete the text box?",
-                                        isPresented: $deleteTextBox
-                                    ) {
-                                        Button("Delete", role: .destructive) {
-                                            textOpened = false
-                                            textManager.deleteText(
-                                                textBoxes: $textBoxes,
-                                                key: uniqueKey(for: currentPage),
-                                                index: currentTextBox
-                                            )
-                                            textManager.saveTextBoxes(textBoxes: textBoxes)
-                                            currentTextBox = -1
-                                        }
-                                        Button("Cancel", role: .cancel) {
-                                            currentTextBox = -1
-                                        }
+                                TextView(
+                                    textManager: textManager,
+                                    textBoxes: $textBoxes,
+                                    key: uniqueKey(for: currentPage),
+                                    deleteTextBox: $deleteTextBox,
+                                    currentTextBoxIndex: $currentTextBox,
+                                    width: geometry.size.width,
+                                    height: geometry.size.height,
+                                    textOpened: $textOpened,
+                                    isHidden: $isHidden
+                                )
+                                .scaleEffect(
+                                    zoomManager.newZoomLevel(),
+                                    anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center
+                                )
+                                .alert(
+                                    "Are you sure you want to delete the text box?",
+                                    isPresented: $deleteTextBox
+                                ) {
+                                    Button("Delete", role: .destructive) {
+                                        textOpened = false
+                                        textManager.deleteText(
+                                            textBoxes: $textBoxes,
+                                            key: uniqueKey(for: currentPage),
+                                            index: currentTextBox
+                                        )
+                                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                                        currentTextBox = -1
+                                    }
+                                    Button("Cancel", role: .cancel) {
+                                        currentTextBox = -1
                                     }
                                 }
                             }
