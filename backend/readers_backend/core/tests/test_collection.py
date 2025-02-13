@@ -202,7 +202,7 @@ class CollectionTestCase(APITestCase):
             msg="Collection should not have been deleted without authorization."
         )
 
-    def test_list_collections(self):
+    def test_list_released_collections_without_auth(self):
         # auth shouldn't be needed here
         self.client.credentials()
 
@@ -213,19 +213,19 @@ class CollectionTestCase(APITestCase):
                 "major_version": 1,
                 "minor_version": 0,
                 "localization": "en-US",
-                "is_released": False,
+                "is_released": True,
             },
             {
                 "major_version": 1,
                 "minor_version": 1,
                 "localization": "fr-FR",
-                "is_released": False,
+                "is_released": True,
             },
             {
                 "major_version": 1,
                 "minor_version": 2,
                 "localization": "fr-FR",
-                "is_released": False,
+                "is_released": True,
             },
         ]
 
@@ -321,6 +321,22 @@ class CollectionTestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertFalse(response.data[0]['is_released'])
 
+    def test_list_collections_filter_without_auth(self):
+        collections_data = [
+            {"major_version": 1, "minor_version": 0, "localization": "en-US", "is_released": False},
+            {"major_version": 2, "minor_version": 0, "localization": "en-US", "is_released": False},
+        ]
+
+        for data in collections_data:
+            Collection.objects.create(**data)
+
+        url = reverse('collection-list')
+
+        response = self.client.get(f"{url}?is_released=true")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
+
+
     def test_list_collections_multiple_filters(self):
         collections_data = [
             {"major_version": 1, "minor_version": 0, "localization": "en-US", "is_released": True},
@@ -363,13 +379,119 @@ class CollectionTestCase(APITestCase):
         self.assertEqual(response.data[0]['minor_version'], 1)
         self.assertEqual(response.data[0]['localization'], "en-US")
 
+    def test_release_collection(self):
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+        url = reverse('collection-release', kwargs={'pk': collection.pk})
 
-    def test_retrieve_collection(self):
+        self.assertFalse(collection.is_released)
+
+        response = self.client.patch(url)
+        collection.refresh_from_db()
+        self.assertTrue(collection.is_released)
+
+    def test_release_collection_without_auth(self):
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+        url = reverse('collection-release', kwargs={'pk': collection.pk})
+
+        self.client.credentials()  # Clear authorization token before making the request
+
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, 401,
+                         msg=f"Expected status code 401 Unauthorized, but got {response.status_code}.")
+        collection.refresh_from_db()
+        self.assertFalse(collection.is_released)
+
+    def test_unrelease_collection(self):
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US", is_released=True)
+        url = reverse('collection-unrelease', kwargs={'pk': collection.pk})
+
+        self.assertTrue(collection.is_released)
+
+        response = self.client.patch(url)
+        collection.refresh_from_db()
+        self.assertFalse(collection.is_released)
+
+    def test_unrelease_collection_without_auth(self):
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US", is_released=True)
+        url = reverse('collection-unrelease', kwargs={'pk': collection.pk})
+
+        self.client.credentials()  # Clear authorization token before making the request
+
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, 401,
+                         msg=f"Expected status code 401 Unauthorized, but got {response.status_code}.")
+        collection.refresh_from_db()
+        self.assertTrue(collection.is_released)
+
+    def test_list_collections_without_auth_cannot_see_unreleased(self):
+        # no auth for this test.
+        self.client.credentials()
+
+        collections = [
+            {"major_version": 1, "minor_version": 0, "localization": "en-US", "is_released": True},
+            {"major_version": 1, "minor_version": 1, "localization": "en-US", "is_released": True},
+            {"major_version": 2, "minor_version": 0, "localization": "en-US", "is_released": False},
+        ]
+
+        for collection in collections:
+            Collection.objects.create(**collection)
+
+        self.assertEqual(3, Collection.objects.count())
+
+        url = reverse('collection-list')
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(2, len(response.data))
+        self.assertTrue(all([collection['is_released'] for collection in response.data]))
+
+    def test_list_collections_with_auth_can_see_unreleased(self):
+
+        collections = [
+            {"major_version": 1, "minor_version": 0, "localization": "en-US", "is_released": True},
+            {"major_version": 1, "minor_version": 1, "localization": "en-US", "is_released": True},
+            {"major_version": 2, "minor_version": 0, "localization": "en-US", "is_released": False},
+        ]
+
+        for collection in collections:
+            Collection.objects.create(**collection)
+
+        self.assertEqual(3, Collection.objects.count())
+
+        url = reverse('collection-list')
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(3, len(response.data))
+
+    def test_retrieve_unreleased_collection_without_auth(self):
+        self.client.credentials()
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+        url = reverse('collection-detail', kwargs={'pk': collection.id})
+
+        self.assertFalse(collection.is_released, msg="Expected collection to be unreleased, but it was released.")
+        self.assertEqual(1, Collection.objects.count(), msg="Expected exactly one collection in the database.")
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404,
+                         msg=f"Expected status code 404 Not Found, but got {response.status_code}.")
+
+    def test_retrieve_unreleased_collection_with_auth(self):
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+        url = reverse('collection-detail', kwargs={'pk': collection.id})
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200, msg=f"Expected status code 200 OK, but got {response.status_code}.")
+        self.assertEqual(response.data['id'], collection.id,
+                         msg=f"Expected collection ID to be {collection.id}, but got {response.data['id']}.")
+
+    def test_retrieve_released_collection_without_auth(self):
 
         # auth shouldn't be required here.
         self.client.credentials()
 
-        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US", is_released=True)
 
         # Create a test PDF file
         pdf_content = b'%PDF-1.4 fake pdf content'
