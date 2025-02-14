@@ -2,6 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.spotless)
+}
+
+repositories {
+    google()
+    mavenCentral()
 }
 
 android {
@@ -38,6 +45,33 @@ android {
         compose = true
     }
 }
+spotless {
+    kotlin {
+        target("**/*.kt")
+        targetExclude("build/**/*.kt")
+
+        ktlint("12.1.2")
+            .setEditorConfigPath("$projectDir/.editorconfig")
+            .editorConfigOverride(
+                mapOf(
+                    "indent_size" to 4,
+                    "continuation_indent_size" to 4,
+                    "ktlint_code_style" to "android_studio",
+                    "max_line_length" to "120"
+                )
+            )
+            .customRuleSets(
+                listOf(
+                    "io.nlopez.compose.rules:ktlint:0.4.16"
+                )
+            )
+    }
+
+    kotlinGradle {
+        target("*.gradle.kts")
+        ktlint()
+    }
+}
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -65,7 +99,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-
 
 }

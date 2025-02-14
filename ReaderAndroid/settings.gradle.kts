@@ -7,7 +7,13 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        mavenCentral()
+        mavenCentral {
+            content {
+                // Allow ktlint dependencies
+                includeGroup("com.pinterest.ktlint")
+                includeGroup("io.nlopez.compose.rules")
+            }
+        }
         gradlePluginPortal()
     }
 }
