@@ -1,0 +1,17 @@
+# Log/OS Files
+*.log
+*.DS_Store
+
+# Ignore Xcode user-specific files
+ReaderIOS/ReaderIOS.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcuserstate
+*.xcuserdata/
+*.xcworkspace/
+
+# Virtual envs
+backend-virtual-env/
+.env
+.venv
+env/
+venv/
+ENV/
