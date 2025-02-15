@@ -2,13 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ktlint)
     alias(libs.plugins.spotless)
-}
-
-repositories {
-    google()
-    mavenCentral()
 }
 
 android {
@@ -50,7 +44,7 @@ spotless {
         target("**/*.kt")
         targetExclude("build/**/*.kt")
 
-        ktlint("12.1.2")
+        ktlint("0.50.0")
             .setEditorConfigPath("$projectDir/.editorconfig")
             .editorConfigOverride(
                 mapOf(
@@ -60,16 +54,11 @@ spotless {
                     "max_line_length" to "120"
                 )
             )
-            .customRuleSets(
-                listOf(
-                    "io.nlopez.compose.rules:ktlint:0.4.16"
-                )
-            )
     }
 
     kotlinGradle {
         target("*.gradle.kts")
-        ktlint()
+        ktlint("0.50.0")
     }
 }
 
