@@ -25,7 +25,8 @@ jobs:
         run: chmod +x ./ReaderAndroid/gradlew
 
       - name: Run format checks
-        run: ./ReaderAndroid/gradlew spotlessKotlinGradleCheck
+        working-directory: ./ReaderAndroid
+        run: ./gradlew spotlessKotlinGradleCheck
 
       - name: Upload format reports
         if: always()

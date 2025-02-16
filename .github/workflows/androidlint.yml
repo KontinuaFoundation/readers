@@ -25,7 +25,8 @@ jobs:
         run: chmod +x ./ReaderAndroid/gradlew
 
       - name: Run ktlint checks
-        run: ./ReaderAndroid/gradlew spotlessKotlinCheck
+        working-directory: ./ReaderAndroid
+        run: ./gradlew spotlessKotlinCheck
 
       - name: Upload lint reports
         if: always()
