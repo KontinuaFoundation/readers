@@ -22,10 +22,10 @@ jobs:
           cache: "gradle"
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: chmod +x ./ReaderAndroid/gradlew
 
       - name: Run format checks
-        run: ./gradlew spotlessKotlinGradleCheck
+        run: ./ReaderAndroid/gradlew spotlessKotlinGradleCheck
 
       - name: Upload format reports
         if: always()

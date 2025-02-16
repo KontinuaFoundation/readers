@@ -22,10 +22,10 @@ jobs:
           cache: "gradle"
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: chmod +x ./ReaderAndroid/gradlew
 
       - name: Run ktlint checks
-        run: ./gradlew spotlessKotlinCheck
+        run: ./ReaderAndroid/gradlew spotlessKotlinCheck
 
       - name: Upload lint reports
         if: always()
