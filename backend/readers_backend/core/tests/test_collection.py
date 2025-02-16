@@ -3,8 +3,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
-
 from core.models import Collection, Workbook
+from core.views import CollectionViewSet
 
 
 class CollectionTestCase(APITestCase):
@@ -14,10 +14,20 @@ class CollectionTestCase(APITestCase):
         token = Token.objects.create(user=user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
 
+        # Disable throttling for testing
+        self._original_throttle_classes = CollectionViewSet.throttle_classes
+        CollectionViewSet.throttle_classes = []
+
+
+
     def tearDown(self):
         """Ensure uploaded files are deleted after tests"""
         for workbook in Workbook.objects.all():
             Workbook.objects.all().delete()
+
+        # Restore throttles.
+        # Probably not necessary, but good to retain state between tests.
+        CollectionViewSet.throttle_classes = self._original_throttle_classes
 
     def test_create_collection(self):
         url = reverse('collection-list')
