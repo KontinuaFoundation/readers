@@ -1,4 +1,4 @@
-package com.example.readerandroid.ui.theme
+package com.kontinua.readerandroid.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -9,14 +9,21 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import com.example.readerandroid.ui.theme.Pink40
+import com.example.readerandroid.ui.theme.Pink80
+import com.example.readerandroid.ui.theme.Purple40
+import com.example.readerandroid.ui.theme.Purple80
+import com.example.readerandroid.ui.theme.PurpleGrey40
+import com.example.readerandroid.ui.theme.PurpleGrey80
+import com.example.readerandroid.ui.theme.Typography
 
-private val DarkColorScheme = darkColorScheme(
+private val nightColors = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80,
 )
 
-private val LightColorScheme = lightColorScheme(
+private val dayColors = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40,
@@ -33,7 +40,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun ReaderAndroidTheme(
+fun readerAndroidTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
@@ -45,8 +52,8 @@ fun ReaderAndroidTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> nightColors
+        else -> dayColors
     }
 
     MaterialTheme(

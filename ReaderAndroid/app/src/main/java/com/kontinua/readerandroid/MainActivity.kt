@@ -6,12 +6,17 @@ import android.graphics.pdf.PdfRenderer
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import android.view.*
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,11 +29,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Url
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
-class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
+class MainActivity :
+    AppCompatActivity(),
+    GestureDetector.OnGestureListener {
 
     private lateinit var imageView: ImageView
     private lateinit var loadingTextView: TextView
@@ -68,8 +72,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         loadPdfFromUrl()
     }
 
-
-    private fun retrofit() : Retrofit {
+    private fun retrofit(): Retrofit {
         val retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)
             .addConverterFactory(GsonConverterFactory.create())
@@ -83,7 +86,8 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
             val call = apiService.getPdfData("$baseUrl/pdfs/$pdfFileName")
 
-            withContext(Dispatchers.Main) {  // Switch to Main thread for UI updates
+            withContext(Dispatchers.Main) {
+                // Switch to Main thread for UI updates
                 call.enqueue(object : Callback<ResponseBody> {
                     override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                         if (response.isSuccessful) {
@@ -94,8 +98,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                                         withContext(Dispatchers.Main) {
                                             openPdf(pdfFile)
                                         }
-                                    }
-                                    catch (e: Exception) {
+                                    } catch (e: Exception) {
                                         Log.e("MainActivity", "Error saving PDF: ${e.message}", e)
                                         // Clean up
                                         CoroutineScope(Dispatchers.Main).launch {
@@ -151,16 +154,14 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             CoroutineScope(Dispatchers.Main).launch {
                 parcelFileDescriptor = descriptor
                 pdfRenderer = renderer
-                displayPage(0)  // Load the first page
+                displayPage(0) // Load the first page
             }
-
         } catch (e: IOException) {
             Log.e("MainActivity", "Error opening PDF: ${e.message}")
             // Clean up
             descriptor?.close()
             loadingTextView.text = "Error opening PDF"
             loadingProgressBar.visibility = View.GONE
-
         } catch (e: Exception) {
             Log.e("MainActivity", "Error opening PDF: ${e.message}")
         }
@@ -169,7 +170,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     @SuppressLint("SetTextI18n")
     private fun displayPage(index: Int) {
         CoroutineScope(Dispatchers.Main).launch {
-            val renderer = pdfRenderer  //Local Variable
+            val renderer = pdfRenderer // Local Variable
 
             if (renderer == null) {
                 Log.e("MainActivity", "PdfRenderer is null. PDF might not be opened yet.")
@@ -189,9 +190,9 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                 page.close()
                 currentPageIndex = index // Update current page index
 
-                loadingTextView.visibility = View.GONE  //Hide the loading message
+                loadingTextView.visibility = View.GONE // Hide the loading message
                 loadingProgressBar.visibility = View.GONE // Hide the progress bar
-                imageView.visibility = View.VISIBLE //Show the PDF
+                imageView.visibility = View.VISIBLE // Show the PDF
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error rendering page: ${e.message}")
                 loadingTextView.text = "Error Rendering PDF"
@@ -211,16 +212,9 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     }
 
     // Gesture detection methods
-    override fun onDown(event: MotionEvent): Boolean {
-        return true
-    }
+    override fun onDown(event: MotionEvent): Boolean = true
 
-    override fun onFling(
-        event1: MotionEvent?,
-        event2: MotionEvent,
-        velocityX: Float,
-        velocityY: Float
-    ): Boolean {
+    override fun onFling(event1: MotionEvent?, event2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
         val flingThreshold = 100
         val velocityThreshold = 100
         if (event1 != null) {
@@ -242,20 +236,12 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
     override fun onLongPress(event: MotionEvent) {}
 
-    override fun onScroll(
-        event1: MotionEvent?,
-        event2: MotionEvent,
-        distanceX: Float,
-        distanceY: Float
-    ): Boolean {
-        return false
-    }
+    override fun onScroll(event1: MotionEvent?, event2: MotionEvent, distanceX: Float, distanceY: Float): Boolean =
+        false
 
     override fun onShowPress(event: MotionEvent) {}
 
-    override fun onSingleTapUp(event: MotionEvent): Boolean {
-        return false
-    }
+    override fun onSingleTapUp(event: MotionEvent): Boolean = false
     private fun goToNextPage() {
         CoroutineScope(Dispatchers.Main).launch {
             val renderer = pdfRenderer ?: return@launch

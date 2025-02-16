@@ -24,7 +24,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -39,28 +39,31 @@ android {
         compose = true
     }
 }
+
 spotless {
     kotlin {
         target("**/*.kt")
-        targetExclude("build/**/*.kt")
+        targetExclude(
+            "build/**/*.kt",
+            "**/ExampleInstrumentedTest.kt",
+            "**/ExampleUnitTest.kt",
+        )
 
-        ktlint("0.50.0")
+        ktlint("1.5.0")
             .setEditorConfigPath("$projectDir/.editorconfig")
             .editorConfigOverride(
                 mapOf(
-                    "indent_size" to 4,
-                    "continuation_indent_size" to 4,
                     "ktlint_code_style" to "android_studio",
-                    "max_line_length" to "120"
-                )
+                ),
             )
     }
 
     kotlinGradle {
         target("*.gradle.kts")
-        ktlint("0.50.0")
+        ktlint("1.5.0")
     }
 }
+
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -88,5 +91,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
 }
