@@ -11,9 +11,41 @@ class WorkbookCreateSerializer(serializers.ModelSerializer):
         model = Workbook
         fields = '__all__'
 
-    def validate_chapters(self, value):
-        # TODO: Validate the json format?
-        return value
+    def validate_chapters(self, chapters):
+        REQUIRED_CHAPTER_FIELDS = ('title', 'book', 'id', 'chap_num', 'start_page')
+        REQUIRED_COVER_FIELDS = ('id', 'desc')
+
+        if not isinstance(chapters, list):
+            raise serializers.ValidationError("must be a list of chapters.")
+
+        if len(chapters) == 0:
+            raise serializers.ValidationError("must have at least one chapter.")
+
+        # For every chapter we need to have the required fields...
+        for chapter in chapters:
+            for field in REQUIRED_CHAPTER_FIELDS:
+                if not chapter.get(field):
+                    raise serializers.ValidationError({
+                        field: "This field is required."
+                    })
+
+            # If this chapter has covers, we need to make sure they have the required fields...
+            if "covers" in chapter:
+                if not isinstance(chapter.get('covers'), list):
+                    raise serializers.ValidationError({"covers": "covers must be a list of covers."})
+
+                for cover in chapter.get('covers'):
+                    for field in REQUIRED_COVER_FIELDS:
+                        if not cover.get(field):
+                            raise serializers.ValidationError({
+                                "covers": {
+                                    field: "This field is required."
+                                }
+                            })
+
+
+
+        return chapters
 
 class WorkbookRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
