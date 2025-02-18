@@ -40,13 +40,30 @@ class CollectionCreateSerializer(serializers.ModelSerializer):
         model = Collection
         fields = ['major_version', 'minor_version', 'localization', 'id']
 
-    def validate_major_version(self, value):
-        # TODO: Must be greater than or equal to the current major version?
-        return value
+    def validate(self, data):
+        major_version = data.get("major_version")
+        minor_version = data.get("minor_version")
+        localization = data.get("localization")
 
-    def validate_minor_version(self, value):
-        # TODO: Must be greater than any minor version for the given major version?
-        return value
+        latest = Collection.objects.filter(localization=localization).order_by(
+            "-major_version", "-minor_version"
+        ).first()
+
+        if not latest:
+            return data
+
+        if major_version < latest.major_version:
+            raise serializers.ValidationError({
+                "major_version": f"Must be at least {latest.major_version} (latest: {latest.major_version}.{latest.minor_version})."
+            })
+
+        if major_version == latest.major_version and minor_version <= latest.minor_version:
+            raise serializers.ValidationError({
+                "minor_version": f"Must be greater than {latest.minor_version} (latest: {latest.major_version}.{latest.minor_version})."
+            })
+
+        return data
+
 
 class CollectionRetrieveSerializer(serializers.ModelSerializer):
     workbooks = WorkbooksListSerializer(many=True, read_only=True)
