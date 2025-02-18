@@ -22,10 +22,6 @@ class WorkbookCreateSerializer(serializers.ModelSerializer):
                 "type": "object",
                 "required": ["title", "book", "id", "chap_num", "start_page", "covers"],
                 "properties": {
-                    "requires (optional)": {
-                        "type": "array",
-                        "items": {"type": "string"}
-                    },
                     "requires": {
                         "type": "array",
                         "items": {"type": "string"}
