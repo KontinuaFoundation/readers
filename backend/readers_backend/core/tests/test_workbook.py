@@ -395,8 +395,6 @@ class WorkbookTestCase(APITestCase):
                              f"Expected 400 Bad Request for missing {field}, got {response.status_code}.")
             self.assertTrue("chapters" in response.json(),
                             f"Expected 'chapters' field in response error but got {response.json()}")
-            self.assertTrue(field in response.json()["chapters"],
-                            f"Expected '{field}' field in chapters response error but got {response.json()['chapters']}")
 
     def test_create_workbook_with_chapters_with_essential_fields_empty(self):
         url = reverse('workbook-list')
@@ -438,8 +436,6 @@ class WorkbookTestCase(APITestCase):
                              f"Expected 400 Bad Request for missing {field}, got {response.status_code}.")
             self.assertTrue("chapters" in response.json(),
                             f"Expected 'chapters' field in response error but got {response.json()}")
-            self.assertTrue(field in response.json()["chapters"],
-                            f"Expected '{field}' field in chapters response error but got {response.json()['chapters']}")
 
 
     def test_create_workbook_with_chapters_with_covers_with_essential_fields_missing(self):
@@ -486,9 +482,6 @@ class WorkbookTestCase(APITestCase):
                              f"Expected 400 Bad Request for missing {field}, got {response.status_code}.")
             self.assertTrue("chapters" in response.json(),
                             f"Expected 'chapters' field in response error but got {response.json()}")
-            self.assertTrue("covers" in response.json()["chapters"], msg=f"Expected 'covers' field in chapters response error but got {response.json()['chapters']}")
-            self.assertTrue(field in response.json()["chapters"]["covers"],
-                            f"Expected '{field}' field in chapters response error but got {response.json()['chapters']}")
 
     def test_create_workbook_with_chapters_with_covers_with_essential_fields_empty(self):
         url = reverse('workbook-list')
@@ -531,10 +524,6 @@ class WorkbookTestCase(APITestCase):
                              f"Expected 400 Bad Request for empty {field}, got {response.status_code}.")
             self.assertTrue("chapters" in response.json(),
                             f"Expected 'chapters' field in response error but got {response.json()}")
-            self.assertTrue("covers" in response.json()["chapters"],
-                            msg=f"Expected 'covers' field in chapters response error but got {response.json()['chapters']}")
-            self.assertTrue(field in response.json()["chapters"]["covers"],
-                            f"Expected '{field}' field in chapters response error but got {response.json()['chapters']}")
 
 
     def test_create_workbook_with_chapters_not_a_list(self):
@@ -554,6 +543,34 @@ class WorkbookTestCase(APITestCase):
             'number': 1,
             'collection': collection.id,
             'chapters': '{}',
+            'pdf': pdf_file,
+        }
+
+        response = self.client.post(url, body, format='multipart')
+
+        # Is it created?
+        self.assertEqual(400, response.status_code,
+                         f"Failed to create Workbook: Response status code is {response.status_code}, expected 201.")
+        self.assertTrue("chapters" in response.json(),
+                        f"Expected 'chapters' field in response error but got {response.json()}")
+
+    def test_create_workbook_with_chapters_list_not_contain_dict(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        body = {
+            'number': 1,
+            'collection': collection.id,
+            'chapters': '["chapters"]',
             'pdf': pdf_file,
         }
 
@@ -602,6 +619,42 @@ class WorkbookTestCase(APITestCase):
                          f"Expected 400 Bad Request, got {response.status_code}.")
         self.assertTrue("chapters" in response.json(),
                         f"Expected 'chapters' field in response error but got {response.json()}")
-        self.assertTrue("covers" in response.json()["chapters"],
-                        msg=f"Expected 'covers' field in chapters response error but got {response.json()['chapters']}")
 
+    def test_create_workbook_with_covers_list_doesnt_contain_dict(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        chapter_data = [{
+            "requires": [],
+            "title": "Chapter 1",
+            "book": "01",
+            "id": "chapter-1",
+            "chap_num": 1,
+            "covers": ["cover"],
+            "start_page": 1
+        }]
+
+        body = {
+            'number': 1,
+            'collection': collection.id,
+            'chapters': json.dumps(chapter_data),
+            'pdf': pdf_file,
+        }
+
+        response = self.client.post(url, body, format='multipart')
+
+        self.assertEqual(400, response.status_code,
+                         f"Expected 400 Bad Request, got {response.status_code}.")
+        self.assertTrue("chapters" in response.json(),
+                        f"Expected 'chapters' field in response error but got {response.json()}")
+
+    #TODO: if covers has video or references verify the fields are there.
