@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ReaderAndroid</string>
+    <string name="todo">TODO</string>
+    <string name="getting_pdf">Getting PDF…</string>
+</resources>

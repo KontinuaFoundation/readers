@@ -1,15 +1,45 @@
+import json
+
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
-
 from core.models import Collection, Workbook
 from core.views import WorkbookViewSet
 
 
 class WorkbookTestCase(APITestCase):
 
+    # A good chapters argument structure to use for testing.
+    GOOD_CHAPTERS = [
+        {
+            "requires": [],
+            "title": "Introduction to the Kontinua Sequence",
+            "id": "introduction",
+            "book": "01",
+            "chap_num": 1,
+            "start_page": 3,
+            "covers": [
+                {
+                    "id": "kont_intro",
+                    "desc": "Introduction to Kontinua",
+                    "videos": [
+                        {
+                            "link": "https://youtu.be/example",
+                            "title": "Test Video"
+                        }
+                    ],
+                    "references": [
+                        {
+                            "link": "https://example.org/",
+                            "title": "Test Reference"
+                        }
+                    ]
+                }
+            ],
+        }
+    ]
 
     def setUp(self):
         user = User.objects.create_user(username="testuser", password="testpass123")
@@ -45,7 +75,7 @@ class WorkbookTestCase(APITestCase):
         body = {
             'number': 1,
             'collection': collection.id,
-            'chapters': '{}',
+            'chapters': json.dumps(self.GOOD_CHAPTERS),
             'pdf': pdf_file,
         }
 
@@ -53,7 +83,7 @@ class WorkbookTestCase(APITestCase):
 
         # Is it created?
         self.assertEqual(201, response.status_code,
-                         f"Failed to create Workbook: Response status code is {response.status_code}, expected 201.")
+                         f"Failed to create Workbook: Response status code is {response.status_code}, expected 201: {response.json()}")
         self.assertEqual(1, Workbook.objects.count(),
                          f"Workbook object was not created: Current count is {Workbook.objects.count()}, expected 1.")
         self.assertEqual(1, collection.workbooks.count(),
@@ -65,7 +95,7 @@ class WorkbookTestCase(APITestCase):
                          f"Workbook number does not match expected value: Found {workbook.number}, expected 1.")
         self.assertEqual(collection, workbook.collection,
                          f"Workbook is not associated with the correct Collection: Found {workbook.collection}, expected {collection}.")
-        self.assertEqual({}, workbook.chapters,
+        self.assertEqual(self.GOOD_CHAPTERS, workbook.chapters,
                          f"Workbook chapters content does not match expected value: Found {workbook.chapters}, expected '{{}}'.")
         self.assertIsNotNone(workbook.pdf,
                              "Workbook PDF file was not uploaded.")
@@ -307,5 +337,332 @@ class WorkbookTestCase(APITestCase):
         chapter2 = data['chapters'][1]
         self.assertEqual(["atom"], chapter2['requires'],
                          f"Chapter requires mismatch: got {chapter2['requires']}")
-    
-    
+
+    # Workbook chapter validation tests.
+    def test_create_workbook_with_no_chapters(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        body = {
+            'number': 1,
+            'collection': collection.id,
+            'pdf': pdf_file,
+        }
+
+        response = self.client.post(url, body, format='multipart')
+
+        self.assertEqual(400, response.status_code,
+                         f"Expected 400 Bad Request for invalid chapters, got {response.status_code}.")
+
+
+    def test_create_workbook_with_chapters_with_essential_fields_missing(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        essential_fields = ['title', 'book', 'id', 'chap_num', 'start_page']
+        for field in essential_fields:
+            chapter_data_missing_field = {
+                "requires": [],
+                "title": "Chapter 1",
+                "book": "01",
+                "id": "chapter-1",
+                "chap_num": 1,
+                "covers": [],
+                "start_page": 1
+            }
+            del chapter_data_missing_field[field]
+
+            body = {
+                'number': 1,
+                'collection': collection.id,
+                'chapters': json.dumps([chapter_data_missing_field]),
+                'pdf': pdf_file,
+            }
+
+            response = self.client.post(url, body, format='multipart')
+
+            self.assertEqual(400, response.status_code,
+                             f"Expected 400 Bad Request for missing {field}, got {response.status_code}.")
+            self.assertTrue("chapters" in response.json(),
+                            f"Expected 'chapters' field in response error but got {response.json()}")
+
+    def test_create_workbook_with_chapters_with_essential_fields_empty(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        essential_fields = ['title', 'book', 'id', 'chap_num', 'start_page']
+        for field in essential_fields:
+            chapter_data_missing_field = [
+                {
+                    "requires": [],
+                    "title": "Chapter 1" if field != "title" else "",
+                    "book": "01" if field != "book" else "",
+                    "id": "chapter-1" if field != "id" else "",
+                    "chap_num": 1 if field != "chap_num" else None,
+                    "covers": [],
+                    "start_page": 1 if field != "start_page" else None
+                }
+            ]
+
+            body = {
+                'number': 1,
+                'collection': collection.id,
+                'chapters': json.dumps(chapter_data_missing_field),
+                'pdf': pdf_file,
+            }
+
+            response = self.client.post(url, body, format='multipart')
+
+            self.assertEqual(400, response.status_code,
+                             f"Expected 400 Bad Request for missing {field}, got {response.status_code}.")
+            self.assertTrue("chapters" in response.json(),
+                            f"Expected 'chapters' field in response error but got {response.json()}")
+
+
+    def test_create_workbook_with_chapters_with_covers_with_essential_fields_missing(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        essential_fields = ('id', 'desc')
+        for field in essential_fields:
+
+            chapter_data_missing_field = [{
+                "requires": [],
+                "title": "Chapter 1",
+                "book": "01",
+                "id": "chapter-1",
+                "chap_num": 1,
+                "covers": [{
+                    "id": "cover-1",
+                    "desc": "cover-1 desc",
+                    "videos": [],
+                    "references": [],
+                }],
+                "start_page": 1
+            }]
+
+            del chapter_data_missing_field[0]["covers"][0][field]
+
+            response = self.client.post(url, {
+                'number': 1,
+                'collection': collection.id,
+                'chapters': json.dumps(chapter_data_missing_field),
+                'pdf': pdf_file,
+            }, format='multipart')
+
+            self.assertEqual(400, response.status_code,
+                             f"Expected 400 Bad Request for missing {field}, got {response.status_code}.")
+            self.assertTrue("chapters" in response.json(),
+                            f"Expected 'chapters' field in response error but got {response.json()}")
+
+    def test_create_workbook_with_chapters_with_covers_with_essential_fields_empty(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        essential_fields = ('id', 'desc')
+        for field in essential_fields:
+            chapter_data_empty_field = [{
+                "requires": [],
+                "title": "Chapter 1",
+                "book": "01",
+                "id": "chapter-1",
+                "chap_num": 1,
+                "covers": [{
+                    "id": "" if field == "id" else "cover-1",
+                    "desc": "" if field == "desc" else "cover-1 desc",
+                    "videos": [],
+                    "references": [],
+                }],
+                "start_page": 1
+            }]
+
+            response = self.client.post(url, {
+                'number': 1,
+                'collection': collection.id,
+                'chapters': json.dumps(chapter_data_empty_field),
+                'pdf': pdf_file,
+            }, format='multipart')
+
+            self.assertEqual(400, response.status_code,
+                             f"Expected 400 Bad Request for empty {field}, got {response.status_code}.")
+            self.assertTrue("chapters" in response.json(),
+                            f"Expected 'chapters' field in response error but got {response.json()}")
+
+
+    def test_create_workbook_with_chapters_not_a_list(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        body = {
+            'number': 1,
+            'collection': collection.id,
+            'chapters': '{}',
+            'pdf': pdf_file,
+        }
+
+        response = self.client.post(url, body, format='multipart')
+
+        # Is it created?
+        self.assertEqual(400, response.status_code,
+                         f"Failed to create Workbook: Response status code is {response.status_code}, expected 201.")
+        self.assertTrue("chapters" in response.json(),
+                        f"Expected 'chapters' field in response error but got {response.json()}")
+
+    def test_create_workbook_with_chapters_list_not_contain_dict(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        body = {
+            'number': 1,
+            'collection': collection.id,
+            'chapters': '["chapters"]',
+            'pdf': pdf_file,
+        }
+
+        response = self.client.post(url, body, format='multipart')
+
+        # Is it created?
+        self.assertEqual(400, response.status_code,
+                         f"Failed to create Workbook: Response status code is {response.status_code}, expected 201.")
+        self.assertTrue("chapters" in response.json(),
+                        f"Expected 'chapters' field in response error but got {response.json()}")
+
+    def test_create_workbook_with_covers_not_a_list(self):
+        url = reverse('workbook-list')
+
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        chapter_data = [{
+            "requires": [],
+            "title": "Chapter 1",
+            "book": "01",
+            "id": "chapter-1",
+            "chap_num": 1,
+            "covers": {},
+            "start_page": 1
+        }]
+
+        body = {
+            'number': 1,
+            'collection': collection.id,
+            'chapters': json.dumps(chapter_data),
+            'pdf': pdf_file,
+        }
+
+        response = self.client.post(url, body, format='multipart')
+
+        self.assertEqual(400, response.status_code,
+                         f"Expected 400 Bad Request, got {response.status_code}.")
+        self.assertTrue("chapters" in response.json(),
+                        f"Expected 'chapters' field in response error but got {response.json()}")
+
+    def test_create_workbook_with_covers_list_doesnt_contain_dict(self):
+        url = reverse('workbook-list')
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+
+        # Create a test PDF file
+        pdf_content = b'%PDF-1.4 fake pdf content'
+        pdf_file = SimpleUploadedFile(
+            name='test.pdf',
+            content=pdf_content,
+            content_type='application/pdf'
+        )
+
+        chapter_data = [{
+            "requires": [],
+            "title": "Chapter 1",
+            "book": "01",
+            "id": "chapter-1",
+            "chap_num": 1,
+            "covers": ["cover"],
+            "start_page": 1
+        }]
+
+        body = {
+            'number': 1,
+            'collection': collection.id,
+            'chapters': json.dumps(chapter_data),
+            'pdf': pdf_file,
+        }
+
+        response = self.client.post(url, body, format='multipart')
+
+        self.assertEqual(400, response.status_code,
+                         f"Expected 400 Bad Request, got {response.status_code}.")
+        self.assertTrue("chapters" in response.json(),
+                        f"Expected 'chapters' field in response error but got {response.json()}")
+
+    #TODO: if covers has video or references verify the fields are there.

@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class Collection(models.Model):
     major_version = models.IntegerField(blank=False, null=False)
     minor_version = models.IntegerField(blank=False, null=False)

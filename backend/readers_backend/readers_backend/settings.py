@@ -9,8 +9,22 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+
+def get_required_env_var(key):
+    '''
+    Retrieves a required environment variable.
+    If it doesn't exist then throws an EnvironmentError.
+    '''
+    value = os.environ.get(key)
+    if not value:
+        raise EnvironmentError(f"Missing required environment variable: {key}")
+    return value
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +36,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-3r+kj$$&^pg-av4%scddw6bjiiufkrrpkh7%0+osn#vi!$6f83'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = get_required_env_var("DJANGO_DEBUG") == "True"
 
 ALLOWED_HOSTS = []
 
@@ -79,6 +93,22 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Storage Backend
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {},
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+AWS_ACCESS_KEY_ID = get_required_env_var("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = get_required_env_var("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = get_required_env_var("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = get_required_env_var("AWS_S3_REGION_NAME")
+AWS_S3_ADDRESSING_STYLE = get_required_env_var("AWS_S3_ADDRESSING_STYLE")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
