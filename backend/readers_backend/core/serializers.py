@@ -1,0 +1,73 @@
+from rest_framework import serializers
+
+from .models import Collection, Workbook
+
+
+'''
+All serializers pertaining to actions performed on Workbook resource.
+'''
+class WorkbookCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Workbook
+        fields = '__all__'
+
+    def validate_chapters(self, value):
+        # TODO: Validate the json format?
+        return value
+
+class WorkbookRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Workbook
+        fields = '__all__'
+
+# This is only used when viewing detailed view of collection
+# Should not have direct access to an endpoint.
+class WorkbooksListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Workbook
+        fields = ['id', 'number']
+
+'''
+All serializers pertaining to actions performed on Collections resource.
+'''
+class CollectionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = '__all__'
+
+class CollectionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = ['major_version', 'minor_version', 'localization', 'id']
+
+    def validate(self, data):
+        major_version = data.get("major_version")
+        minor_version = data.get("minor_version")
+        localization = data.get("localization")
+
+        latest = Collection.objects.filter(localization=localization).order_by(
+            "-major_version", "-minor_version"
+        ).first()
+
+        if not latest:
+            return data
+
+        if major_version < latest.major_version:
+            raise serializers.ValidationError({
+                "major_version": f"Must be at least {latest.major_version} (latest: {latest.major_version}.{latest.minor_version})."
+            })
+
+        if major_version == latest.major_version and minor_version <= latest.minor_version:
+            raise serializers.ValidationError({
+                "minor_version": f"Must be greater than {latest.minor_version} (latest: {latest.major_version}.{latest.minor_version})."
+            })
+
+        return data
+
+
+class CollectionRetrieveSerializer(serializers.ModelSerializer):
+    workbooks = WorkbooksListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Collection
+        fields = '__all__'

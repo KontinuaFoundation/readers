@@ -31,3 +31,8 @@ SwiftFormat is a tool that helps you format your code. It is run automatically i
 SwiftFormat is configured in the `.swiftformat` file where some defualt rules are set and might need to be modified.
 There is no need to download SwiftFormat, as it is automatically installed in Xcode as a Swift Package Dependency.
 To run SwiftFormat, In Xcode right click ReaderIOS root folder and select "SwiftFormatPlugin" from the context menu. This will open a new window with options on Directories and/ or files to format. Skip the test directories for now unless you want to format them.
+
+
+### Documentation
+
+Documentation for both the backend and frontend client can be found in the [docs directory](docs/).
