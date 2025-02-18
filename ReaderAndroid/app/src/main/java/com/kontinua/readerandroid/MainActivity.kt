@@ -78,6 +78,14 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         // Retrofit setup moved here
         apiService = retrofit().create(ApiService::class.java)
         loadPdfFromUrl()
+
+        previousButton.setOnClickListener {
+            goToPreviousPage()
+        }
+
+        nextButton.setOnClickListener {
+            goToNextPage()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -87,9 +95,19 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_settings -> {
-                // Handle settings button click
-                Log.d("MainActivity", "Settings button clicked")
+            R.id.action_timer -> {
+                // Handle timer button click
+                Log.d("MainActivity", "timer button clicked")
+                true
+            }
+            R.id.action_markup -> {
+                // Handle timer button click
+                Log.d("MainActivity", "markup button clicked")
+                true
+            }
+            R.id.action_resources -> {
+                // Handle timer button click
+                Log.d("MainActivity", "resources button clicked")
                 true
             }
 
