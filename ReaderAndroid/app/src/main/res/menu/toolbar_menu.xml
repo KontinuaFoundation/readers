@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        android:icon="@drawable/baseline_access_time_24"
+        app:showAsAction="ifRoom|withText" />
+    <!-- Add more menu items here -->
+
+</menu>

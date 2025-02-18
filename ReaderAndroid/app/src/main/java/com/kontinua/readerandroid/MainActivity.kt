@@ -10,8 +10,10 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
+import androidx.appcompat.widget.Toolbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,6 +35,10 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var imageView: ImageView
     private lateinit var loadingTextView: TextView
     private lateinit var loadingProgressBar: ProgressBar
+    private lateinit var toolbar: Toolbar
+    private lateinit var previousButton: ImageButton
+    private lateinit var nextButton: ImageButton
+    private lateinit var pageNumberTextView: TextView
     private var pdfRenderer: PdfRenderer? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
     private var currentPageIndex: Int = 0 // Track the current page index
@@ -53,6 +59,12 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         imageView = findViewById(R.id.pdfImageView)
         loadingTextView = findViewById(R.id.loadingTextView)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
+        nextButton = findViewById(R.id.nextButton)
+        previousButton = findViewById(R.id.previousButton)
+        pageNumberTextView = findViewById(R.id.pageNumberTextView)
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar) //Set toolbar as the action bar
+        supportActionBar?.title = "My PDF Viewer"
 
         // Initialize gesture detector
         gestureDetector = GestureDetectorCompat(this, this)
@@ -66,6 +78,23 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         // Retrofit setup moved here
         apiService = retrofit().create(ApiService::class.java)
         loadPdfFromUrl()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                // Handle settings button click
+                Log.d("MainActivity", "Settings button clicked")
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
 
@@ -188,6 +217,8 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                 imageView.setImageBitmap(bitmap)
                 page.close()
                 currentPageIndex = index // Update current page index
+                updatePageNumberTextView()
+
 
                 loadingTextView.visibility = View.GONE  //Hide the loading message
                 loadingProgressBar.visibility = View.GONE // Hide the progress bar
@@ -271,5 +302,9 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                 displayPage(currentPageIndex - 1)
             }
         }
+    }
+    @SuppressLint("SetTextI18n")
+    private fun updatePageNumberTextView() {
+        pageNumberTextView.text = "${currentPageIndex + 1}"
     }
 }
