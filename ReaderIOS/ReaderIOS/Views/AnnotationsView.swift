@@ -18,9 +18,12 @@ struct AnnotationsView: View {
     @State private var liveDrawingColor: Color = .black // pen color default
     @State private var liveHighlighterColor: Color = .yellow // highlight color default
     @ObservedObject var annotationManager: AnnotationManager
+    @ObservedObject var textManager: TextManager
+    @Binding var textBoxes: [String: [TextBoxData]]
     var selectedColor: Color
     var selectedHighlighterColor: Color
     var zoomedIn: Bool
+    @Binding var textOpened: Bool
 
     var body: some View {
         Canvas { context, _ in
@@ -57,27 +60,29 @@ struct AnnotationsView: View {
                         finalizeCurrentPath(for: &pagePaths, color: liveDrawingColor)
                     } else if selectedScribbleTool == "Highlight" {
                         finalizeCurrentPath(for: &highlightPaths, color: liveDrawingColor)
-                    } else if selectedScribbleTool == "", !zoomedIn {
+                    } else if selectedScribbleTool == "" || selectedScribbleTool == "Text", !zoomedIn {
                         if value.translation.width < 0 {
                             nextPage?()
                         } else if value.translation.width > 0 {
                             previousPage?()
                         }
+                        textOpened = false
                     }
                     annotationManager.saveAnnotations(
                         pagePaths: pagePaths,
                         highlightPaths: highlightPaths
                     )
+                    textManager.saveTextBoxes(textBoxes: textBoxes)
                 }
         )
         .onAppear {
             liveDrawingColor = selectedColor
             liveHighlighterColor = selectedHighlighterColor
         }
-        .onChange(of: selectedColor) { newColor in
+        .onChange(of: selectedColor) { newColor, _ in
             liveDrawingColor = newColor
         }
-        .onChange(of: selectedHighlighterColor) { newColor in
+        .onChange(of: selectedHighlighterColor) { newColor, _ in
             liveHighlighterColor = newColor
         }
     }

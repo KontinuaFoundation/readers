@@ -1,10 +1,10 @@
 import SwiftUI
 
 class ZoomManager: ObservableObject {
-    @Published var zoomedIn: Bool = false
-    @Published var currentZoom: CGFloat = 0
-    @Published var totalZoom: CGFloat = 1.2
-    @Published var zoomPoint: UnitPoint = .center
+    @Published private var zoomedIn: Bool = false
+    @Published private var currentZoom: CGFloat = 0
+    @Published private var totalZoom: CGFloat = 1.2
+    @Published private var zoomPoint: UnitPoint = .center
 
     func zoomin() -> some Gesture {
         var magnification: some Gesture {
@@ -54,5 +54,13 @@ class ZoomManager: ObservableObject {
         currentZoom = 0
         zoomedIn = false
         zoomPoint = .center
+    }
+
+    func getZoomedIn() -> Bool {
+        zoomedIn
+    }
+
+    func getZoomPoint() -> UnitPoint {
+        zoomPoint
     }
 }
