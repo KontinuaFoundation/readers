@@ -32,12 +32,11 @@ google-services.json
 
 # Android Profiling
 *.hprof
-ReaderIOS/ReaderIOS.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Ignore Xcode user-specific files
 *.xcuserstate
-*.xcuserdata/
-*.xcworkspace/
+**/*.xcuserdata/
+**/xcuserdata/
 
 # Virtual envs
 backend-virtual-env/
@@ -57,5 +56,9 @@ __pycache__/
 local_settings.py
 db.sqlite3
 media
+
+
+#pdfs
+*.pdf
 
 

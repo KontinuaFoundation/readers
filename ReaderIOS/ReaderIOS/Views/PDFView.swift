@@ -89,6 +89,11 @@ struct PDFView: View {
                                 }
                             }
                             .toolbar {
+                                ToolbarItemGroup(placement: .navigationBarLeading) {
+                                    PageControlView(currentPage: $currentPage, totalPages: pdfDocument.pageCount)
+                                        .padding(.leading, 10)
+                                }
+
                                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                                     // timer controls now in to TimerControlsView
                                     TimerControlsView(timerManager: timerManager)
