@@ -138,8 +138,9 @@ All authenticated endpoints require a valid **DRF TokenAuthentication** token in
   "pdf": "string",
   "chapters": [
     {
-      "requires": "array of strings",
+      "requires (optional)": "array of strings",
       "title": "string",
+      "book": "string",
       "id": "string",
       "chap_num": "integer",
       "start_page": "integer",
@@ -147,13 +148,13 @@ All authenticated endpoints require a valid **DRF TokenAuthentication** token in
         {
           "id": "string",
           "desc": "string",
-          "videos": [
+          "videos (optional)": [
             {
               "link": "string",
               "title": "string"
             }
           ],
-          "references": [
+          "references (optional)": [
             {
               "link": "string",
               "title": "string"

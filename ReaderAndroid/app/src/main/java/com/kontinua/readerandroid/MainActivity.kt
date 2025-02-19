@@ -1,7 +1,9 @@
 package com.kontinua.readerandroid
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.graphics.pdf.PdfRenderer
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
@@ -9,11 +11,15 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
+import androidx.appcompat.widget.Toolbar
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -37,6 +43,10 @@ class MainActivity :
     private lateinit var imageView: ImageView
     private lateinit var loadingTextView: TextView
     private lateinit var loadingProgressBar: ProgressBar
+    private lateinit var toolbar: Toolbar
+    private lateinit var previousButton: ImageButton
+    private lateinit var nextButton: ImageButton
+    private lateinit var pageNumberEditText: EditText
     private var pdfRenderer: PdfRenderer? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
     private var currentPageIndex: Int = 0 // Track the current page index
@@ -57,6 +67,12 @@ class MainActivity :
         imageView = findViewById(R.id.pdfImageView)
         loadingTextView = findViewById(R.id.loadingTextView)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
+        nextButton = findViewById(R.id.nextButton)
+        previousButton = findViewById(R.id.previousButton)
+        pageNumberEditText = findViewById(R.id.pageNumberEditText)
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar) //Set toolbar as the action bar
+        supportActionBar?.title = "My PDF Viewer"
 
         // Initialize gesture detector
         gestureDetector = GestureDetectorCompat(this, this)
@@ -67,9 +83,65 @@ class MainActivity :
             true // Consume the touch event
         }
 
+        // Handle user input in EditText when they press "Enter"
+        pageNumberEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
+                // Get the entered page number
+                val pageNumberString = pageNumberEditText.text.toString()
+
+                // Validate the input and navigate to the page
+                if (pageNumberString.isNotEmpty()) {
+                    try {
+                        val pageNumber = pageNumberString.toInt()
+                        goToPage(pageNumber - 1) // Subtract 1 because PDF pages are 0-indexed
+                    } catch (e: NumberFormatException) {
+                        // Handle invalid input (e.g., show an error message)
+                        Log.e("MainActivity", "Invalid page number format")
+                    }
+                }
+                return@OnKeyListener true // Consume the event
+            }
+            false // Don't consume the event
+        })
+
         // Retrofit setup moved here
         apiService = retrofit().create(ApiService::class.java)
         loadPdfFromUrl()
+
+        previousButton.setOnClickListener {
+            goToPreviousPage()
+        }
+
+        nextButton.setOnClickListener {
+            goToNextPage()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_timer -> {
+                // Handle timer button click
+                Log.d("MainActivity", "timer button clicked")
+                true
+            }
+            R.id.action_markup -> {
+                // Handle timer button click
+                Log.d("MainActivity", "markup button clicked")
+                true
+            }
+            R.id.action_resources -> {
+                // Handle timer button click
+                Log.d("MainActivity", "resources button clicked")
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun retrofit(): Retrofit {
@@ -189,6 +261,8 @@ class MainActivity :
                 imageView.setImageBitmap(bitmap)
                 page.close()
                 currentPageIndex = index // Update current page index
+                updatePageNumberEditText()
+
 
                 loadingTextView.visibility = View.GONE // Hide the loading message
                 loadingProgressBar.visibility = View.GONE // Hide the progress bar
@@ -258,4 +332,38 @@ class MainActivity :
             }
         }
     }
+    private fun goToPage(pageNumber: Int) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val renderer = pdfRenderer ?: return@launch
+            if (pageNumber >= 0 && pageNumber < renderer.pageCount) {
+                displayPage(pageNumber)
+            } else {
+                // Handle invalid page number (e.g., show an error message)
+                Log.e("MainActivity", "Invalid page number entered")
+            }
+        }
+
+    }
+    @SuppressLint("ServiceCast")
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
+                val outRect = Rect()
+                v.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    v.clearFocus()
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(v.windowToken, 0)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updatePageNumberEditText() {
+        pageNumberEditText.setText((currentPageIndex + 1).toString())
+    }
+
 }
