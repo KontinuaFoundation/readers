@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.spotless)
 }
 
 android {
@@ -23,7 +24,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -36,6 +37,30 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+spotless {
+    kotlin {
+        target("**/*.kt")
+        targetExclude(
+            "build/**/*.kt",
+            "**/ExampleInstrumentedTest.kt",
+            "**/ExampleUnitTest.kt",
+        )
+
+        ktlint("1.5.0")
+            .setEditorConfigPath("$projectDir/.editorconfig")
+            .editorConfigOverride(
+                mapOf(
+                    "ktlint_code_style" to "android_studio",
+                ),
+            )
+    }
+
+    kotlinGradle {
+        target("*.gradle.kts")
+        ktlint("1.5.0")
     }
 }
 
@@ -65,7 +90,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-
-
 }

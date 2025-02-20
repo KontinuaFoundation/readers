@@ -1,0 +1,37 @@
+name: Android Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ktlint:
+    name: Run Kotlin Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "gradle"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./ReaderAndroid/gradlew
+
+      - name: Run ktlint checks
+        working-directory: ./ReaderAndroid
+        run: ./gradlew spotlessKotlinCheck
+
+      - name: Upload lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: |
+            **/build/reports/spotless/
