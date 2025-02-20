@@ -88,10 +88,38 @@
 
     </RelativeLayout>
 
+    <!-- chapter Sidebar -->
     <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigation_view"
-        android:layout_width="wrap_content"
+        android:id="@+id/chapter_view"
+        android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/navbar_menu"/>
+        app:menu="@menu/chapter_menu">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <!-- Button to Open Workbook Sidebar -->
+            <Button
+                android:id="@+id/open_workbook_nav_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Workbooks"/>
+
+            <com.google.android.material.navigation.NavigationView
+                android:id="@+id/chapter_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </LinearLayout>
+    </com.google.android.material.navigation.NavigationView>
+
+    <!-- Second Sidebar (Workbooks) -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/workbook_view"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/workbook_menu"
+        android:visibility="gone"/>
 </androidx.drawerlayout.widget.DrawerLayout>
