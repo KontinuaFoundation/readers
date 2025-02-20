@@ -11,11 +11,11 @@ import SwiftUI
 struct ReaderIOSApp: App {
     var body: some Scene {
         WindowGroup {
-            NavigationPDFSplitView()
+            SplitView()
         }
     }
 }
 
 #Preview {
-    NavigationPDFSplitView()
+    SplitView()
 }

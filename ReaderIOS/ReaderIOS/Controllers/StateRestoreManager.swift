@@ -68,9 +68,9 @@ final class StateRestoreManager {
     func loadPageNumber(for workbookID: String) -> Int {
         let defaults = UserDefaults.standard
         if let workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [String: Int],
-           let pg = workbookPages[workbookID]
+           let page = workbookPages[workbookID]
         {
-            return pg
+            return page
         }
         return 0
     }
