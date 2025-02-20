@@ -23,6 +23,7 @@
             android:elevation="4dp"
             android:theme="@style/ToolbarTheme"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            android:paddingTop="20dp"
             android:layout_alignParentTop="true"/>
 
         <ImageView
@@ -96,6 +97,7 @@
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:paddingTop="20dp"
         app:menu="@menu/chapter_menu">
         <LinearLayout
             android:orientation="vertical"
