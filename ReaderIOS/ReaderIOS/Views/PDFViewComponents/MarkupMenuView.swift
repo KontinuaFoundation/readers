@@ -8,13 +8,14 @@ import SwiftUI
 
 struct MarkupMenu: View {
     @Binding var selectedScribbleTool: String
-    @Binding var annotationsEnabled: Bool
     @Binding var exitNotSelected: Bool
     @Binding var showClearAlert: Bool
     @Binding var selectedPenColor: Color
     @Binding var selectedHighlighterColor: Color
     @Binding var isPenSubmenuVisible: Bool
-    @ObservedObject var annotationManager: AnnotationManager
+    @ObservedObject var annotationManager: AnnotationStorageManager
+    @ObservedObject var textManager: TextManager
+    @Binding var textBoxes: [String: [TextBoxData]]
 
     var pagePaths: [String: [(path: Path, color: Color)]]
     var highlightPaths: [String: [(path: Path, color: Color)]]
@@ -26,7 +27,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedPenColor = .black
                     selectScribbleTool("Pen")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -39,7 +39,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedPenColor = .green
                     selectScribbleTool("Pen")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -52,7 +51,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedPenColor = .red
                     selectScribbleTool("Pen")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -65,7 +63,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedPenColor = .blue
                     selectScribbleTool("Pen")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -88,7 +85,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedHighlighterColor = .yellow
                     selectScribbleTool("Highlight")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -101,7 +97,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedHighlighterColor = .pink
                     selectScribbleTool("Highlight")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -114,7 +109,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedHighlighterColor = .blue
                     selectScribbleTool("Highlight")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -127,7 +121,6 @@ struct MarkupMenu: View {
                 Button {
                     selectedHighlighterColor = .green
                     selectScribbleTool("Highlight")
-                    annotationsEnabled = true
                     exitNotSelected = true
                     isPenSubmenuVisible = false
                 } label: {
@@ -148,12 +141,10 @@ struct MarkupMenu: View {
             }
             Button("Erase") {
                 selectScribbleTool("Erase")
-                annotationsEnabled = true
                 exitNotSelected = true
             }
             Button("Text") {
                 selectScribbleTool("Text")
-                annotationsEnabled = true
                 exitNotSelected = true
             }
             Button("Clear Screen") {
@@ -166,6 +157,7 @@ struct MarkupMenu: View {
                     pagePaths: pagePaths,
                     highlightPaths: highlightPaths
                 )
+                textManager.saveTextBoxes(textBoxes: textBoxes)
             }
         } label: {
             Text(selectedScribbleTool.isEmpty ? "Markup" : "Markup: " + selectedScribbleTool)

@@ -1,5 +1,5 @@
 //
-//  BookmarkView.swift
+//  BookmarkSearchView.swift
 //  ReaderIOS
 //
 //  Created by Ethan Handelman on 2/19/25.
@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-struct BookmarkView: View {
+struct BookmarkSearchView: View {
     @Binding var currentPage: Int
     var currentPdfFileName: String?
-    var bookmarkLookup: [String: Set<Int>]
+    @ObservedObject var bookmarkManager: BookmarkManager
 
     var body: some View {
         if let currentPdfFileName = currentPdfFileName,
-           let bookmarks = bookmarkLookup[currentPdfFileName]
+           let bookmarks = bookmarkManager.bookmarkLookup[currentPdfFileName]
         {
             List(Array(bookmarks).sorted(), id: \.self) { bookmark in
                 HStack {

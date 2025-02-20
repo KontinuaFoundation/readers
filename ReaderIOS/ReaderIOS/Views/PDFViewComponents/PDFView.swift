@@ -9,24 +9,26 @@ struct URLItem: Identifiable {
 struct PDFView: View {
     @Binding var fileName: String?
     @Binding var currentPage: Int
-    @Binding var bookmarkLookup: [String: Set<Int>]
+    // Remove the bookmarkLookup binding:
+    // @Binding var bookmarkLookup: [String: Set<Int>]
     @Binding var covers: [Cover]?
     @Binding var pdfDocument: PDFDocument?
+
     // Digital resources state vars
     @State private var showDigitalResources = false
     @ObservedObject private var zoomManager = ZoomManager()
     @State private var showingFeedback = false
 
-    // timer vars
+    // Timer vars
     @StateObject private var timerManager = TimerManager()
 
-    // annotation vars
+    // Annotation vars
     @State private var exitNotSelected: Bool = false
     @State private var selectedScribbleTool: String = ""
     @State private var pageChangeEnabled: Bool = true
     @State private var pagePaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var highlightPaths: [String: [(path: Path, color: Color)]] = [:]
-    @State private var selectedPenColor: Color = .black // pen default is black
+    @State private var selectedPenColor: Color = .black // Default pen color is black
     @State private var selectedHighlighterColor: Color = .yellow
     @State private var isPenSubmenuVisible: Bool = false
     @State var textBoxes: [String: [TextBoxData]] = [:]
@@ -37,7 +39,10 @@ struct PDFView: View {
     @State var isHidden: Bool = false
 
     @State private var showClearAlert = false
-    @ObservedObject private var annotationManager = AnnotationManager()
+    @ObservedObject private var annotationStorageManager = AnnotationStorageManager()
+
+    // Use the new BookmarkManager instead of a binding dictionary.
+    @ObservedObject var bookmarkManager: BookmarkManager
 
     var body: some View {
         GeometryReader { geometry in
@@ -65,7 +70,7 @@ struct PDFView: View {
                                     selectedScribbleTool: $selectedScribbleTool,
                                     nextPage: { goToNextPage() },
                                     previousPage: { goToPreviousPage() },
-                                    annotationManager: annotationManager,
+                                    annotationManager: annotationStorageManager,
                                     textManager: textManager,
                                     textBoxes: $textBoxes,
                                     selectedColor: selectedPenColor,
@@ -139,9 +144,7 @@ struct PDFView: View {
                                 }
 
                                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                                    // timer controls now in to TimerControlsView
                                     TimerControlsView(timerManager: timerManager)
-                                    // markup menu now in MarkupView
                                     MarkupMenu(
                                         selectedScribbleTool: $selectedScribbleTool,
                                         exitNotSelected: $exitNotSelected,
@@ -149,7 +152,7 @@ struct PDFView: View {
                                         selectedPenColor: $selectedPenColor,
                                         selectedHighlighterColor: $selectedHighlighterColor,
                                         isPenSubmenuVisible: $isPenSubmenuVisible,
-                                        annotationManager: annotationManager,
+                                        annotationManager: annotationStorageManager,
                                         textManager: textManager,
                                         textBoxes: $textBoxes,
                                         pagePaths: pagePaths,
@@ -167,10 +170,14 @@ struct PDFView: View {
                                                DigitalResourcesView(covers: covers)
                                            }
 
+                                    // Bookmark button using the BookmarkManager
                                     Button {
-                                        toggleCurrentPageInBookmarks()
+                                        bookmarkManager.toggleBookmark(for: fileName, currentPage: currentPage)
                                     } label: {
-                                        Image(systemName: isCurrentPageBookmarked ? "bookmark.fill" : "bookmark")
+                                        Image(systemName: bookmarkManager.isBookmarked(
+                                            fileName: fileName,
+                                            currentPage: currentPage
+                                        ) ? "bookmark.fill" : "bookmark")
                                             .foregroundColor(.yellow)
                                     }
 
@@ -181,7 +188,6 @@ struct PDFView: View {
                                     }
                                 }
 
-                                // bottom bar now using TimerProgressView
                                 ToolbarItem(placement: .bottomBar) {
                                     TimerProgressView(timerManager: timerManager, showingFeedback: $showingFeedback)
                                 }
@@ -190,7 +196,7 @@ struct PDFView: View {
                             ProgressView("Getting Workbook")
                                 .onAppear {
                                     loadPDFFromURL()
-                                    annotationManager.loadAnnotations(
+                                    annotationStorageManager.loadAnnotations(
                                         pagePaths: &pagePaths,
                                         highlightPaths: &highlightPaths
                                     )
@@ -201,13 +207,13 @@ struct PDFView: View {
                 }
                 .onDisappear {
                     textManager.saveTextBoxes(textBoxes: textBoxes)
-                    annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
+                    annotationStorageManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
                 }
             }
             .alert("Are you sure you want to clear your screen?", isPresented: $showClearAlert) {
                 Button("Clear", role: .destructive) {
                     clearMarkup()
-                    annotationManager.saveAnnotations(
+                    annotationStorageManager.saveAnnotations(
                         pagePaths: pagePaths,
                         highlightPaths: highlightPaths
                     )
@@ -223,6 +229,8 @@ struct PDFView: View {
         }
     }
 
+    // MARK: - Navigation Helpers
+
     private func goToNextPage() {
         if let pdfDocument = pdfDocument, currentPage < pdfDocument.pageCount - 1 {
             currentPage += 1
@@ -235,33 +243,20 @@ struct PDFView: View {
         }
     }
 
+    // MARK: - PDF Loading and Path Management
+
     private func loadPDFFromURL() {
         guard let fileName = fileName else { return }
-
-        let baseURL = "http://localhost:8000/pdfs/"
-        let urlString = baseURL + fileName
-        guard let url = URL(string: urlString) else {
-            print("Invalid URL for file: \(fileName)")
-            return
-        }
-
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            if let error = error {
-                print("Error downloading PDF: \(error.localizedDescription)")
-                return
+            NetworkingService.shared.fetchPDF(fileName: fileName) { result in
+                switch result {
+                case .success(let document):
+                    DispatchQueue.main.async {
+                        pdfDocument = document
+                    }
+                case .failure(let error):
+                    print("Error fetching PDF: \(error.localizedDescription)")
+                }
             }
-            guard let data = data, let document = PDFDocument(data: data) else {
-                print("No data found or invalid PDF from \(url).")
-                return
-            }
-            DispatchQueue.main.async {
-                pdfDocument = document
-            }
-        }.resume()
-    }
-
-    private func selectScribbleTool(_ tool: String) {
-        selectedScribbleTool = tool
     }
 
     private func loadPathsForPage(_ pageIndex: Int) {
@@ -282,31 +277,6 @@ struct PDFView: View {
     private func clearMarkup() {
         highlightPaths.removeValue(forKey: uniqueKey(for: currentPage))
         pagePaths.removeValue(forKey: uniqueKey(for: currentPage))
-    }
-
-    var isCurrentPageBookmarked: Bool {
-        if let fileName = fileName {
-            if let valueSet = bookmarkLookup[fileName] {
-                return valueSet.contains(currentPage)
-            }
-            return false
-        }
-        return false
-    }
-
-    private func toggleCurrentPageInBookmarks() {
-        if let fileName = fileName {
-            if var valueSet = bookmarkLookup[fileName] {
-                if valueSet.contains(currentPage) {
-                    valueSet.remove(currentPage)
-                } else {
-                    valueSet.insert(currentPage)
-                }
-                bookmarkLookup[fileName] = valueSet
-            } else {
-                bookmarkLookup[fileName] = Set([currentPage])
-            }
-        }
     }
 }
 

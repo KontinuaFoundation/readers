@@ -17,7 +17,7 @@ struct AnnotationsView: View {
     @State private var liveDrawingPath: Path = .init()
     @State private var liveDrawingColor: Color = .black // pen color default
     @State private var liveHighlighterColor: Color = .yellow // highlight color default
-    @ObservedObject var annotationManager: AnnotationManager
+    @ObservedObject var annotationManager: AnnotationStorageManager
     @ObservedObject var textManager: TextManager
     @Binding var textBoxes: [String: [TextBoxData]]
     var selectedColor: Color

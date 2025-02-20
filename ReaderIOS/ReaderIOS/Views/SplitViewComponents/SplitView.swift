@@ -23,7 +23,7 @@ struct SplitView: View {
 
     // Bookmark state vars
     @State private var isShowingBookmarks: Bool = false
-    @State private var bookmarkLookup = [String: Set<Int>]()
+    @State private var bookmarkManager = BookmarkManager()
 
     // PDFDocument loaded by PDFView
     @State private var pdfDocument: PDFDocument?
@@ -63,10 +63,10 @@ struct SplitView: View {
                     )
                 } else {
                     // Bookmarks view
-                    BookmarkView(
+                    BookmarkSearchView(
                         currentPage: $currentPage,
                         currentPdfFileName: currentPdfFileName,
-                        bookmarkLookup: bookmarkLookup
+                        bookmarkManager: bookmarkManager
                     )
                 }
             }
@@ -87,9 +87,9 @@ struct SplitView: View {
                 PDFView(
                     fileName: $currentPdfFileName,
                     currentPage: $currentPage,
-                    bookmarkLookup: $bookmarkLookup,
                     covers: $covers,
-                    pdfDocument: $pdfDocument
+                    pdfDocument: $pdfDocument,
+                    bookmarkManager: bookmarkManager
                 )
             } else {
                 ProgressView("Getting the latest workbook.")
