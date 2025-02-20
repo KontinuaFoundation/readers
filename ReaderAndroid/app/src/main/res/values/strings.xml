@@ -2,4 +2,6 @@
     <string name="app_name">ReaderAndroid</string>
     <string name="todo">TODO</string>
     <string name="getting_pdf">Getting PDF…</string>
+    <string name="navigation_drawer_open">Open Navigation Drawer</string>
+    <string name="navigation_drawer_close">Close Navigation Drawer</string>
 </resources>
