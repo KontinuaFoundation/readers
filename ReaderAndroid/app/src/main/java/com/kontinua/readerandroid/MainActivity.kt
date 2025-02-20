@@ -16,18 +16,18 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.core.view.GravityCompat
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -44,9 +44,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Url
 
-class MainActivity : 
-    AppCompatActivity(), 
-    GestureDetector.OnGestureListener, 
+class MainActivity :
+    AppCompatActivity(),
+    GestureDetector.OnGestureListener,
     NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var imageView: ImageView
@@ -98,7 +98,7 @@ class MainActivity :
         workbookView = findViewById(R.id.workbook_view)
         drawerLayout = findViewById(R.id.drawer_layout)
         val openWorkbookNavButton = findViewById<Button>(R.id.open_workbook_nav_button)
-        setSupportActionBar(toolbar) //Set toolbar as the action bar
+        setSupportActionBar(toolbar) // Set toolbar as the action bar
         supportActionBar?.title = ""
 
         // Initialize gesture detector
@@ -157,8 +157,11 @@ class MainActivity :
         }
 
         val toggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar,
-            R.string.navigation_drawer_open, R.string.navigation_drawer_close
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close,
         )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
@@ -175,7 +178,7 @@ class MainActivity :
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             else -> {
-                if (workbookSelected){
+                if (workbookSelected) {
                     Log.d("MainActivity", "Clicked on Chapter: ${item.title}")
                     currentPageIndex = chapterMap[item.itemId]!!
                     displayPage(currentPageIndex - 1)
@@ -212,7 +215,7 @@ class MainActivity :
         }
         else -> super.onOptionsItemSelected(item)
     }
-    
+
     override fun onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -441,27 +444,22 @@ class MainActivity :
     private fun updatePageNumberEditText() {
         pageNumberEditText.setText((currentPageIndex + 1).toString())
     }
-    
-    data class ChapterData(
-        val title: String,
-        val id: String,
-        val chap_num: Int,
-        val start_page: Int
-    )
 
-    data class WorkbookData(
-        val id: String,
-        val metaName: String,
-        val pdfName: String
-    )
+    data class ChapterData(val title: String, val id: String, val chap_num: Int, val start_page: Int)
+
+    data class WorkbookData(val id: String, val metaName: String, val pdfName: String)
 
     private fun populateMenu(chapters: List<ChapterData>) {
         val menu = chapterView.menu
-        menu.clear()  // Clear existing items
+        menu.clear() // Clear existing items
 
         for (chapter in chapters) {
-            val menuItem = menu.add(Menu.NONE, chapter.id.hashCode(), Menu.NONE,
-                "${chapter.chap_num}. ${chapter.title}")
+            val menuItem = menu.add(
+                Menu.NONE,
+                chapter.id.hashCode(),
+                Menu.NONE,
+                "${chapter.chap_num}. ${chapter.title}",
+            )
             menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER) // Ensure it stays in the sidebar
             chapterMap[chapter.id.hashCode()] = chapter.start_page
         }
@@ -518,5 +516,4 @@ class MainActivity :
             }
         }
     }
-
 }
