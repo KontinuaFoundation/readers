@@ -135,16 +135,16 @@ struct PDFView: View {
                                         highlightPaths: highlightPaths
                                     )
 
-                                    Button(action: { showDigitalResources = true }) {
+                                    Button(action: { showDigitalResources = true }, label: {
                                         Text("Digital Resources")
                                             .padding(5)
                                             .foregroundColor((covers?.isEmpty ?? true) ? .gray : .purple)
                                             .cornerRadius(8)
-                                    }
+                                    })
                                     .disabled(covers?.isEmpty ?? true)
-                                    .fullScreenCover(isPresented: $showDigitalResources) {
+                                    .fullScreenCover(isPresented: $showDigitalResources, content: {
                                         DigitalResourcesView(covers: covers)
-                                    }
+                                    })
 
                                     Button {
                                         bookmarkManager.toggleBookmark(for: fileName, currentPage: currentPage)
