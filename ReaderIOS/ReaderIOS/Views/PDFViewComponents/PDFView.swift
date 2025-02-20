@@ -12,35 +12,33 @@ struct PDFView: View {
     @Binding var bookmarkLookup: [String: Set<Int>]
     @Binding var covers: [Cover]?
     @Binding var pdfDocument: PDFDocument?
-
     // Digital resources state vars
     @State private var showDigitalResources = false
-
-    // zoom vars
     @ObservedObject private var zoomManager = ZoomManager()
-
-    // feedback var
     @State private var showingFeedback = false
 
     // timer vars
     @StateObject private var timerManager = TimerManager()
 
     // annotation vars
-    @State private var annotationsEnabled: Bool = false
     @State private var exitNotSelected: Bool = false
     @State private var selectedScribbleTool: String = ""
     @State private var pageChangeEnabled: Bool = true
     @State private var pagePaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var highlightPaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var selectedPenColor: Color = .black // pen default is black
-    @State private var selectedHighlighterColor: Color = .yellow // highlight default si yellow
-
+    @State private var selectedHighlighterColor: Color = .yellow
     @State private var isPenSubmenuVisible: Bool = false
+    @State var textBoxes: [String: [TextBoxData]] = [:]
+    @ObservedObject private var textManager = TextManager()
+    @State var deleteTextBox: Bool = false
+    @State var currentTextBox: Int = -1
+    @State var textOpened: Bool = false
+    @State var isHidden: Bool = false
 
     @State private var showClearAlert = false
     @ObservedObject private var annotationManager = AnnotationManager()
 
-    // big pdf view
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
@@ -55,36 +53,82 @@ struct PDFView: View {
                                 .edgesIgnoringSafeArea(.all)
                                 .scaleEffect(
                                     zoomManager.newZoomLevel(),
-                                    anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center
+                                    anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center
                                 )
                                 .onChange(of: currentPage) { _, newValue in
                                     loadPathsForPage(newValue)
                                 }
-                                if annotationsEnabled {
-                                    AnnotationsView(
-                                        pagePaths: $pagePaths,
-                                        highlightPaths: $highlightPaths,
-                                        key: uniqueKey(for: currentPage),
-                                        selectedScribbleTool: $selectedScribbleTool,
-                                        nextPage: { goToNextPage() },
-                                        previousPage: { goToPreviousPage() },
-                                        annotationManager: annotationManager,
-                                        selectedColor: selectedPenColor,
-                                        selectedHighlighterColor: selectedHighlighterColor,
-                                        zoomedIn: zoomManager.zoomedIn
+                                AnnotationsView(
+                                    pagePaths: $pagePaths,
+                                    highlightPaths: $highlightPaths,
+                                    key: uniqueKey(for: currentPage),
+                                    selectedScribbleTool: $selectedScribbleTool,
+                                    nextPage: { goToNextPage() },
+                                    previousPage: { goToPreviousPage() },
+                                    annotationManager: annotationManager,
+                                    textManager: textManager,
+                                    textBoxes: $textBoxes,
+                                    selectedColor: selectedPenColor,
+                                    selectedHighlighterColor: selectedHighlighterColor,
+                                    zoomedIn: zoomManager.getZoomedIn(),
+                                    textOpened: $textOpened
+                                )
+                                .scaleEffect(
+                                    zoomManager.newZoomLevel(),
+                                    anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center
+                                )
+                                .gesture(zoomManager.zoomin())
+                                .gesture(zoomManager.zoomout())
+                                .onTapGesture(count: 1, coordinateSpace: .local) { location in
+                                    zoomManager.newZoomPoint(
+                                        newPoint: location,
+                                        width: geometry.size.width,
+                                        height: geometry.size.height
                                     )
-                                    .scaleEffect(
-                                        zoomManager.newZoomLevel(),
-                                        anchor: zoomManager.zoomedIn ? zoomManager.zoomPoint : .center
-                                    )
-                                    .gesture(zoomManager.zoomin())
-                                    .gesture(zoomManager.zoomout())
-                                    .onTapGesture(count: 1, coordinateSpace: .local) { location in
-                                        zoomManager.newZoomPoint(
-                                            newPoint: location,
+                                    if !textOpened, selectedScribbleTool == "Text" {
+                                        textOpened = true
+                                        textManager.addText(
+                                            textBoxes: $textBoxes,
+                                            key: uniqueKey(for: currentPage),
                                             width: geometry.size.width,
                                             height: geometry.size.height
                                         )
+                                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                                    } else {
+                                        textOpened = false
+                                    }
+                                }
+                                TextView(
+                                    textManager: textManager,
+                                    textBoxes: $textBoxes,
+                                    key: uniqueKey(for: currentPage),
+                                    deleteTextBox: $deleteTextBox,
+                                    currentTextBoxIndex: $currentTextBox,
+                                    width: geometry.size.width,
+                                    height: geometry.size.height,
+                                    textOpened: $textOpened,
+                                    isHidden: $isHidden
+                                )
+                                .scaleEffect(
+                                    zoomManager.newZoomLevel(),
+                                    anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center
+                                )
+                                .alert(
+                                    "Are you sure you want to delete the text box?",
+                                    isPresented: $deleteTextBox
+                                ) {
+                                    Button("Delete", role: .destructive) {
+                                        textOpened = false
+                                        textManager.deleteText(
+                                            textBoxes: $textBoxes,
+                                            key: uniqueKey(for: currentPage),
+                                            index: currentTextBox
+                                        )
+                                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                                        currentTextBox = -1
+                                    }
+                                    Button("Cancel", role: .cancel) {
+                                        currentTextBox = -1
                                     }
                                 }
                             }
@@ -100,17 +144,17 @@ struct PDFView: View {
                                     // markup menu now in MarkupView
                                     MarkupMenu(
                                         selectedScribbleTool: $selectedScribbleTool,
-                                        annotationsEnabled: $annotationsEnabled,
                                         exitNotSelected: $exitNotSelected,
                                         showClearAlert: $showClearAlert,
                                         selectedPenColor: $selectedPenColor,
                                         selectedHighlighterColor: $selectedHighlighterColor,
                                         isPenSubmenuVisible: $isPenSubmenuVisible,
                                         annotationManager: annotationManager,
+                                        textManager: textManager,
+                                        textBoxes: $textBoxes,
                                         pagePaths: pagePaths,
                                         highlightPaths: highlightPaths
                                     )
-
                                     Button(action: { showDigitalResources = true },
                                            label: {
                                                Text("Digital Resources")
@@ -130,7 +174,7 @@ struct PDFView: View {
                                             .foregroundColor(.yellow)
                                     }
 
-                                    if zoomManager.zoomedIn {
+                                    if zoomManager.getZoomedIn() {
                                         Button("Reset Zoom") {
                                             zoomManager.resetZoom()
                                         }
@@ -150,12 +194,14 @@ struct PDFView: View {
                                         pagePaths: &pagePaths,
                                         highlightPaths: &highlightPaths
                                     )
-                                    if !pagePaths.isEmpty || !highlightPaths.isEmpty {
-                                        annotationsEnabled = true
-                                    }
+                                    textManager.loadTextBoxes(textBoxes: &textBoxes)
                                 }
                         }
                     }
+                }
+                .onDisappear {
+                    textManager.saveTextBoxes(textBoxes: textBoxes)
+                    annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
                 }
             }
             .alert("Are you sure you want to clear your screen?", isPresented: $showClearAlert) {
@@ -174,20 +220,6 @@ struct PDFView: View {
             .onChange(of: fileName) { _, _ in
                 loadPDFFromURL()
             }
-        }
-    }
-
-    private func dragGesture() -> some Gesture {
-        if pageChangeEnabled {
-            return DragGesture().onEnded { value in
-                if value.translation.width < 0 {
-                    goToNextPage()
-                } else if value.translation.width > 0 {
-                    goToPreviousPage()
-                }
-            }
-        } else {
-            return DragGesture().onEnded { _ in }
         }
     }
 
