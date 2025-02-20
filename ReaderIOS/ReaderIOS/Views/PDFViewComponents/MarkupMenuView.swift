@@ -7,70 +7,36 @@
 import SwiftUI
 
 struct MarkupMenu: View {
+    // MARK: - Bindings
+
     @Binding var selectedScribbleTool: String
     @Binding var exitNotSelected: Bool
     @Binding var showClearAlert: Bool
     @Binding var selectedPenColor: Color
     @Binding var selectedHighlighterColor: Color
     @Binding var isPenSubmenuVisible: Bool
-    @ObservedObject var annotationManager: AnnotationStorageManager
-    @ObservedObject var textManager: TextManager
     @Binding var textBoxes: [String: [TextBoxData]]
 
-    var pagePaths: [String: [(path: Path, color: Color)]]
-    var highlightPaths: [String: [(path: Path, color: Color)]]
+    // MARK: - Observed Objects
+
+    @ObservedObject var annotationManager: AnnotationStorageManager
+    @ObservedObject var textManager: TextManager
+
+    // MARK: - Input Data
+
+    let pagePaths: [String: [(path: Path, color: Color)]]
+    let highlightPaths: [String: [(path: Path, color: Color)]]
+
+    // MARK: - Body
 
     var body: some View {
         Menu {
-            // pen submenu
+            // Pen Color Submenu
             Menu {
-                Button {
-                    selectedPenColor = .black
-                    selectScribbleTool("Pen")
-                    exitNotSelected = true
-                    isPenSubmenuVisible = false
-                } label: {
-                    Text("Black")
-                    if selectedPenColor == .black {
-                        Image(systemName: "checkmark")
-                    }
-                }
-
-                Button {
-                    selectedPenColor = .green
-                    selectScribbleTool("Pen")
-                    exitNotSelected = true
-                    isPenSubmenuVisible = false
-                } label: {
-                    Text("Green")
-                    if selectedPenColor == .green {
-                        Image(systemName: "checkmark")
-                    }
-                }
-
-                Button {
-                    selectedPenColor = .red
-                    selectScribbleTool("Pen")
-                    exitNotSelected = true
-                    isPenSubmenuVisible = false
-                } label: {
-                    Text("Red")
-                    if selectedPenColor == .red {
-                        Image(systemName: "checkmark")
-                    }
-                }
-
-                Button {
-                    selectedPenColor = .blue
-                    selectScribbleTool("Pen")
-                    exitNotSelected = true
-                    isPenSubmenuVisible = false
-                } label: {
-                    Text("Blue")
-                    if selectedPenColor == .blue {
-                        Image(systemName: "checkmark")
-                    }
-                }
+                penColorButton(color: .black, label: "Black")
+                penColorButton(color: .green, label: "Green")
+                penColorButton(color: .red, label: "Red")
+                penColorButton(color: .blue, label: "Blue")
             } label: {
                 HStack {
                     Text("Pen")
@@ -81,54 +47,13 @@ struct MarkupMenu: View {
                     }
                 }
             }
+
+            // Highlighter Color Submenu
             Menu {
-                Button {
-                    selectedHighlighterColor = .yellow
-                    selectScribbleTool("Highlight")
-                    exitNotSelected = true
-                    isPenSubmenuVisible = false
-                } label: {
-                    Text("Yellow")
-                    if selectedHighlighterColor == .yellow {
-                        Image(systemName: "checkmark")
-                    }
-                }
-
-                Button {
-                    selectedHighlighterColor = .pink
-                    selectScribbleTool("Highlight")
-                    exitNotSelected = true
-                    isPenSubmenuVisible = false
-                } label: {
-                    Text("Pink")
-                    if selectedHighlighterColor == .pink {
-                        Image(systemName: "checkmark")
-                    }
-                }
-
-                Button {
-                    selectedHighlighterColor = .blue
-                    selectScribbleTool("Highlight")
-                    exitNotSelected = true
-                    isPenSubmenuVisible = false
-                } label: {
-                    Text("Blue")
-                    if selectedHighlighterColor == .blue {
-                        Image(systemName: "checkmark")
-                    }
-                }
-
-                Button {
-                    selectedHighlighterColor = .green
-                    selectScribbleTool("Highlight")
-                    exitNotSelected = true
-                    isPenSubmenuVisible = false
-                } label: {
-                    Text("Green")
-                    if selectedHighlighterColor == .green {
-                        Image(systemName: "checkmark")
-                    }
-                }
+                highlighterColorButton(color: .yellow, label: "Yellow")
+                highlighterColorButton(color: .pink, label: "Pink")
+                highlighterColorButton(color: .blue, label: "Blue")
+                highlighterColorButton(color: .green, label: "Green")
             } label: {
                 HStack {
                     Text("Highlight")
@@ -139,6 +64,7 @@ struct MarkupMenu: View {
                     }
                 }
             }
+
             Button("Erase") {
                 selectScribbleTool("Erase")
                 exitNotSelected = true
@@ -153,17 +79,48 @@ struct MarkupMenu: View {
             Button("Exit Markup") {
                 selectScribbleTool("")
                 exitNotSelected = false
-                annotationManager.saveAnnotations(
-                    pagePaths: pagePaths,
-                    highlightPaths: highlightPaths
-                )
+                annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
                 textManager.saveTextBoxes(textBoxes: textBoxes)
             }
         } label: {
-            Text(selectedScribbleTool.isEmpty ? "Markup" : "Markup: " + selectedScribbleTool)
+            Text(selectedScribbleTool.isEmpty ? "Markup" : "Markup: \(selectedScribbleTool)")
                 .padding(5)
-                .foregroundColor(exitNotSelected ? Color.pink : Color.blue)
+                .foregroundColor(exitNotSelected ? .pink : .blue)
                 .cornerRadius(8)
+        }
+    }
+
+    // MARK: - Private Helpers
+
+    private func penColorButton(color: Color, label: String) -> some View {
+        Button {
+            selectedPenColor = color
+            selectScribbleTool("Pen")
+            exitNotSelected = true
+            isPenSubmenuVisible = false
+        } label: {
+            HStack {
+                Text(label)
+                if selectedPenColor == color {
+                    Image(systemName: "checkmark")
+                }
+            }
+        }
+    }
+
+    private func highlighterColorButton(color: Color, label: String) -> some View {
+        Button {
+            selectedHighlighterColor = color
+            selectScribbleTool("Highlight")
+            exitNotSelected = true
+            isPenSubmenuVisible = false
+        } label: {
+            HStack {
+                Text(label)
+                if selectedHighlighterColor == color {
+                    Image(systemName: "checkmark")
+                }
+            }
         }
     }
 

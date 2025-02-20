@@ -1,80 +1,107 @@
 import PDFKit
 import SwiftUI
 
-struct PathWithColor {
-    var path: Path
-    var color: Color
-}
-
 struct AnnotationsView: View {
+    // MARK: - Bindings
+
     @Binding var pagePaths: [String: [(path: Path, color: Color)]]
     @Binding var highlightPaths: [String: [(path: Path, color: Color)]]
-
-    var key: String
     @Binding var selectedScribbleTool: String
-    var nextPage: (() -> Void)?
-    var previousPage: (() -> Void)?
-    @State private var liveDrawingPath: Path = .init()
-    @State private var liveDrawingColor: Color = .black // pen color default
-    @State private var liveHighlighterColor: Color = .yellow // highlight color default
-    @ObservedObject var annotationManager: AnnotationStorageManager
-    @ObservedObject var textManager: TextManager
-    @Binding var textBoxes: [String: [TextBoxData]]
-    var selectedColor: Color
-    var selectedHighlighterColor: Color
-    var zoomedIn: Bool
     @Binding var textOpened: Bool
 
+    // MARK: - Input Parameters
+
+    let key: String
+    let nextPage: (() -> Void)?
+    let previousPage: (() -> Void)?
+    let selectedColor: Color
+    let selectedHighlighterColor: Color
+    let zoomedIn: Bool
+    let zoomManager: ZoomManager
+
+    // MARK: - Observed Objects
+
+    @ObservedObject var annotationManager: AnnotationStorageManager
+    @ObservedObject var textManager: TextManager
+
+    // MARK: - Binding Data
+
+    @Binding var textBoxes: [String: [TextBoxData]]
+
+    // MARK: - Local State
+
+    @State private var liveDrawingPath: Path = .init()
+    @State private var liveDrawingColor: Color = .black
+    @State private var liveHighlighterColor: Color = .yellow
+
+    // MARK: - Body
+
     var body: some View {
-        Canvas { context, _ in
-            // Existing page paths have their old colors
-            if let paths = pagePaths[key] {
-                for pathInfo in paths {
-                    context.stroke(Path(pathInfo.path.cgPath), with: .color(pathInfo.color), lineWidth: 2)
-                }
-            }
-
-            if let hPaths = highlightPaths[key] {
-                for pathInfo in hPaths {
-                    context.stroke(pathInfo.path, with: .color(pathInfo.color.opacity(0.2)), lineWidth: 15)
-                }
-            }
-
-            // Live drawing path (use liveDrawingColor)
-            context.stroke(Path(liveDrawingPath.cgPath),
-                           with: selectedScribbleTool == "Highlight" ? .color(liveHighlighterColor.opacity(0.2)) :
-                               .color(liveDrawingColor),
-                           lineWidth: selectedScribbleTool == "Highlight" ? 15 : 2)
-        }
-        .gesture(
-            DragGesture(minimumDistance: 0.0001)
-                .onChanged { value in
-                    if selectedScribbleTool == "Erase" {
-                        erasePath(at: value.location)
-                    } else if selectedScribbleTool == "Pen" || selectedScribbleTool == "Highlight" {
-                        updateLivePath(with: value.location)
+        GeometryReader { geometry in
+            Canvas { context, _ in
+                // Draw saved paths
+                if let paths = pagePaths[key] {
+                    for pathInfo in paths {
+                        context.stroke(Path(pathInfo.path.cgPath),
+                                       with: .color(pathInfo.color),
+                                       lineWidth: 2)
                     }
                 }
-                .onEnded { value in
-                    if selectedScribbleTool == "Pen" {
-                        finalizeCurrentPath(for: &pagePaths, color: liveDrawingColor)
-                    } else if selectedScribbleTool == "Highlight" {
-                        finalizeCurrentPath(for: &highlightPaths, color: liveDrawingColor)
-                    } else if selectedScribbleTool == "" || selectedScribbleTool == "Text", !zoomedIn {
-                        if value.translation.width < 0 {
-                            nextPage?()
-                        } else if value.translation.width > 0 {
-                            previousPage?()
+                if let hPaths = highlightPaths[key] {
+                    for pathInfo in hPaths {
+                        context.stroke(pathInfo.path,
+                                       with: .color(pathInfo.color.opacity(0.2)),
+                                       lineWidth: 15)
+                    }
+                }
+                // Draw live drawing path
+                context.stroke(Path(liveDrawingPath.cgPath),
+                               with: selectedScribbleTool == "Highlight" ?
+                                   .color(liveHighlighterColor.opacity(0.2)) :
+                                   .color(liveDrawingColor),
+                               lineWidth: selectedScribbleTool == "Highlight" ? 15 : 2)
+            }
+            .gesture(
+                DragGesture(minimumDistance: 0.0001)
+                    .onChanged { value in
+                        if selectedScribbleTool == "Erase" {
+                            erasePath(at: value.location)
+                        } else if selectedScribbleTool == "Pen" || selectedScribbleTool == "Highlight" {
+                            updateLivePath(with: value.location)
                         }
-                        textOpened = false
                     }
-                    annotationManager.saveAnnotations(
-                        pagePaths: pagePaths,
-                        highlightPaths: highlightPaths
-                    )
+                    .onEnded { value in
+                        if selectedScribbleTool == "Pen" {
+                            finalizeCurrentPath(for: &pagePaths, using: liveDrawingColor)
+                        } else if selectedScribbleTool == "Highlight" {
+                            finalizeCurrentPath(for: &highlightPaths, using: liveHighlighterColor)
+                        } else if selectedScribbleTool.isEmpty || selectedScribbleTool == "Text", !zoomedIn {
+                            if value.translation.width < 0 { nextPage?() }
+                            else if value.translation.width > 0 { previousPage?() }
+                            textOpened = false
+                        }
+                        annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
+                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                    }
+            )
+            .simultaneousGesture(zoomManager.zoomin())
+            .simultaneousGesture(zoomManager.zoomout())
+            .onTapGesture(count: 1, coordinateSpace: .local) { location in
+                zoomManager.newZoomPoint(newPoint: location,
+                                         width: geometry.size.width,
+                                         height: geometry.size.height)
+                if !textOpened, selectedScribbleTool == "Text" {
+                    textOpened = true
+                    textManager.addText(textBoxes: $textBoxes,
+                                        key: key,
+                                        width: geometry.size.width,
+                                        height: geometry.size.height)
                     textManager.saveTextBoxes(textBoxes: textBoxes)
+                } else {
+                    textOpened = false
                 }
-        )
+            }
+        }
         .onAppear {
             liveDrawingColor = selectedColor
             liveHighlighterColor = selectedHighlighterColor
@@ -87,15 +114,17 @@ struct AnnotationsView: View {
         }
     }
 
+    // MARK: - Private Helpers
+
     private func erasePath(at location: CGPoint) {
-        if let pagePathsForCurrentPage = pagePaths[key] {
-            for (index, pathInfo) in pagePathsForCurrentPage.enumerated() where pathInfo.path.contains(location) {
+        if let paths = pagePaths[key] {
+            for (index, pathInfo) in paths.enumerated() where pathInfo.path.contains(location) {
                 pagePaths[key]?.remove(at: index)
                 break
             }
         }
-        if let highlightPathsForCurrentPage = highlightPaths[key] {
-            for (index, pathInfo) in highlightPathsForCurrentPage.enumerated() where pathInfo.path.contains(location) {
+        if let hPaths = highlightPaths[key] {
+            for (index, pathInfo) in hPaths.enumerated() where pathInfo.path.contains(location) {
                 highlightPaths[key]?.remove(at: index)
                 break
             }
@@ -110,11 +139,12 @@ struct AnnotationsView: View {
         }
     }
 
-    private func finalizeCurrentPath(for pathDirectory: inout [String: [(path: Path, color: Color)]], color _: Color) {
-        if !liveDrawingPath.isEmpty {
-            let pathColor = selectedScribbleTool == "Highlight" ? liveHighlighterColor : liveDrawingColor
-            pathDirectory[key, default: []].append((path: liveDrawingPath, color: pathColor))
-            liveDrawingPath = Path()
-        }
+    private func finalizeCurrentPath(for paths: inout [String: [(path: Path, color: Color)]],
+                                     using _: Color)
+    {
+        guard !liveDrawingPath.isEmpty else { return }
+        let finalColor = selectedScribbleTool == "Highlight" ? liveHighlighterColor : liveDrawingColor
+        paths[key, default: []].append((path: liveDrawingPath, color: finalColor))
+        liveDrawingPath = Path()
     }
 }

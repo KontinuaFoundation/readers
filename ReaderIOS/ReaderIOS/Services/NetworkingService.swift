@@ -87,29 +87,29 @@ final class NetworkingService {
         }
         task.resume()
     }
-    
+
     /// Fetches a PDF document given its file name.
-      func fetchPDF(fileName: String, completion: @escaping (Result<PDFDocument, Error>) -> Void) {
-          let baseURL = "http://localhost:8000/pdfs/"
-          let urlString = baseURL + fileName
-          guard let url = URL(string: urlString) else {
-              completion(.failure(NetworkError.invalidURL))
-              return
-          }
-          
-          let task = session.dataTask(with: url) { data, _, error in
-              if let error = error {
-                  completion(.failure(error))
-                  return
-              }
-              guard let data = data, let document = PDFDocument(data: data) else {
-                  completion(.failure(NetworkError.noData))
-                  return
-              }
-              DispatchQueue.main.async {
-                  completion(.success(document))
-              }
-          }
-          task.resume()
-      }
+    func fetchPDF(fileName: String, completion: @escaping (Result<PDFDocument, Error>) -> Void) {
+        let baseURL = "http://localhost:8000/pdfs/"
+        let urlString = baseURL + fileName
+        guard let url = URL(string: urlString) else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        let task = session.dataTask(with: url) { data, _, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            guard let data = data, let document = PDFDocument(data: data) else {
+                completion(.failure(NetworkError.noData))
+                return
+            }
+            DispatchQueue.main.async {
+                completion(.success(document))
+            }
+        }
+        task.resume()
+    }
 }
