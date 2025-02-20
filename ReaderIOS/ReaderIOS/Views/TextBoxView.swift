@@ -32,11 +32,11 @@ struct TextView: View {
                     }
                 }
             }
-            if textBoxes[key]?.count ?? 0 > 0{
+            if textBoxes[key]?.count ?? 0 > 0 {
                 Image(systemName: isHidden ? "eye.slash" : "eye")
                     .foregroundStyle(Color.blue)
                     .font(.system(size: 25))
-                    .position(x: width-111, y: height-125)
+                    .position(x: width - 111, y: height - 125)
                     .onTapGesture(count: 1) {
                         isHidden.toggle()
                     }
