@@ -1,11 +1,6 @@
 import PDFKit
 import SwiftUI
 
-struct URLItem: Identifiable {
-    let id = UUID()
-    let url: URL
-}
-
 struct PDFView: View {
     // MARK: - Bindings
 
@@ -20,8 +15,10 @@ struct PDFView: View {
 
     // MARK: - State Variables
 
+    // misc variables
     @State private var showDigitalResources = false
     @State private var showingFeedback = false
+    // markup variables
     @State private var selectedScribbleTool = ""
     @State private var exitNotSelected = false
     @State private var pagePaths: [String: [(path: Path, color: Color)]] = [:]

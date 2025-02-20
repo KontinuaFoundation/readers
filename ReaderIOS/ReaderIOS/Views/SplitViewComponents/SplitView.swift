@@ -1,5 +1,5 @@
 //
-//  TableOfContentsSplitView.swift
+//  SplitView.swift
 //  ReaderIOS
 //
 //  Created by Devin Hadley on 11/10/24.
@@ -8,6 +8,9 @@ import PDFKit
 import SwiftUI
 
 struct SplitView: View {
+    var initialWorkbooks: [Workbook] = []
+    var initialPDFDocument: PDFDocument?
+
     // Loaded workbooks information state vars
     @State private var workbooks: [Workbook]?
     @State private var chapters: [Chapter]?
@@ -46,7 +49,10 @@ struct SplitView: View {
             } else {
                 ProgressView("Fetching Workbooks")
                     .onAppear {
-                        fetchWorkbooks()
+                        if !initialWorkbooks.isEmpty {
+                            workbooks = initialWorkbooks
+                            selectedWorkbookID = initialWorkbooks.first?.id
+                        }
                     }
             }
         }
@@ -93,6 +99,12 @@ struct SplitView: View {
                 )
             } else {
                 ProgressView("Getting the latest workbook.")
+            }
+        }
+        .onAppear {
+            // Optionally, if initialPDFDocument is available, set it.
+            if let initialPDF = initialPDFDocument {
+                pdfDocument = initialPDF
             }
         }
         .onChange(of: selectedWorkbookID) {
