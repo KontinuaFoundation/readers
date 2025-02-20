@@ -76,8 +76,7 @@ struct AnnotationsView: View {
                         } else if selectedScribbleTool == "Highlight" {
                             finalizeCurrentPath(for: &highlightPaths, using: liveHighlighterColor)
                         } else if selectedScribbleTool.isEmpty || selectedScribbleTool == "Text", !zoomedIn {
-                            if value.translation.width < 0 { nextPage?() }
-                            else if value.translation.width > 0 { previousPage?() }
+                            if value.translation.width < 0 { nextPage?() } else if value.translation.width > 0 { previousPage?() }
                             textOpened = false
                         }
                         annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)

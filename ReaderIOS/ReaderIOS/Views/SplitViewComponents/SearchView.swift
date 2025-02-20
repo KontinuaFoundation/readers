@@ -8,9 +8,6 @@
 import PDFKit
 import SwiftUI
 
-import PDFKit
-import SwiftUI
-
 struct SearchView: View {
     // Bindings from the parent for interactions that affect navigation
     @Binding var currentPage: Int
