@@ -6,6 +6,7 @@ from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 from core.models import Collection, Workbook
+from core.views import WorkbookViewSet
 
 
 class WorkbookTestCase(APITestCase):
@@ -45,11 +46,18 @@ class WorkbookTestCase(APITestCase):
         token = Token.objects.create(user=user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
 
+        self._original_throttle_classes = WorkbookViewSet.throttle_classes
+        WorkbookViewSet.throttle_classes = []
+
 
     def tearDown(self):
         """Ensure uploaded files are deleted after tests"""
         for workbook in Workbook.objects.all():
             Workbook.objects.all().delete()
+
+        # Restore throttles.
+        # Probably not necessary, but good to retain state between tests.
+        WorkbookViewSet.throttle_classes = self._original_throttle_classes
 
     def test_create_workbook(self):
         url = reverse('workbook-list')
