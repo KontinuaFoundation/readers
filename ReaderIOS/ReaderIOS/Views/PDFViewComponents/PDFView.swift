@@ -228,6 +228,7 @@ struct PDFView: View {
         let key = uniqueKey(for: currentPage)
         highlightPaths.removeValue(forKey: key)
         pagePaths.removeValue(forKey: key)
+        textManager.deleteAllText(textBoxes: $textBoxes, key: uniqueKey(for: currentPage))
     }
 
     private func goToNextPage() {
