@@ -1,5 +1,5 @@
 //
-//  AnnotationManager.swift
+//  AnnotationStorageManager.swift
 //  ReaderIOS
 //
 //  Created by Luis Rodriguez Jr. on 11/19/24.
@@ -8,7 +8,7 @@
 import PDFKit
 import SwiftUI
 
-class AnnotationManager: ObservableObject {
+class AnnotationStorageManager: ObservableObject {
     struct AnnotationData: Codable {
         let key: String
         let paths: [[CGPoint]]

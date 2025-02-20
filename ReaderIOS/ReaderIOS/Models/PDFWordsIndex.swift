@@ -38,14 +38,9 @@ class PDFWordsIndex: ObservableObject {
 
             while !scanner.isAtEnd {
                 if let token = scanner.scanCharacters(from: .alphanumerics) {
-                    let startIndex = plainText.index(
-                        plainText.startIndex,
-                        offsetBy: scanner.currentIndex.utf16Offset(in: plainText) - token.count
-                    )
-                    let endIndex = plainText.index(
-                        plainText.startIndex,
-                        offsetBy: scanner.currentIndex.utf16Offset(in: plainText)
-                    )
+                    // Use scanner.currentIndex directly.
+                    let endIndex = scanner.currentIndex
+                    let startIndex = plainText.index(endIndex, offsetBy: -token.count)
                     ranges.append(startIndex ..< endIndex)
                     tokens.append(token.lowercased())
                 } else {
