@@ -1,5 +1,5 @@
 //
-//  InitializationViewModel.swift
+//  InitializationManager.swift
 //  ReaderIOS
 //
 //  Created by Ethan Handelman on 2/19/25.
@@ -9,8 +9,9 @@ import Foundation
 import PDFKit
 import SwiftUI
 
-final class InitializationViewModel: ObservableObject {
+final class InitializationManager: ObservableObject {
     @Published var isInitialized = false
+    @Published var loadFailed = false
     @Published var workbooks: [Workbook] = []
     @Published var pdfDocument: PDFDocument?
 
@@ -26,7 +27,6 @@ final class InitializationViewModel: ObservableObject {
             case let .success(workbooks):
                 DispatchQueue.main.async {
                     self?.workbooks = workbooks
-                    // Optionally: set a default workbook or load PDF for the first workbook.
                     if let firstWorkbook = workbooks.first {
                         self?.fetchPDF(for: firstWorkbook.pdfName)
                     } else {
@@ -37,7 +37,7 @@ final class InitializationViewModel: ObservableObject {
                 print("Error fetching workbooks: \(error)")
                 // Handle error appropriately
                 DispatchQueue.main.async {
-                    self?.isInitialized = true
+                    self?.loadFailed = true
                 }
             }
         }
