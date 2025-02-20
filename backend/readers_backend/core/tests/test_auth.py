@@ -35,3 +35,27 @@ class TokenAuthenticationTestCase(APITestCase):
                          msg=f"Token response not 204 NO CONTENT:\n {response.data}")
 
         self.assertFalse(Token.objects.filter(user=user).exists(), "Token was not deleted successfully.")
+
+    def test_rate_limit_on_unauthenticated_user(self):
+        url = reverse('collection-list')
+
+        for _ in range(100):
+            response = self.client.get(url)
+
+        # 101st request should be throttled (100 per min)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS, msg=f"Response not 429 TOO MANY REQUESTS:\n{response.data}")
+
+    def test_no_rate_limit_on_authenticated_user(self):
+        user = User.objects.create_user(username="testuser", password="testpass123")
+        token = Token.objects.create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
+        url = reverse('collection-list')
+
+        for _ in range(100):
+            response = self.client.get(url)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, msg=f"Response not 200 OK:\n{response.data}")
+

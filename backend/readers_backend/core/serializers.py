@@ -121,11 +121,9 @@ class WorkbooksListSerializer(serializers.ModelSerializer):
         model = Workbook
         fields = ['id', 'number']
 
-
 '''
 All serializers pertaining to actions performed on Collections resource.
 '''
-
 
 class CollectionListSerializer(serializers.ModelSerializer):
     class Meta:
