@@ -280,6 +280,7 @@ struct PDFView: View {
     private func clearMarkup() {
         highlightPaths.removeValue(forKey: uniqueKey(for: currentPage))
         pagePaths.removeValue(forKey: uniqueKey(for: currentPage))
+        textManager.deleteAllText(textBoxes: $textBoxes, key: uniqueKey(for: currentPage))
     }
 
     var isCurrentPageBookmarked: Bool {
