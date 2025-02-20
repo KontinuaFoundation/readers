@@ -15,9 +15,13 @@ import android.widget.ProgressBar
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.view.GravityCompat
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GestureDetectorCompat
 import androidx.appcompat.widget.Toolbar
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,7 +38,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
+class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener, NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var imageView: ImageView
     private lateinit var loadingTextView: TextView
@@ -43,19 +47,25 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var previousButton: ImageButton
     private lateinit var nextButton: ImageButton
     private lateinit var pageNumberEditText: EditText
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
     private var pdfRenderer: PdfRenderer? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
     private var currentPageIndex: Int = 0 // Track the current page index
     private lateinit var gestureDetector: GestureDetectorCompat
     private val baseUrl = "http://10.0.2.2:8000/"
-    private val pdfFileName = "workbook-01.pdf"
+    private val FileName = "workbook-01"
 
     interface ApiService {
         @GET
         fun getPdfData(@Url url: String): Call<ResponseBody>
+
+        @GET
+        fun getMetaData(@Url url: String): Call<Map<String, List<ChapterData>>>
     }
     private lateinit var apiService: ApiService
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -67,8 +77,10 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         previousButton = findViewById(R.id.previousButton)
         pageNumberEditText = findViewById(R.id.pageNumberEditText)
         toolbar = findViewById(R.id.toolbar)
+        navigationView = findViewById(R.id.navigation_view)
+        drawerLayout = findViewById(R.id.drawer_layout)
         setSupportActionBar(toolbar) //Set toolbar as the action bar
-        supportActionBar?.title = "My PDF Viewer"
+        supportActionBar?.title = ""
 
         // Initialize gesture detector
         gestureDetector = GestureDetectorCompat(this, this)
@@ -103,6 +115,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         // Retrofit setup moved here
         apiService = retrofit().create(ApiService::class.java)
         loadPdfFromUrl()
+        loadMenuFromServer()
 
         previousButton.setOnClickListener {
             goToPreviousPage()
@@ -111,10 +124,35 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         nextButton.setOnClickListener {
             goToNextPage()
         }
+
+        val toggle = ActionBarDrawerToggle(
+            this, drawerLayout, toolbar,
+            R.string.navigation_drawer_open, R.string.navigation_drawer_close
+        )
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        navigationView.setNavigationItemSelectedListener(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_home -> {
+                // Handle Home click
+            }
+            R.id.nav_profile -> {
+                // Handle Profile click
+            }
+            R.id.nav_settings -> {
+                // Handle Settings click
+            }
+        }
+        drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -140,6 +178,13 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         }
     }
 
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+        }
+    }
 
     private fun retrofit() : Retrofit {
         val retrofit = Retrofit.Builder()
@@ -153,7 +198,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         CoroutineScope(Dispatchers.IO).launch {
             // Use IO dispatcher for network call
 
-            val call = apiService.getPdfData("$baseUrl/pdfs/$pdfFileName")
+            val call = apiService.getPdfData("$baseUrl/pdfs/$FileName.pdf")
 
             withContext(Dispatchers.Main) {  // Switch to Main thread for UI updates
                 call.enqueue(object : Callback<ResponseBody> {
@@ -162,7 +207,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                             response.body()?.let { body ->
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
-                                        val pdfFile = savePdfToCache(this@MainActivity, body, pdfFileName)
+                                        val pdfFile = savePdfToCache(this@MainActivity, body, FileName)
                                         withContext(Dispatchers.Main) {
                                             openPdf(pdfFile)
                                         }
@@ -378,6 +423,48 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     @SuppressLint("SetTextI18n")
     private fun updatePageNumberEditText() {
         pageNumberEditText.setText((currentPageIndex + 1).toString())
+    }
+
+    data class ChapterData(
+        val title: String,
+        val book: String,
+        val id: String,
+        val chapNum: Int,
+        val startPage: Int
+    )
+
+    private fun loadMenuFromServer() {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val apiService = retrofit.create(ApiService::class.java)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = apiService.getMetaData("$baseUrl/meta/$FileName").execute()
+
+            if (response.isSuccessful) {
+                response.body()?.let { chapterData ->
+                    withContext(Dispatchers.Main) {
+                        val chapterItems = chapterData["chapter_items"]
+                        Log.d("MainActivity", "Parsed Menu Items: $chapterItems")
+                        if (chapterItems != null) {
+                            val menu = navigationView.menu
+                            menu.clear()
+
+                            for (item in chapterItems) {
+                                val chapterItem = menu.add(Menu.NONE, item.chapNum.hashCode(), Menu.NONE, item.title)
+                                val iconId = resources.getIdentifier(item.id, "drawable", packageName)
+                                if (iconId != 0) {
+                                    chapterItem.setIcon(iconId)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
