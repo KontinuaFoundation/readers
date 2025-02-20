@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+struct URLItem: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
 struct DigitalResourcesView: View {
     var covers: [Cover]?
     @State private var selectedLink: URLItem?
@@ -20,7 +25,6 @@ struct DigitalResourcesView: View {
                     ForEach(covers) { cover in
                         Section(header: Text(cover.desc)
                             .font(.title3)
-                            // .fontWeight(.bold)
                             .foregroundColor(.black)
                             .textCase(nil))
                         {
