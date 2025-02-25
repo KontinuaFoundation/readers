@@ -12,15 +12,12 @@ struct PageControlView: View {
     // Total number of pages available.
     let totalPages: Int
 
-    // A state variable to hold the text field's value.
     @State private var textFieldValue: String = ""
-    // A FocusState variable to track whether the text field is focused.
+
     @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
-        // Wrap everything in a ZStack with a clear background to catch taps.
         ZStack {
-            // This invisible background registers taps that dismiss the keyboard.
             Color.clear
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -30,15 +27,13 @@ struct PageControlView: View {
                 }
 
             HStack(spacing: 8) {
-                // Left arrow: Decrement the current page.
                 Button(action: decrementPage) {
                     Image(systemName: "chevron.left")
                         .font(.title)
                         .frame(width: 10, height: 24)
                 }
-                .disabled(currentPage == 0) // Disable if already on the first page.
+                .disabled(currentPage == 0)
 
-                // Center text field: Display and edit the page number.
                 TextField("", text: $textFieldValue, onEditingChanged: { isEditing in
                     if isEditing {
                         // Clear the text when the user starts editing.
@@ -53,7 +48,6 @@ struct PageControlView: View {
                     .keyboardType(.numberPad)
                     // change keyboard hide to "go" button
                     .submitLabel(.go)
-                    // Bind the text field’s focus to the FocusState variable.
                     .focused($isTextFieldFocused)
                     // When focus is lost (for example, user taps outside), commit the text.
                     .onChange(of: isTextFieldFocused) { focused in
@@ -62,16 +56,14 @@ struct PageControlView: View {
                         }
                     }
 
-                // Right arrow: Increment the current page.
                 Button(action: incrementPage) {
                     Image(systemName: "chevron.right")
                         .font(.title)
                         .frame(width: 24, height: 24)
                 }
-                .disabled(currentPage >= totalPages - 1) // Disable if already on the last page.
+                .disabled(currentPage >= totalPages - 1)
             }
         }
-        // When the view appears, initialize the text field with the current page.
         .onAppear {
             textFieldValue = "\(currentPage + 1)"
         }
@@ -81,14 +73,12 @@ struct PageControlView: View {
         }
     }
 
-    /// Increments the current page if possible.
     private func incrementPage() {
         if currentPage < totalPages - 1 {
             currentPage += 1
         }
     }
 
-    /// Decrements the current page if possible.
     private func decrementPage() {
         if currentPage > 0 {
             currentPage -= 1

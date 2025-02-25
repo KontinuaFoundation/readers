@@ -32,6 +32,15 @@ struct TextView: View {
                     }
                 }
             }
+            if textBoxes[key]?.count ?? 0 > 0 {
+                Image(systemName: isHidden ? "eye.slash" : "eye")
+                    .foregroundStyle(Color.blue)
+                    .font(.system(size: 25))
+                    .position(x: width - 111, y: height - 125)
+                    .onTapGesture(count: 1) {
+                        isHidden.toggle()
+                    }
+            }
         }
     }
 }
@@ -57,7 +66,7 @@ struct TextBox: View {
                     .frame(width: isHidden ? 0 : data.size.width, height: isHidden ? 0 : data.size.height)
                     .border(Color.blue, width: isFocused ? 3 : 0)
                     .foregroundStyle(Color.black)
-                    .background(Color.yellow)
+                    .background(Color.white)
                     .opacity(isFocused ? 0.7 : 0.3)
                     .cornerRadius(8)
                     .focused($isFocused)
@@ -145,13 +154,6 @@ struct TextBox: View {
                     x: data.position.x - 100 * (data.size.width / 200),
                     y: data.position.y - 50 * (data.size.height / 100)
                 )
-            Image(systemName: "eye")
-                .foregroundStyle(Color.blue)
-                .opacity(0.5)
-                .position(x: data.position.x, y: data.position.y + 50 * (data.size.height / 100))
-                .onTapGesture(count: 1) {
-                    isHidden.toggle()
-                }
         }
     }
 }
