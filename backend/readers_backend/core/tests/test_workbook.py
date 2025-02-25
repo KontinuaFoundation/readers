@@ -7,39 +7,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 from core.models import Collection, Workbook
 from core.views import WorkbookViewSet
-
+from .constants import GOOD_CHAPTERS
 
 class WorkbookTestCase(APITestCase):
-
     # A good chapters argument structure to use for testing.
-    GOOD_CHAPTERS = [
-        {
-            "requires": [],
-            "title": "Introduction to the Kontinua Sequence",
-            "id": "introduction",
-            "book": "01",
-            "chap_num": 1,
-            "start_page": 3,
-            "covers": [
-                {
-                    "id": "kont_intro",
-                    "desc": "Introduction to Kontinua",
-                    "videos": [
-                        {
-                            "link": "https://youtu.be/example",
-                            "title": "Test Video"
-                        }
-                    ],
-                    "references": [
-                        {
-                            "link": "https://example.org/",
-                            "title": "Test Reference"
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
 
     def setUp(self):
         user = User.objects.create_user(username="testuser", password="testpass123")
@@ -48,7 +19,6 @@ class WorkbookTestCase(APITestCase):
 
         self._original_throttle_classes = WorkbookViewSet.throttle_classes
         WorkbookViewSet.throttle_classes = []
-
 
     def tearDown(self):
         """Ensure uploaded files are deleted after tests"""
@@ -75,7 +45,7 @@ class WorkbookTestCase(APITestCase):
         body = {
             'number': 1,
             'collection': collection.id,
-            'chapters': json.dumps(self.GOOD_CHAPTERS),
+            'chapters': json.dumps(GOOD_CHAPTERS),
             'pdf': pdf_file,
         }
 
@@ -95,7 +65,7 @@ class WorkbookTestCase(APITestCase):
                          f"Workbook number does not match expected value: Found {workbook.number}, expected 1.")
         self.assertEqual(collection, workbook.collection,
                          f"Workbook is not associated with the correct Collection: Found {workbook.collection}, expected {collection}.")
-        self.assertEqual(self.GOOD_CHAPTERS, workbook.chapters,
+        self.assertEqual(GOOD_CHAPTERS, workbook.chapters,
                          f"Workbook chapters content does not match expected value: Found {workbook.chapters}, expected '{{}}'.")
         self.assertIsNotNone(workbook.pdf,
                              "Workbook PDF file was not uploaded.")
@@ -363,7 +333,6 @@ class WorkbookTestCase(APITestCase):
         self.assertEqual(400, response.status_code,
                          f"Expected 400 Bad Request for invalid chapters, got {response.status_code}.")
 
-
     def test_create_workbook_with_chapters_with_essential_fields_missing(self):
         url = reverse('workbook-list')
 
@@ -377,12 +346,11 @@ class WorkbookTestCase(APITestCase):
             content_type='application/pdf'
         )
 
-        essential_fields = ['title', 'book', 'id', 'chap_num', 'start_page']
+        essential_fields = ['title', 'id', 'chap_num', 'start_page']
         for field in essential_fields:
             chapter_data_missing_field = {
                 "requires": [],
                 "title": "Chapter 1",
-                "book": "01",
                 "id": "chapter-1",
                 "chap_num": 1,
                 "covers": [],
@@ -445,7 +413,6 @@ class WorkbookTestCase(APITestCase):
             self.assertTrue("chapters" in response.json(),
                             f"Expected 'chapters' field in response error but got {response.json()}")
 
-
     def test_create_workbook_with_chapters_with_covers_with_essential_fields_missing(self):
         url = reverse('workbook-list')
 
@@ -461,7 +428,6 @@ class WorkbookTestCase(APITestCase):
 
         essential_fields = ('id', 'desc')
         for field in essential_fields:
-
             chapter_data_missing_field = [{
                 "requires": [],
                 "title": "Chapter 1",
@@ -533,7 +499,6 @@ class WorkbookTestCase(APITestCase):
             self.assertTrue("chapters" in response.json(),
                             f"Expected 'chapters' field in response error but got {response.json()}")
 
-
     def test_create_workbook_with_chapters_not_a_list(self):
         url = reverse('workbook-list')
 
@@ -592,7 +557,6 @@ class WorkbookTestCase(APITestCase):
 
     def test_create_workbook_with_covers_not_a_list(self):
         url = reverse('workbook-list')
-
 
         collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
 
@@ -665,4 +629,4 @@ class WorkbookTestCase(APITestCase):
         self.assertTrue("chapters" in response.json(),
                         f"Expected 'chapters' field in response error but got {response.json()}")
 
-    #TODO: if covers has video or references verify the fields are there.
+    # TODO: if covers has video or references verify the fields are there.

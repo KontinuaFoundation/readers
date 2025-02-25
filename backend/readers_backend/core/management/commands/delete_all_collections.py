@@ -3,8 +3,7 @@ from core.models import Collection
 
 
 class Command(BaseCommand):
-    help = "Closes the specified poll for voting"
-
+    help = "Deletes all collections and in turn all workbooks. It will remove all pdfs from S3 also."
 
     def handle(self, *args, **options):
         Collection.objects.all().delete()
