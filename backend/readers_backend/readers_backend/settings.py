@@ -104,8 +104,12 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-AWS_ACCESS_KEY_ID = get_required_env_var("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = get_required_env_var("AWS_SECRET_ACCESS_KEY")
+# AWS should use instance role in production.
+# In dev we can use credentials.
+if DEBUG:
+    AWS_ACCESS_KEY_ID = get_required_env_var("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = get_required_env_var("AWS_SECRET_ACCESS_KEY")
+
 AWS_STORAGE_BUCKET_NAME = get_required_env_var("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_REGION_NAME = get_required_env_var("AWS_S3_REGION_NAME")
 AWS_S3_ADDRESSING_STYLE = get_required_env_var("AWS_S3_ADDRESSING_STYLE")
