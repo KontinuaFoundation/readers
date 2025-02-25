@@ -37,7 +37,17 @@ export AWS_S3_REGION_NAME="us-east-2"
 export AWS_S3_ADDRESSING_STYLE="virtual"
 export DJANGO_DEBUG="False"
 
+DJANGO_SUPERUSER_USERNAME=$(aws ssm get-parameter --name "/readers_backend/django_superuser_username" --with-decryption --query "Parameter.Value" --output text)
+DJANGO_SUPERUSER_EMAIL=""
+DJANGO_SUPERUSER_PASSWORD=$(aws ssm get-parameter --name "/readers_backend/django_superuser_password" --with-decryption --query "Parameter.Value" --output text)
+
+export DJANGO_SUPERUSER_USERNAME
+export DJANGO_SUPERUSER_EMAIL
+export DJANGO_SUPERUSER_PASSWORD
+
+
 python manage.py migrate
+python3 manage.py createsuperuser --noinput
 
 gunicorn readers_backend.wsgi:application --bind 0.0.0.0:80 --workers 3 &
 echo "Django application started on port 80"
