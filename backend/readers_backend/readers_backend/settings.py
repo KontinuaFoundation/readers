@@ -40,6 +40,9 @@ DEBUG = get_required_env_var("DJANGO_DEBUG") == "True"
 
 ALLOWED_HOSTS = []
 
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+
 # Application definition
 
 INSTALLED_APPS = [
