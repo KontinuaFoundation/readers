@@ -38,7 +38,8 @@ SECRET_KEY = 'django-insecure-3r+kj$$&^pg-av4%scddw6bjiiufkrrpkh7%0+osn#vi!$6f83
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = get_required_env_var("DJANGO_DEBUG") == "True"
 
-ALLOWED_HOSTS = []
+# EC2 Elastic IP
+ALLOWED_HOSTS = ["18.189.208.93"]
 
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
