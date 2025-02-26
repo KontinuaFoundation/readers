@@ -36,6 +36,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-3r+kj$$&^pg-av4%scddw6bjiiufkrrpkh7%0+osn#vi!$6f83'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
+# If we're not in debug, we're going to assume we're in production.
+# That is we will integrate with some AWS services and we will expect some environment variables.
 DEBUG = get_required_env_var("DJANGO_DEBUG") == "True"
 
 # EC2 Elastic IP
@@ -98,26 +101,29 @@ DATABASES = {
     }
 }
 
-# Storage Backend
+# Default storage backend
 STORAGES = {
     "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {},
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-# AWS should use instance role in production.
-# If in debug we can use credenials if they're there.
-if DEBUG and os.environ.get("AWS_ACCESS_KEY_ID") and os.environ.get("AWS_SECRET_ACCESS_KEY"):
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
+# If we're in production we need S3 AWS integrations.
+if not DEBUG:
 
-AWS_STORAGE_BUCKET_NAME = get_required_env_var("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_REGION_NAME = get_required_env_var("AWS_S3_REGION_NAME")
-AWS_S3_ADDRESSING_STYLE = get_required_env_var("AWS_S3_ADDRESSING_STYLE")
+    # S3 Storage.
+    AWS_STORAGE_BUCKET_NAME = get_required_env_var("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = get_required_env_var("AWS_S3_REGION_NAME")
+    AWS_S3_ADDRESSING_STYLE = get_required_env_var("AWS_S3_ADDRESSING_STYLE")
+
+    # Use s3 storage backend.
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {},
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
