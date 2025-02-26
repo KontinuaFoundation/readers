@@ -1,0 +1,37 @@
+[
+  {
+    "title": "Trigometric Functions",
+    "id": "trig_functions",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Inverse Trigonometric Functions",
+    "id": "inv_trig_functions",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 11
+  },
+  {
+    "title": "Trigonometric Identities",
+    "id": "trig_identities",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 13
+  },
+  {
+    "title": "Transforming Functions",
+    "id": "transforms",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 25
+  },
+  {
+    "title": "Polar Coordinates",
+    "id": "polar_coord",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 31
+  }
+]

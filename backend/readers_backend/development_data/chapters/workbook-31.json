@@ -1,0 +1,37 @@
+[
+  {
+    "title": "Introduction to Graphs",
+    "id": "graphs",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Dijkstra's Algorithm",
+    "id": "dijkstra",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 9
+  },
+  {
+    "title": "Binary Search",
+    "id": "binary_search",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 17
+  },
+  {
+    "title": "Other Graph Algorithms",
+    "id": "graph_algorithms",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 23
+  },
+  {
+    "title": "Bayesian Networks",
+    "id": "bayesian_networks",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 25
+  }
+]

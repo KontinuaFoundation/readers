@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Conditional Probability",
+    "id": "conditional_prob",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Bayes' Theorem",
+    "id": "bayes",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 7
+  }
+]

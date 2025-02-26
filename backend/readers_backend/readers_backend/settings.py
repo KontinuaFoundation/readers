@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-
 def get_required_env_var(key):
     '''
     Retrieves a required environment variable.
@@ -111,15 +110,17 @@ STORAGES = {
     },
 }
 
-# If we're in production we need S3 AWS integrations.
-if not DEBUG:
+# Static files storage directory in debug.
+if DEBUG:
+    MEDIA_URL = "/files/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "files")
 
-    # S3 Storage.
+# If we're in production we need to use S3 as our storage backend.
+if not DEBUG:
     AWS_STORAGE_BUCKET_NAME = get_required_env_var("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = get_required_env_var("AWS_S3_REGION_NAME")
     AWS_S3_ADDRESSING_STYLE = get_required_env_var("AWS_S3_ADDRESSING_STYLE")
 
-    # Use s3 storage backend.
     STORAGES["default"] = {
         "BACKEND": "storages.backends.s3.S3Storage",
         "OPTIONS": {},
