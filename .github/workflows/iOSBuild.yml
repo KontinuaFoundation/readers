@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build default scheme using an iPad simulator
+    name: Run iOS Build
     runs-on: macos-latest
 
     steps:

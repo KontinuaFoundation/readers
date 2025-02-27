@@ -8,6 +8,7 @@ on:
 
 jobs:
   swiftformat:
+    name: Run iOS Formatting
     runs-on: macos-latest
 
     steps:

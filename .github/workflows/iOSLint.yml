@@ -8,6 +8,7 @@ on:
 
 jobs:
   swiftlint:
+    name: Run iOS Linting
     runs-on: macos-latest
 
     steps:
