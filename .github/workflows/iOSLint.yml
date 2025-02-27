@@ -18,14 +18,15 @@ jobs:
 
       # Step 2: Generate hash for the iOS directory
       - name: Generate iOS code hash
-        id: iOS-hash
+        id: ios-hash
         run: |
           if [ -d "ReaderIOS" ]; then
-            find ReaderIOS -type f | sort | xargs md5sum | md5sum | cut -d' ' -f1 > iOS_hash.txt
-            echo "hash=$(cat iOS_hash.txt)" >> $GITHUB_OUTPUT
+            find ReaderIOS -type f | sort | xargs md5 -r | md5 -r > ios_hash.txt
+            echo "hash=$(cat ios_hash.txt)" >> $GITHUB_OUTPUT
           else
-            echo "hash=no-iOS-files" >> $GITHUB_OUTPUT
+            echo "hash=no-ios-files" >> $GITHUB_OUTPUT
           fi
+        shell: bash
 
       # Step 3: Generate hash for the Android directory
       - name: Cache lint check results
