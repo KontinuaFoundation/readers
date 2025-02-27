@@ -53,7 +53,7 @@ jobs:
         if: steps.cache-format.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         working-directory: ./ReaderIOS
         run: |
-          swiftformat . --lint --swiftversion 16.1 --config ../.swiftformat
+          swiftformat . --lint --swiftversion 16.1 --config ./.swiftformat
           mkdir -p ../.cache/iOS-format
           echo "Format check passed at $(date)" > ../.cache/iOS-format/result
 
