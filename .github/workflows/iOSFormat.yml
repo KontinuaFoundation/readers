@@ -2,7 +2,6 @@ name: iOS Format
 
 on:
   push:
-    branches: [main]
     paths: ./ReaderIOS
   pull_request:
     branches: [main]
@@ -22,7 +21,7 @@ jobs:
         run: |
           brew install swiftformat || brew upgrade swiftformat
 
-      # Step 3: Run SwiftFormat 
+      # Step 3: Run SwiftFormat
       - name: Check SwiftFormat
         run: |
           swiftformat . --lint --swiftversion 16.1 --config ReaderIOS/.swiftformat

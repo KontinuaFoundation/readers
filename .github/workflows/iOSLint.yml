@@ -2,7 +2,6 @@ name: iOS Lint
 
 on:
   push:
-    branches: [main]
     paths: ./ReaderIOS
   pull_request:
     branches: [main]
