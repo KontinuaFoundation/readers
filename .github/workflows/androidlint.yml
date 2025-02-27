@@ -3,8 +3,10 @@ name: Android Lint
 on:
   push:
     branches: [main]
+    paths: ./ReaderAndroid
   pull_request:
     branches: [main]
+    paths: ./ReaderAndroid
 
 jobs:
   ktlint:
@@ -12,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repository
       - uses: actions/checkout@v3
 
       - name: Set up JDK

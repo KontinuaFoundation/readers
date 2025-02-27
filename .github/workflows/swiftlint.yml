@@ -1,12 +1,12 @@
 name: SwiftLint
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
-    branches:
-      - main
+    branches: [main]
+    paths: ./ReaderIOS
+  pull_request:
+    branches: [main]
+    paths: ./ReaderIOS
 
 jobs:
   swiftlint:
@@ -21,6 +21,7 @@ jobs:
       - name: Install SwiftLint
         run: |
           brew install swiftlint || brew upgrade swiftlint
+
       # Step 3: Run SwiftLint
       - name: Run SwiftLint
         run: |

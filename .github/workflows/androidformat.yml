@@ -3,17 +3,21 @@ name: Android Format
 on:
   push:
     branches: [main]
+    paths: ./ReaderAndroid
   pull_request:
     branches: [main]
+    paths: ./ReaderAndroid
 
-jobs:
+jobs:      
   format:
     name: Run Kotlin Formatting
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repository
       - uses: actions/checkout@v3
 
+      #Step 2: Set up Java version
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
