@@ -21,12 +21,18 @@ jobs:
         id: ios-hash
         run: |
           if [ -d "ReaderIOS" ]; then
-            find ReaderIOS -type f | sort | xargs md5 -r | md5 -r > ios_hash.txt
+            # Create a temporary file with all file paths
+            find ReaderIOS -type f | sort > ios_files.txt
+            # Calculate hash of all file contents concatenated
+            cat ios_files.txt | while read file; do
+              if [ -f "$file" ]; then
+                cat "$file"
+              fi
+            done | md5 > ios_hash.txt
             echo "hash=$(cat ios_hash.txt)" >> $GITHUB_OUTPUT
           else
             echo "hash=no-ios-files" >> $GITHUB_OUTPUT
           fi
-        shell: bash
 
       # Step 3: Generate hash for the Android directory
       - name: Cache build check results
