@@ -1,0 +1,91 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Run iOS Build
+    runs-on: macos-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Step 2: Generate hash for the iOS directory
+      - name: Generate iOS code hash
+        id: ios-hash
+        run: |
+          if [ -d "ReaderIOS" ]; then
+            # Create a temporary file with all file paths
+            find ReaderIOS -type f | sort > ios_files.txt
+            # Calculate hash of all file contents concatenated
+            cat ios_files.txt | while read file; do
+              if [ -f "$file" ]; then
+                cat "$file"
+              fi
+            done | md5 > ios_hash.txt
+            echo "hash=$(cat ios_hash.txt)" >> $GITHUB_OUTPUT
+          else
+            echo "hash=no-ios-files" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 3: Generate hash for the Android directory
+      - name: Cache build check results
+        id: cache-build
+        uses: actions/cache@v3
+        with:
+          path: .cache/iOS-build
+          key: iOS-build-${{ steps.iOS-hash.outputs.hash }}
+
+      # Step 4: Select Xcode version to use
+      - name: Select Xcode Version
+        if: steps.cache-build.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.1.app
+          xcodebuild -version
+
+      # Step 5: Set the default scheme for the targets
+      - name: Set Default Scheme
+        if: steps.cache-build.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
+        working-directory: ./ReaderIOS
+        run: |
+          scheme_list=$(xcodebuild -list -json | tr -d "\n")
+          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
+          echo $default | cat >default
+          echo Using default scheme: $default
+
+      # Step 6: Build the project and run on iPad simulator
+      - name: Build
+        if: steps.cache-build.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
+        working-directory: ./ReaderIOS
+        env:
+          scheme: ${{ 'default' }}
+          platform: ${{ 'iOS Simulator' }}
+        run: |
+          mkdir -p ../.cache/iOS-build
+          device="iPad Pro 13-inch (M4)"
+          if [ $scheme = default ]; then scheme=$(cat default); fi
+          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then 
+            filetype_parameter="workspace" 
+            file_to_build="`ls -A | grep -i \\.xcworkspace\$`" 
+          else 
+            filetype_parameter="project" 
+            file_to_build="`ls -A | grep -i \\.xcodeproj\$`" 
+          fi
+          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
+          xcodebuild build-for-testing \
+            -scheme "$scheme" \
+            -"$filetype_parameter" "$file_to_build" \
+            -destination "platform=$platform,name=$device" \
+            -skipPackagePluginValidation \
+            -skipMacroValidation
+          echo "Build passed at $(date)" > ../.cache/iOS-build/result
+
+      #Step 7: Report success
+      - name: Report build status
+        run: echo "iOS build successful!"
