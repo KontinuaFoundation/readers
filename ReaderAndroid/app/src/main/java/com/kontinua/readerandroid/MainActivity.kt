@@ -446,7 +446,6 @@ class MainActivity :
     }
 
     data class ChapterData(val title: String, val id: String, val chap_num: Int, val start_page: Int)
-
     data class WorkbookData(val id: String, val metaName: String, val pdfName: String)
 
     private fun populateMenu(chapters: List<ChapterData>) {
