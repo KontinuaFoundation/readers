@@ -52,8 +52,8 @@ jobs:
       # Step 5: Set the default scheme for the targets
       - name: Set Default Scheme
         if: steps.cache-build.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
+        working-directory: ./ReaderIOS
         run: |
-          cd ReaderIOS
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
           default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
           echo $default | cat >default
@@ -62,11 +62,12 @@ jobs:
       # Step 6: Build the project and run on iPad simulator
       - name: Build
         if: steps.cache-build.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
+        working-directory: ./ReaderIOS
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          cd ReaderIOS
+          mkdir -p ../.cache/iOS-build
           device="iPad Pro 13-inch (M4)"
           if [ $scheme = default ]; then scheme=$(cat default); fi
           if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then 

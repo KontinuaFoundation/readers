@@ -55,6 +55,7 @@ jobs:
         working-directory: ./ReaderAndroid
         run: |
           ./gradlew spotlessKotlinGradleCheck
+          mkdir -p ../.cache/android-format
           echo "Format check passed at $(date)" > ../.cache/android-format/result
 
       #Step 7: Report success

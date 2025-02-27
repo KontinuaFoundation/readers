@@ -55,6 +55,7 @@ jobs:
         working-directory: ./ReaderAndroid
         run: |
           ./gradlew spotlessKotlinCheck
+          mkdir -p ../.cache/android-lint
           echo "Lint check passed at $(date)" > ../.cache/android-lint/result
 
       #Step 7: Report success

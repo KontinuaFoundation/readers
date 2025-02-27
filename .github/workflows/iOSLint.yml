@@ -51,8 +51,10 @@ jobs:
       # Step 5: Run SwiftLint
       - name: Run SwiftLint
         if: steps.cache-lint.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
+        working-directory: ./ReaderIOS
         run: |
-          swiftlint --strict --config ReaderIOS/.swiftlint.yml
+          swiftlint --strict --config ../.swiftlint.yml
+          mkdir -p ../.cache/iOS-lint
           echo "Lint check passed at $(date)" > ../.cache/iOS-lint/result
 
       #Step 6: Report success
