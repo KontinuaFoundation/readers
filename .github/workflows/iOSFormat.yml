@@ -1,4 +1,4 @@
-name: SwiftFormat
+name: iOS Format
 
 on:
   push:
@@ -17,12 +17,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-        # Step 2: Install SwiftFormat
+      # Step 2: Install SwiftFormat or upgrade version
       - name: Install SwiftFormat
         run: |
           brew install swiftformat || brew upgrade swiftformat
 
-      # Step 3: Run SwiftFormat
+      # Step 3: Run SwiftFormat 
       - name: Check SwiftFormat
         run: |
           swiftformat . --lint --swiftversion 16.1 --config ReaderIOS/.swiftformat

@@ -1,4 +1,4 @@
-name: SwiftLint
+name: iOS Lint
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Install SwiftLint
+      # Step 2: Install SwiftLint or upgrade version
       - name: Install SwiftLint
         run: |
           brew install swiftlint || brew upgrade swiftlint

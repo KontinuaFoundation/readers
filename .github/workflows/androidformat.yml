@@ -8,14 +8,15 @@ on:
     branches: [main]
     paths: ./ReaderAndroid
 
-jobs:      
+jobs:
   format:
     name: Run Kotlin Formatting
     runs-on: ubuntu-latest
 
     steps:
       # Step 1: Checkout the repository
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
       #Step 2: Set up Java version
       - name: Set up JDK
@@ -25,17 +26,11 @@ jobs:
           distribution: "temurin"
           cache: "gradle"
 
+      #Step 3: Grant permissions
       - name: Grant execute permission for gradlew
         run: chmod +x ./ReaderAndroid/gradlew
 
+      #Step 4: Run formating check
       - name: Run format checks
         working-directory: ./ReaderAndroid
         run: ./gradlew spotlessKotlinGradleCheck
-
-      - name: Upload format reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: format-report
-          path: |
-            **/build/reports/spotless/
