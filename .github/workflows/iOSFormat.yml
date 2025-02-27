@@ -2,10 +2,9 @@ name: iOS Format
 
 on:
   push:
-    paths: ./ReaderIOS
+    branches: [main]
   pull_request:
     branches: [main]
-    paths: ./ReaderIOS
 
 jobs:
   swiftformat:
@@ -16,12 +15,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Install SwiftFormat or upgrade version
+      # Step 2: Generate hash for the iOS directory
+      - name: Generate iOS code hash
+        id: iOS-hash
+        run: |
+          if [ -d "ReaderIOS" ]; then
+            find ReaderIOS -type f | sort | xargs md5sum | md5sum | cut -d' ' -f1 > iOS_hash.txt
+            echo "hash=$(cat iOS_hash.txt)" >> $GITHUB_OUTPUT
+          else
+            echo "hash=no-iOS-files" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 3: Generate hash for the Android directory
+      - name: Cache format check results
+        id: cache-format
+        uses: actions/cache@v3
+        with:
+          path: .cache/iOS-format
+          key: iOS-format-${{ steps.iOS-hash.outputs.hash }}
+
+      # Step 4: Install SwiftFormat or upgrade version
       - name: Install SwiftFormat
+        if: steps.cache-format.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         run: |
           brew install swiftformat || brew upgrade swiftformat
 
-      # Step 3: Run SwiftFormat
+      # Step 5: Run SwiftFormat
       - name: Check SwiftFormat
+        if: steps.cache-format.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         run: |
           swiftformat . --lint --swiftversion 16.1 --config ReaderIOS/.swiftformat
+          echo "Format check passed at $(date)" > ../.cache/iOS-format/result
+
+      #Step 6: Report success
+      - name: Report format status
+        run: echo "iOS format successful!"

@@ -2,10 +2,9 @@ name: iOS Lint
 
 on:
   push:
-    paths: ./ReaderIOS
+    branches: [main]
   pull_request:
     branches: [main]
-    paths: ./ReaderIOS
 
 jobs:
   swiftlint:
@@ -16,12 +15,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Install SwiftLint or upgrade version
+      # Step 2: Generate hash for the iOS directory
+      - name: Generate iOS code hash
+        id: iOS-hash
+        run: |
+          if [ -d "ReaderIOS" ]; then
+            find ReaderIOS -type f | sort | xargs md5sum | md5sum | cut -d' ' -f1 > iOS_hash.txt
+            echo "hash=$(cat iOS_hash.txt)" >> $GITHUB_OUTPUT
+          else
+            echo "hash=no-iOS-files" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 3: Generate hash for the Android directory
+      - name: Cache lint check results
+        id: cache-lint
+        uses: actions/cache@v3
+        with:
+          path: .cache/iOS-lint
+          key: iOS-lint-${{ steps.iOS-hash.outputs.hash }}
+
+      # Step 4: Install SwiftLint or upgrade version
       - name: Install SwiftLint
+        if: steps.cache-lint.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         run: |
           brew install swiftlint || brew upgrade swiftlint
 
-      # Step 3: Run SwiftLint
+      # Step 5: Run SwiftLint
       - name: Run SwiftLint
+        if: steps.cache-lint.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         run: |
           swiftlint --strict --config ReaderIOS/.swiftlint.yml
+          echo "Lint check passed at $(date)" > ../.cache/iOS-lint/result
+
+      #Step 6: Report success
+      - name: Report lint status
+        run: echo "iOS lint successful!"

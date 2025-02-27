@@ -3,10 +3,8 @@ name: iOS Build
 on:
   push:
     branches: [main]
-    paths: ./ReaderIOS
   pull_request:
     branches: [main]
-    paths: ./ReaderIOS
 
 jobs:
   build:
@@ -18,12 +16,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Step 2: Generate hash for the iOS directory
+      - name: Generate iOS code hash
+        id: iOS-hash
+        run: |
+          if [ -d "ReaderIOS" ]; then
+            find ReaderIOS -type f | sort | xargs md5sum | md5sum | cut -d' ' -f1 > iOS_hash.txt
+            echo "hash=$(cat iOS_hash.txt)" >> $GITHUB_OUTPUT
+          else
+            echo "hash=no-iOS-files" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 3: Generate hash for the Android directory
+      - name: Cache build check results
+        id: cache-build
+        uses: actions/cache@v3
+        with:
+          path: .cache/iOS-build
+          key: iOS-build-${{ steps.iOS-hash.outputs.hash }}
+
+      # Step 4: Select Xcode version to use
       - name: Select Xcode Version
+        if: steps.cache-build.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         run: |
           sudo xcode-select -s /Applications/Xcode_16.1.app
           xcodebuild -version
 
+      # Step 5: Set the default scheme for the targets
       - name: Set Default Scheme
+        if: steps.cache-build.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         run: |
           cd ReaderIOS
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
@@ -31,7 +52,9 @@ jobs:
           echo $default | cat >default
           echo Using default scheme: $default
 
+      # Step 6: Build the project and run on iPad simulator
       - name: Build
+        if: steps.cache-build.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
@@ -53,3 +76,8 @@ jobs:
             -destination "platform=$platform,name=$device" \
             -skipPackagePluginValidation \
             -skipMacroValidation
+          echo "Build passed at $(date)" > ../.cache/iOS-build/result
+
+      #Step 7: Report success
+      - name: Report build status
+        run: echo "iOS build successful!"
