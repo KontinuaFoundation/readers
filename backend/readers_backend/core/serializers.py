@@ -20,17 +20,13 @@ class WorkbookCreateSerializer(serializers.ModelSerializer):
             "minItems": 1,
             "items": {
                 "type": "object",
-                "required": ["title", "book", "id", "chap_num", "start_page", "covers"],
+                "required": ["title", "id", "chap_num", "start_page", "covers"],
                 "properties": {
                     "requires": {
                         "type": "array",
                         "items": {"type": "string"}
                     },
                     "title": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "book": {
                         "type": "string",
                         "minLength": 1
                     },
@@ -42,7 +38,7 @@ class WorkbookCreateSerializer(serializers.ModelSerializer):
                     "start_page": {"type": "integer"},
                     "covers": {
                         "type": "array",
-                        "minItems": 1,
+                        "minItems": 0,
                         "items": {
                             "type": "object",
                             "required": ["id", "desc"],

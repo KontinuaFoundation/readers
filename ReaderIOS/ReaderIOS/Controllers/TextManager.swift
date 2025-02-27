@@ -20,7 +20,12 @@ class TextManager: ObservableObject {
     func deleteText(textBoxes: Binding<[String: [TextBoxData]]>, key: String, index: Int) {
         var updatedTextBoxes = textBoxes.wrappedValue
         updatedTextBoxes[key, default: []].remove(at: index)
-        // updatedTextBoxes[key]?.removeAll()
+        textBoxes.wrappedValue = updatedTextBoxes
+    }
+
+    func deleteAllText(textBoxes: Binding<[String: [TextBoxData]]>, key: String) {
+        var updatedTextBoxes = textBoxes.wrappedValue
+        updatedTextBoxes[key]?.removeAll()
         textBoxes.wrappedValue = updatedTextBoxes
     }
 

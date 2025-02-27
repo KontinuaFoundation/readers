@@ -15,14 +15,19 @@ import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -41,7 +46,8 @@ import retrofit2.http.Url
 
 class MainActivity :
     AppCompatActivity(),
-    GestureDetector.OnGestureListener {
+    GestureDetector.OnGestureListener,
+    NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var imageView: ImageView
     private lateinit var loadingTextView: TextView
@@ -50,19 +56,33 @@ class MainActivity :
     private lateinit var previousButton: ImageButton
     private lateinit var nextButton: ImageButton
     private lateinit var pageNumberEditText: EditText
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var chapterView: NavigationView
+    private lateinit var workbookView: NavigationView
     private var pdfRenderer: PdfRenderer? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
     private var currentPageIndex: Int = 0 // Track the current page index
     private lateinit var gestureDetector: GestureDetectorCompat
     private val baseUrl = "http://10.0.2.2:8000/"
-    private val pdfFileName = "workbook-01.pdf"
+    private var pdfFileName = "workbook-01.pdf"
+    private var metaFileName = "workbook-01.json"
+    private val chapterMap = mutableMapOf<Int, Int>()
+    private val workbookMap = mutableMapOf<Int, WorkbookData>()
+    private var workbookSelected = true
 
     interface ApiService {
         @GET
         fun getPdfData(@Url url: String): Call<ResponseBody>
+
+        @GET
+        fun getChapters(@Url url: String): Call<List<ChapterData>>
+
+        @GET("workbooks.json")
+        fun getWorkbooks(): Call<List<WorkbookData>>
     }
     private lateinit var apiService: ApiService
 
+    @SuppressLint("ClickableViewAccessibility", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -74,8 +94,12 @@ class MainActivity :
         previousButton = findViewById(R.id.previousButton)
         pageNumberEditText = findViewById(R.id.pageNumberEditText)
         toolbar = findViewById(R.id.toolbar)
+        chapterView = findViewById(R.id.chapter_view)
+        workbookView = findViewById(R.id.workbook_view)
+        drawerLayout = findViewById(R.id.drawer_layout)
+        val openWorkbookNavButton = findViewById<Button>(R.id.open_workbook_nav_button)
         setSupportActionBar(toolbar) // Set toolbar as the action bar
-        supportActionBar?.title = "My PDF Viewer"
+        supportActionBar?.title = ""
 
         // Initialize gesture detector
         gestureDetector = GestureDetectorCompat(this, this)
@@ -112,6 +136,17 @@ class MainActivity :
         // Retrofit setup moved here
         apiService = retrofit().create(ApiService::class.java)
         loadPdfFromUrl()
+        loadChaptersFromServer()
+
+        openWorkbookNavButton.setOnClickListener {
+            if (workbookSelected) {
+                loadWorkbooks()
+                workbookSelected = false
+            } else {
+                loadChaptersFromServer()
+                workbookSelected = true
+            }
+        }
 
         previousButton.setOnClickListener {
             goToPreviousPage()
@@ -120,10 +155,45 @@ class MainActivity :
         nextButton.setOnClickListener {
             goToNextPage()
         }
+
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close,
+        )
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        chapterView.setNavigationItemSelectedListener(this)
+        workbookView.setNavigationItemSelectedListener(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            else -> {
+                if (workbookSelected) {
+                    Log.d("MainActivity", "Clicked on Chapter: ${item.title}")
+                    currentPageIndex = chapterMap[item.itemId]!!
+                    displayPage(currentPageIndex - 1)
+                } else {
+                    Log.d("MainActivity", "Clicked on Workbook: ${item.title}")
+                    pdfFileName = workbookMap[item.itemId]!!.pdfName
+                    metaFileName = workbookMap[item.itemId]!!.metaName
+                    currentPageIndex = 0
+                    workbookSelected = true
+                    loadChaptersFromServer()
+                    loadPdfFromUrl()
+                }
+            }
+        }
+        drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -143,8 +213,15 @@ class MainActivity :
             Log.d("MainActivity", "resources button clicked")
             true
         }
-
         else -> super.onOptionsItemSelected(item)
+    }
+
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+        }
     }
 
     private fun retrofit(): Retrofit {
@@ -366,5 +443,77 @@ class MainActivity :
     @SuppressLint("SetTextI18n")
     private fun updatePageNumberEditText() {
         pageNumberEditText.setText((currentPageIndex + 1).toString())
+    }
+
+    data class ChapterData(val title: String, val id: String, val chap_num: Int, val start_page: Int)
+
+    data class WorkbookData(val id: String, val metaName: String, val pdfName: String)
+
+    private fun populateMenu(chapters: List<ChapterData>) {
+        val menu = chapterView.menu
+        menu.clear() // Clear existing items
+
+        for (chapter in chapters) {
+            val menuItem = menu.add(
+                Menu.NONE,
+                chapter.id.hashCode(),
+                Menu.NONE,
+                "${chapter.chap_num}. ${chapter.title}",
+            )
+            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER) // Ensure it stays in the sidebar
+            chapterMap[chapter.id.hashCode()] = chapter.start_page
+        }
+    }
+
+    private fun loadChaptersFromServer() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = apiService.getChapters("$baseUrl/meta/$metaFileName").execute()
+
+                if (response.isSuccessful) {
+                    val chapters = response.body()
+                    Log.d("MainActivity", "Server Response: $chapters")
+
+                    withContext(Dispatchers.Main) {
+                        if (chapters != null) {
+                            populateMenu(chapters)
+                        } else {
+                            Log.e("MainActivity", "Chapters data is NULL")
+                        }
+                    }
+                } else {
+                    Log.e("MainActivity", "Failed to fetch chapters: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Network Error: ${e.message}")
+            }
+        }
+    }
+
+    private fun populateWorkbookMenu(workbooks: List<WorkbookData>) {
+        val menu = chapterView.menu
+        menu.clear()
+
+        for (workbook in workbooks) {
+            val menuItem = menu.add(Menu.NONE, workbook.id.hashCode(), Menu.NONE, workbook.id)
+            workbookMap[workbook.id.hashCode()] = workbook
+        }
+    }
+
+    private fun loadWorkbooks() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = apiService.getWorkbooks().execute()
+
+            if (response.isSuccessful) {
+                val workbooks = response.body()
+                if (workbooks != null) {
+                    withContext(Dispatchers.Main) {
+                        populateWorkbookMenu(workbooks)
+                    }
+                }
+            } else {
+                Log.e("MainActivity", "Failed to load workbooks: ${response.errorBody()?.string()}")
+            }
+        }
     }
 }

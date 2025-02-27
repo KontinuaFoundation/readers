@@ -9,13 +9,21 @@ import SwiftUI
 
 @main
 struct ReaderIOSApp: App {
+    @StateObject private var initManager = InitializationManager()
+
     var body: some Scene {
         WindowGroup {
-            NavigationPDFSplitView()
+            if initManager.isInitialized {
+                // Pass any initial data to SplitView as needed.
+                SplitView(initialWorkbooks: initManager.workbooks,
+                          initialPDFDocument: initManager.pdfDocument)
+            } else {
+                SplashView(loadFailed: initManager.loadFailed)
+            }
         }
     }
 }
 
 #Preview {
-    NavigationPDFSplitView()
+    SplashView()
 }
