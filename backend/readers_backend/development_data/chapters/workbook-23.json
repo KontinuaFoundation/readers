@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Making Plots with matplotlib",
+    "id": "matplotlib",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Geographical Data",
+    "id": "geographical_data",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 5
+  },
+  {
+    "title": "Geocoding and Reverse Geocoding",
+    "id": "geocoding",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Making a Map",
+    "id": "making_a_map",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 9
+  }
+]

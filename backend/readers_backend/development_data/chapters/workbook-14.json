@@ -1,0 +1,37 @@
+[
+  {
+    "title": "Differentiating Polynomials",
+    "id": "differentiating_polynomials",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Python Classes",
+    "id": "classes",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Common Polynomial Products",
+    "id": "common_products_polynomials",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 13
+  },
+  {
+    "title": "Factoring Polynomials",
+    "id": "factoring_polynomials",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 19
+  },
+  {
+    "title": "Partial Fractions",
+    "id": "partial_frac",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 23
+  }
+]

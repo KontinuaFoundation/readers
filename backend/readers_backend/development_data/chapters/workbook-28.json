@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Population Proportion Statistics",
+    "id": "pop_prop",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "The Normal Distribution",
+    "id": "normal_t",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 9
+  },
+  {
+    "title": "Change of Variables",
+    "id": "change_var",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 11
+  },
+  {
+    "title": "Poisson and Exponential Probability Distributions",
+    "id": "poisson_exponential",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 17
+  }
+]

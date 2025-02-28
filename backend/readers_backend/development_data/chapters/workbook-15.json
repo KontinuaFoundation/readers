@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Practice with Polynomials",
+    "id": "practice_polynomials",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Graphing Polynomials",
+    "id": "graphs_polynomials",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 5
+  },
+  {
+    "title": "Interpolating with Polynomials",
+    "id": "interpolating_polynomials",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 9
+  }
+]

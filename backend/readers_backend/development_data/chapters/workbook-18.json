@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Implicit Differentiation",
+    "id": "implicit_diff",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Related Rates",
+    "id": "related_rates",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 9
+  },
+  {
+    "title": "Multivariate Functions",
+    "id": "multiv_func",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 11
+  },
+  {
+    "title": "Partial Derivatives and Gradients",
+    "id": "partial_deriv_grad",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 13
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Functions and Their Graphs",
+    "id": "functions",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Volumes of Common Solids",
+    "id": "volume_solids",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 11
+  },
+  {
+    "title": "Conic Sections",
+    "id": "conic_sections",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 21
+  },
+  {
+    "title": "Manufacturing",
+    "id": "manufacturing",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 23
+  }
+]

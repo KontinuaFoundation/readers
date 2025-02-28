@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Falling Bodies",
+    "id": "falling_bodies",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Solving Quadratics",
+    "id": "solving_quadratics",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 13
+  },
+  {
+    "title": "Complex Numbers",
+    "id": "complex_numbers",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 17
+  },
+  {
+    "title": "Introduction to Sequences",
+    "id": "sequences",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 19
+  }
+]

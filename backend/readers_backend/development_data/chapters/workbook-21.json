@@ -1,0 +1,71 @@
+[
+  {
+    "title": "Data Tables and pandas",
+    "id": "pandas",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Data tables in SQL",
+    "id": "sql_1",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 11
+  },
+  {
+    "requires": [],
+    "title": "Representing Natural Numbers",
+    "id": "hexbinary",
+    "chap_num": 3,
+    "covers": [
+      {
+        "id": "decint-rep",
+        "desc": "Understand the base-10 hindu-arabic representation of numbers",
+        "references": [
+          {
+            "link": "https://en.wikipedia.org/wiki/Hindu-Arabic_numeral_system",
+            "title": "Hindu\u2013Arabic numeral system - Wikipedia"
+          }
+        ]
+      },
+      {
+        "id": "octal-rep",
+        "desc": "Understand the base-8 representation of the natural numbers",
+        "references": [
+          {
+            "link": "https://en.wikipedia.org/wiki/Octal",
+            "title": "Octal - Wikipedia"
+          }
+        ]
+      },
+      {
+        "id": "hex-rep",
+        "desc": "Understand the base-16 representation of the natural numbers",
+        "references": [
+          {
+            "link": "https://en.wikipedia.org/wiki/Hexadecimal",
+            "title": "Hexadecimal - Wikipedia"
+          }
+        ]
+      },
+      {
+        "id": "binary-rep",
+        "desc": "Understand the base-2 representation of the natural numbers",
+        "videos": [
+          {
+            "link": "https://youtu.be/LpuPe81bc2w",
+            "title": "Binary Numbers and Base Systems as Fast as Possible - YouTube"
+          }
+        ],
+        "references": [
+          {
+            "link": "https://en.wikipedia.org/wiki/Binary_number",
+            "title": "Binary number - Wikipedia"
+          }
+        ]
+      }
+    ],
+    "start_page": 17
+  }
+]

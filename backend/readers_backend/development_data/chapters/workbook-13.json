@@ -1,0 +1,37 @@
+[
+  {
+    "title": "Introduction to Polynomials",
+    "id": "polynomials_intro",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Python Lists",
+    "id": "pylists",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Adding and Subtracting Polynomials",
+    "id": "add_subtract_polynomials",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 15
+  },
+  {
+    "title": "Multiplying Polynomials",
+    "id": "multiplying_polynomials",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 21
+  },
+  {
+    "title": "Multiplying Polynomials in Python",
+    "id": "pymultpoly",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 27
+  }
+]

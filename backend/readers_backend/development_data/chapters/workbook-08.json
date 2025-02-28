@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Introduction to Spreadsheets",
+    "id": "basic_spreadsheet",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Compound Interest",
+    "id": "compound_interest",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 9
+  },
+  {
+    "title": "Introduction to Data Visualization",
+    "id": "intro_dataviz",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 13
+  }
+]

@@ -1,0 +1,37 @@
+[
+  {
+    "title": "Cognitive Biases 1",
+    "id": "biases1",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Friction",
+    "id": "friction",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 13
+  },
+  {
+    "title": "The Greek Alphabet",
+    "id": "greek",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 21
+  },
+  {
+    "title": "Basic Statistics",
+    "id": "basic_statistics",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 23
+  },
+  {
+    "title": "Basic Statistics in Spreadsheets",
+    "id": "stat_spreadsheets",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 31
+  }
+]

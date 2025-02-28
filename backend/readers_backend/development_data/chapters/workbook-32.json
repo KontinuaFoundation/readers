@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Introduction to Classification and Regression",
+    "id": "classification_regression",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Simple Linear Regression",
+    "id": "simple_linear",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 5
+  },
+  {
+    "title": "Simple Logistic Regression",
+    "id": "simple_logistic",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Standardizing Data",
+    "id": "standardization",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 9
+  },
+  {
+    "title": "One-Hot Encoding",
+    "id": "one-hot",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 11
+  },
+  {
+    "title": "Multiple Logistic Regression",
+    "id": "multiv_logistic",
+    "chap_num": 6,
+    "covers": [],
+    "start_page": 13
+  }
+]

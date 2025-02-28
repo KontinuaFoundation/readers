@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Decision Trees for Classification",
+    "id": "decision_trees_classification",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Bagging and Random Forests",
+    "id": "bagging_random_forest",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 5
+  },
+  {
+    "title": "Boosting",
+    "id": "boosting",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Clustering using k-Means",
+    "id": "clustering_k-means",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 9
+  }
+]

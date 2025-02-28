@@ -1,0 +1,37 @@
+[
+  {
+    "title": "Differentiation",
+    "id": "differentiability",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Derivatives",
+    "id": "derivative_definition",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Rules for Finding Derivatives",
+    "id": "derivative_rules",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 17
+  },
+  {
+    "title": "First and Second Derivatives and the Shape of a Function",
+    "id": "deriv_graphshape",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 23
+  },
+  {
+    "title": "Optimization",
+    "id": "optimization",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 43
+  }
+]

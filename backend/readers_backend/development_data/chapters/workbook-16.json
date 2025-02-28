@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Fabrication",
+    "id": "fabricating",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Limits",
+    "id": "limits",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Rational Functions",
+    "id": "rational_functions",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 31
+  }
+]

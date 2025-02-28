@@ -1,0 +1,1 @@
+Seed data stored here will be used in `django populate_db` command to populate the database with initial data useful for development.

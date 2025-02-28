@@ -1,0 +1,37 @@
+[
+  {
+    "title": "The Training/Validation/Testing Process",
+    "id": "train_val_test",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Evaluating Classification Systems",
+    "id": "confusion",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 5
+  },
+  {
+    "title": "Evaluation Binary Classifiers",
+    "id": "precision_recall_auc_roc",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "The k-Nearest Neighbor Classifier",
+    "id": "knn_classifier",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 9
+  },
+  {
+    "title": "Bayesian Classifiers",
+    "id": "bayes_classifier",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 11
+  }
+]

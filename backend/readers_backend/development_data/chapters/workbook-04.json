@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Angles",
+    "id": "angles",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Introduction to Triangles",
+    "id": "triangles_circles",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Pythagorean Theorem",
+    "id": "pythagorean_theorem",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 11
+  },
+  {
+    "title": "Congruence",
+    "id": "congruence",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 15
+  },
+  {
+    "title": "Parallel and Perpendicular",
+    "id": "parallel_perpendicular",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 21
+  },
+  {
+    "title": "Circles",
+    "id": "circles",
+    "chap_num": 6,
+    "covers": [],
+    "start_page": 23
+  }
+]

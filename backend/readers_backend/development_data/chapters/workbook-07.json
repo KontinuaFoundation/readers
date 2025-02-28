@@ -1,0 +1,58 @@
+[
+  {
+    "title": "Vectors",
+    "id": "vectors",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Momentum",
+    "id": "momentum",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 11
+  },
+  {
+    "title": "The Dot Product",
+    "id": "dot",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 15
+  },
+  {
+    "title": "Boats",
+    "id": "boats",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 19
+  },
+  {
+    "title": "Sailboats",
+    "id": "sailing",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 25
+  },
+  {
+    "title": "Airplanes",
+    "id": "airplanes",
+    "chap_num": 6,
+    "covers": [],
+    "start_page": 37
+  },
+  {
+    "title": "Quadcopters",
+    "id": "quadcopters",
+    "chap_num": 7,
+    "covers": [],
+    "start_page": 45
+  },
+  {
+    "title": "Helicopters",
+    "id": "helicopters",
+    "chap_num": 8,
+    "covers": [],
+    "start_page": 47
+  }
+]
