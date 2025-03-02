@@ -21,7 +21,7 @@ jobs:
         id: backend-hash
         run: |
           if [ -d "backend" ]; then
-            find backend -type f | sort | xargs md5sum | md5sum | cut -d' ' -f1 > backend-hash.txt
+            find backend -type f | sort | xargs md5sum | md5sum | cut -d' ' -f1 > backend_hash.txt
             echo "hash=$(cat backend_hash.txt)" >> $GITHUB_OUTPUT
           else
             echo "hash=no-backend-files" >> $GITHUB_OUTPUT
