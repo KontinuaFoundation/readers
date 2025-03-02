@@ -56,7 +56,7 @@ jobs:
         if: steps.cache-test.outputs.cache-hit != 'true' && steps.backend-hash.outputs.hash != 'no-backend-files'
         working-directory: ./backend/readers_backend
         run: |
-          python3 manage.py test DJANGO_DEBUG=TRUE
+          DJANGO_DEBUG=TRUE python3 manage.py test 
           echo "Backend test passed at $(date)" > ../.cache/backend-test/result
 
       # Step 7: Report success
