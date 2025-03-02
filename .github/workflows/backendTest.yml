@@ -61,7 +61,7 @@ jobs:
         working-directory: ./backend/readers_backend
         run: |
           DJANGO_DEBUG=TRUE python3 manage.py test 
-          echo "Backend test passed at $(date)" > ../.cache/backend-test/result
+          echo "Backend test passed at $(date)" > ./.cache/backend-test/result
 
       # Step 7: Report success
       - name: Report test status
