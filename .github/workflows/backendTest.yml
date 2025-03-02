@@ -37,7 +37,7 @@ jobs:
         id: cache-test
         uses: actions/cache@v3
         with:
-          path: .cache/backend-test
+          path: ./backend/readers_backend/.cache/backend-test
           key: backend-test-${{ steps.backend-hash.outputs.hash }}
 
       # Step 4: Install python
