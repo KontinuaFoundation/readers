@@ -41,12 +41,14 @@ python3 manage.py populate_db
 
 echo ""
 echo "============================================"
-echo "  🚀 ${bold}SERVER STARTED SUCCESSFULLY!${reset} 🚀  "
+echo "  🚀 ${bold}How To Connect${reset} 🚀  "
 echo "============================================"
 echo ""
-echo "🔗 Connect to the server by visiting: ${bold}${green}http://$IP:8000${reset} in your browser."
+echo "🔗 Connect to the server by visiting: ${bold}${green}http://$IP:8000${reset} in your browser or by changing the base url in the mobile app."
+echo "⚠️ This script uses your devices local ipv4 address to run the server. It may change if you switch networks."
 echo ""
 echo "============================================"
 echo ""
 
+export DJANGO_DEBUG=True
 python3 manage.py runserver $IP:8000
