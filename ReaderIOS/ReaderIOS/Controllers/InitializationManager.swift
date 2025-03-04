@@ -28,7 +28,7 @@ final class InitializationManager: ObservableObject {
 
     func loadInitialData(delay: Int = 0) {
         let start = DispatchTime.now()
-        self.attempts += 1
+        attempts += 1
 
         NetworkingService.shared.fetchWorkbooks { [weak self] result in
             switch result {
@@ -41,6 +41,7 @@ final class InitializationManager: ObservableObject {
                             self?.fetchPDF(for: open.pdfName)
                         }
                     } else {
+                        self?.workbookID = workbooks.first?.id
                         self?.isInitialized = true
                     }
                 }
