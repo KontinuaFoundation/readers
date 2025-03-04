@@ -117,7 +117,7 @@ class MainActivity :
         pauseButton = findViewById(R.id.pauseButton)
         cancelButton = findViewById(R.id.cancelButton)
         restartButton = findViewById(R.id.restartButton)
-        //make the buttons listen
+        // make the buttons listen
         pauseButton.setOnClickListener { pauseTimer() }
         cancelButton.setOnClickListener { cancelTimer() }
         restartButton.setOnClickListener { restartTimer() }
@@ -302,7 +302,7 @@ class MainActivity :
             when (menuItem.itemId) {
                 R.id.action_15mins -> {
                     setTimerDuration(15 * 60 * 10) // 15 minutes in milliseconds
-                    //actually shorter for testing
+                    // actually shorter for testing
                     startTimer()
                     true
                 }
@@ -650,10 +650,10 @@ class MainActivity :
         timerControlsLayout.visibility = View.VISIBLE
         timerBarLayout.visibility = View.VISIBLE
         timerFillView.setBackgroundColor(ContextCompat.getColor(this, R.color.my_green))
-        pauseButton.setImageResource(R.drawable.ic_pause) //make button the pause button
+        pauseButton.setImageResource(R.drawable.ic_pause) // make button the pause button
         elapsedTimeMillis = 0 // this is critical to the calculation
 
-        timer = object : CountDownTimer(timeLeftMillis, 100) { //update every 100 miliseconds
+        timer = object : CountDownTimer(timeLeftMillis, 100) { // update every 100 miliseconds
             override fun onTick(millisUntilFinished: Long) {
                 timeLeftMillis = millisUntilFinished
                 elapsedTimeMillis = timerDuration - timeLeftMillis
@@ -677,7 +677,7 @@ class MainActivity :
         if (isTimerRunning) {
             timer?.cancel()
             isTimerRunning = false
-            pauseButton.setImageResource(R.drawable.ic_resume) //make the pause button back to play
+            pauseButton.setImageResource(R.drawable.ic_resume) // make the pause button back to play
             timerFillView.setBackgroundColor(ContextCompat.getColor(this, R.color.my_yellow))
         } else {
             startTimer()
@@ -702,12 +702,12 @@ class MainActivity :
         timeLeftMillis = timerDuration
         updateTimerBar()
         val params = timerFillView.layoutParams as LinearLayout.LayoutParams
-        params.weight = 0.0f //makes the bar go away
-        timerFillView.layoutParams = params //resets the timer bar to full
+        params.weight = 0.0f // makes the bar go away
+        timerFillView.layoutParams = params // resets the timer bar to full
     }
 
     private fun updateTimerBar() {
-        val progress = (elapsedTimeMillis).toFloat() / timerDuration.toFloat() //elapsed time
+        val progress = (elapsedTimeMillis).toFloat() / timerDuration.toFloat() // elapsed time
         val params = timerFillView.layoutParams as LinearLayout.LayoutParams
         params.weight = progress
         timerFillView.layoutParams = params
