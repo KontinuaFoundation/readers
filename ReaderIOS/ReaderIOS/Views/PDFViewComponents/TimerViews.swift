@@ -6,20 +6,24 @@
 //
 import SwiftUI
 
-// MARK: - Timer Controls View
+// MARK: - Timer Constants
 
 enum TimerConstants {
     // use these constants to set Timer menu options
     static let options: [Int] = [15, 20, 25]
+
+    // must be a multiple of customStep
     static let defaultCustomOption: Double = 20
-    static let customStep: Double = 5
-    static let customMin: Double = 5
-    static let customMax: Double = 60
+    static let customStep: Double = 2
+    static let customMin: Double = 2
+    static let customMax: Double = 30
 
     // DO NOT MODIFY: Calculated constants
     static let actualMin: Double = customMin - customStep
     static let actualMax: Double = customMax + customStep
 }
+
+// MARK: - Timer Controls View
 
 struct TimerControlsView: View {
     @ObservedObject var timerManager: TimerManager
