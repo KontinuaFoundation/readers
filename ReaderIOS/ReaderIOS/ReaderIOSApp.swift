@@ -18,12 +18,8 @@ struct ReaderIOSApp: App {
                 SplitView(initialWorkbooks: initManager.workbooks,
                           initialPDFDocument: initManager.pdfDocument)
             } else {
-                SplashView(loadFailed: initManager.loadFailed)
+                SplashView(initManager: initManager)
             }
         }
     }
-}
-
-#Preview {
-    SplashView()
 }

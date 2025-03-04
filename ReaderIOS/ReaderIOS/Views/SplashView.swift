@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SplashView: View {
-    var loadFailed: Bool = false
+    @ObservedObject var initManager: InitializationManager
 
     var body: some View {
         GeometryReader { geometry in
@@ -20,7 +20,7 @@ struct SplashView: View {
                     .frame(width: geometry.size.width * 0.7)
                     .accessibilityLabel("App Logo")
 
-                if loadFailed {
+                if initManager.loadFailed {
                     // Display red alert symbol and red error text.
                     Image(systemName: "exclamationmark.triangle.fill")
                         .resizable()
@@ -28,10 +28,17 @@ struct SplashView: View {
                         .frame(width: 50, height: 50)
                         .foregroundColor(.red)
 
-                    Text("Failed to load workbooks.\nPlease try again.")
+                    Text("Failed to load workbooks.\n Please check your internet connection and try again.")
                         .multilineTextAlignment(.center)
                         .font(.title3)
                         .foregroundColor(.red)
+
+                    Button("Reload", action: {
+                        initManager.loadFailed = false
+                        initManager.loadInitialData()
+                    })
+                    .font(.title3)
+                    .buttonStyle(.bordered)
                 } else {
                     // Show progress bar and loading text.
                     ProgressView()
