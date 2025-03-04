@@ -10,69 +10,49 @@ import SwiftUI
 
 struct TimerControlsView: View {
     @ObservedObject var timerManager: TimerManager
+    @State private var customMinutes: Double = 20
 
     var body: some View {
         // Timer Controls
-        if timerManager.isTimerRunning {
-            Button {
-                timerManager.pauseTimer()
-            } label: {
-                Image(systemName: "pause.circle")
-                    .foregroundColor(.yellow)
+        Menu {
+            if timerManager.isTimerRunning || timerManager.isPaused {
+                let elapsed = timerManager.selectedDuration - timerManager.remainingDuration
+                Text("\(formatTime(elapsed)) / \(formatTime(timerManager.selectedDuration))")
+                    .foregroundColor(.gray)
             }
 
-            Button {
-                timerManager.restartTimer()
-            } label: {
-                Image(systemName: "arrow.clockwise.circle")
-                    .foregroundColor(.blue)
+            Button("15 Minutes") {
+                timerManager.startTimer(duration: 15 * 60)
+            }
+            Button("30 Minutes") {
+                timerManager.startTimer(duration: 30 * 60)
+            }
+            Button("45 Minutes") {
+                timerManager.startTimer(duration: 45 * 60)
             }
 
-            Button {
-                timerManager.cancelTimer()
-            } label: {
-                Image(systemName: "xmark.circle")
-                    .foregroundColor(.red)
-            }
-        } else if timerManager.isPaused {
-            Button {
-                timerManager.unpauseTimer()
-            } label: {
-                Image(systemName: "play.circle")
-                    .foregroundColor(.green)
-            }
+            // Custom option with a slider below it
 
-            Button {
-                timerManager.restartTimer()
-            } label: {
-                Image(systemName: "arrow.clockwise.circle")
-                    .foregroundColor(.blue)
-            }
-
-            Button {
-                timerManager.cancelTimer()
-            } label: {
-                Image(systemName: "xmark.circle")
-                    .foregroundColor(.red)
-            }
-        } else {
-            Menu {
-                Button("15 Minutes") {
-                    timerManager.startTimer(duration: 15 * 60)
+            VStack(alignment: .leading) {
+                Button("\(Int(customMinutes)) Minutes [Custom]") {
+                    timerManager.startTimer(duration: TimeInterval(Int(customMinutes) * 60))
                 }
-                Button("20 Minutes") {
-                    timerManager.startTimer(duration: 20 * 60)
-                }
-                Button("25 Minutes") {
-                    timerManager.startTimer(duration: 25 * 60)
-                }
-            } label: {
-                Text("Timer")
-                    .padding(5)
-                    .foregroundColor(.blue)
-                    .cornerRadius(8)
+
+                Slider(value: $customMinutes, in: 5 ... 60, step: 5)
+                    .padding(.horizontal)
             }
+        } label: {
+            Text("Timer")
+                .padding(5)
+                .foregroundColor(.blue)
+                .cornerRadius(8)
         }
+    }
+
+    func formatTime(_ seconds: TimeInterval) -> String {
+        let minutes = Int(seconds) / 60
+        let seconds = Int(seconds) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }
 
@@ -84,6 +64,50 @@ struct TimerProgressView: View {
 
     var body: some View {
         HStack(spacing: 0) {
+            if timerManager.isTimerRunning {
+                Button {
+                    timerManager.pauseTimer()
+                } label: {
+                    Image(systemName: "pause.circle")
+                        .foregroundColor(.yellow)
+                }
+
+                Button {
+                    timerManager.restartTimer()
+                } label: {
+                    Image(systemName: "arrow.clockwise.circle")
+                        .foregroundColor(.blue)
+                }
+
+                Button {
+                    timerManager.cancelTimer()
+                } label: {
+                    Image(systemName: "xmark.circle")
+                        .foregroundColor(.red)
+                }
+            } else if timerManager.isPaused {
+                Button {
+                    timerManager.unpauseTimer()
+                } label: {
+                    Image(systemName: "play.circle")
+                        .foregroundColor(.green)
+                }
+
+                Button {
+                    timerManager.restartTimer()
+                } label: {
+                    Image(systemName: "arrow.clockwise.circle")
+                        .foregroundColor(.blue)
+                }
+
+                Button {
+                    timerManager.cancelTimer()
+                } label: {
+                    Image(systemName: "xmark.circle")
+                        .foregroundColor(.red)
+                }
+            }
+
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     if timerManager.isTimerRunning || timerManager.isPaused {
@@ -99,7 +123,7 @@ struct TimerProgressView: View {
                             width: geometry.size.width * CGFloat(timerManager.progress),
                             height: 4
                         )
-                        .animation(.linear(duration: 0.1), value: timerManager.progress)
+                        .animation(.linear(duration: 0.01), value: timerManager.progress)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: 4)
