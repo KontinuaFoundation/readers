@@ -85,7 +85,7 @@ class MainActivity :
     private lateinit var cancelButton: ImageButton
     private lateinit var restartButton: ImageButton
     private var timer: CountDownTimer? = null
-    private var timerDuration: Long = 3000 //hrd coded
+    private var timerDuration: Long = 300 //hrd coded
     private var timeLeftMillis: Long = timerDuration //hard coded
     private var isTimerRunning: Boolean = false //state management
     private var isTimerPaused: Boolean = false
@@ -114,8 +114,8 @@ class MainActivity :
 
         //timer stuff
         timerBarLayout = findViewById(R.id.timerBarLayout);
-        timerControlsLayout = findViewById(R.id.timerControlsLayout)
         timerFillView = findViewById(R.id.timerFillView);
+        timerControlsLayout = findViewById(R.id.timerControlsLayout) // ADD THIS LINE
 
         pauseButton = findViewById(R.id.pauseButton)
         cancelButton = findViewById(R.id.cancelButton)
@@ -208,8 +208,6 @@ class MainActivity :
 
         chapterView.setNavigationItemSelectedListener(this)
         workbookView.setNavigationItemSelectedListener(this)
-
-        startTimer() // Start timer when activity is created
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -308,21 +306,28 @@ class MainActivity :
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_15mins -> {
-                    startTimer() // 15 minutes
+                    setTimerDuration(15 * 60 * 10) // 15 minutes in milliseconds
+                    startTimer()
                     true
                 }
                 R.id.action_20mins -> {
-//                    startTimer(20 * 60 * 1000) // 20 minutes
+                    setTimerDuration(20 * 60 * 1000) // 20 minutes in milliseconds
+                    startTimer()
                     true
                 }
                 R.id.action_25mins -> {
-//                    startTimer(25 * 60 * 1000) // 25 minutes
+                    setTimerDuration(25 * 60 * 1000) // 25 minutes in milliseconds
+                    startTimer()
                     true
                 }
                 else -> false
             }
         }
         popup.show()
+    }
+    private fun setTimerDuration(durationMillis: Long) {
+        timerDuration = durationMillis
+        timeLeftMillis = durationMillis // Reset time left to the new duration
     }
     // Function to show the popup menu
     //does not currently actually do anything
