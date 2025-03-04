@@ -8,9 +8,22 @@ import SwiftUI
 
 // MARK: - Timer Controls View
 
+enum TimerConstants {
+    // use these constants to set Timer menu options
+    static let options: [Int] = [15, 20, 25]
+    static let defaultCustomOption: Double = 20
+    static let customStep: Double = 5
+    static let customMin: Double = 5
+    static let customMax: Double = 60
+
+    // DO NOT MODIFY: Calculated constants
+    static let actualMin: Double = customMin - customStep
+    static let actualMax: Double = customMax + customStep
+}
+
 struct TimerControlsView: View {
     @ObservedObject var timerManager: TimerManager
-    @State private var customMinutes: Double = 20
+    @State private var customMinutes: Double = TimerConstants.defaultCustomOption
 
     var body: some View {
         // Timer Controls
@@ -21,32 +34,33 @@ struct TimerControlsView: View {
                     .foregroundColor(.gray)
             }
 
-            Button("15 Minutes") {
-                timerManager.startTimer(duration: 15 * 60)
-            }
-            Button("30 Minutes") {
-                timerManager.startTimer(duration: 30 * 60)
-            }
-            Button("45 Minutes") {
-                timerManager.startTimer(duration: 45 * 60)
+            // creates Menu options based off options in TimerConstants
+            ForEach(TimerConstants.options, id: \.self) { minutes in
+                Button("\(minutes) Minutes") {
+                    timerManager.startTimer(duration: TimeInterval(minutes * 60))
+                }
             }
 
             // Custom option with a slider below it
-
             VStack(alignment: .leading) {
-                Button("\(Int(customMinutes)) Minutes [Custom]") {
+                Button("\(Int(customMinutes)) Minutes") {
                     timerManager.startTimer(duration: TimeInterval(Int(customMinutes) * 60))
                 }
 
-                Slider(value: $customMinutes, in: 0 ... 65, step: 5)
-                    .padding(.horizontal)
-                    .onChange(of: customMinutes) {
-                        if customMinutes == 65 {
-                            customMinutes = 5
-                        } else if customMinutes == 0 {
-                            customMinutes = 60
-                        }
+                Slider(
+                    value: $customMinutes,
+                    in: TimerConstants.actualMin ... TimerConstants.actualMax,
+                    step: TimerConstants.customStep
+                )
+                .padding(.horizontal)
+                .onChange(of: customMinutes) {
+                    // logic to loop counter
+                    if customMinutes == TimerConstants.actualMax {
+                        customMinutes = TimerConstants.customMin
+                    } else if customMinutes == TimerConstants.actualMin {
+                        customMinutes = TimerConstants.customMax
                     }
+                }
             }
         } label: {
             Text("Timer")
