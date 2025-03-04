@@ -80,7 +80,6 @@ class MainActivity :
     private lateinit var timerBarLayout: LinearLayout
     private lateinit var timerControlsLayout: LinearLayout
     private lateinit var timerFillView: View
-
     private lateinit var pauseButton: ImageButton
     private lateinit var cancelButton: ImageButton
     private lateinit var restartButton: ImageButton
@@ -89,7 +88,7 @@ class MainActivity :
     private var timeLeftMillis: Long = timerDuration //hard coded
     private var isTimerRunning: Boolean = false //state management
     private var isTimerPaused: Boolean = false
-
+    private var elapsedTimeMillis: Long = 0
 
     interface ApiService {
         @GET
@@ -650,10 +649,12 @@ class MainActivity :
         isTimerRunning = true
         timerControlsLayout.visibility = View.VISIBLE
         pauseButton.setImageResource(R.drawable.ic_pause) //Ensure pause icon is set
+        elapsedTimeMillis = 0 //this is critical to the calculation
 
         timer = object : CountDownTimer(timeLeftMillis, 100) { // Update every 100 milliseconds
             override fun onTick(millisUntilFinished: Long) {
                 timeLeftMillis = millisUntilFinished
+                elapsedTimeMillis = timerDuration - timeLeftMillis
                 updateTimerBar()
             }
 
@@ -661,11 +662,13 @@ class MainActivity :
                 isTimerRunning = false
                 timerControlsLayout.visibility = View.GONE
                 timeLeftMillis = timerDuration // Reset for next use, if needed
+                elapsedTimeMillis = timerDuration
                 updateTimerBar() //Set to full, or empty depending on desired finish state
 
             }
         }.start()
     }
+
     private fun pauseTimer() {
         if (isTimerRunning) {
             timer?.cancel()
@@ -688,15 +691,19 @@ class MainActivity :
         isTimerRunning = false
         timerControlsLayout.visibility = View.GONE
         timeLeftMillis = timerDuration
-        updateTimerBar() // Reset the timer bar to empty
+        updateTimerBar()
+        val params = timerFillView.layoutParams as LinearLayout.LayoutParams
+        params.weight = 1.0f
+        timerFillView.layoutParams = params// Reset the timer bar to full
     }
 
     private fun updateTimerBar() {
-        val progress = (timerDuration - timeLeftMillis).toFloat() / timerDuration.toFloat() // calculate elapsed time
+        val progress = (elapsedTimeMillis).toFloat() / timerDuration.toFloat() // elapsed time
         val params = timerFillView.layoutParams as LinearLayout.LayoutParams
         params.weight = progress
         timerFillView.layoutParams = params
     }
+
     private fun loadWorkbooks() {
         CoroutineScope(Dispatchers.IO).launch {
             val response = apiService.getWorkbooks().execute()
