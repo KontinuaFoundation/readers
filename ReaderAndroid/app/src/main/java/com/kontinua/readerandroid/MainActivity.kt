@@ -84,10 +84,9 @@ class MainActivity :
     private lateinit var cancelButton: ImageButton
     private lateinit var restartButton: ImageButton
     private var timer: CountDownTimer? = null
-    private var timerDuration: Long = 300 // hrd coded
-    private var timeLeftMillis: Long = timerDuration // hard coded
+    private var timerDuration: Long = 0
+    private var timeLeftMillis: Long = timerDuration
     private var isTimerRunning: Boolean = false // state management
-    private var isTimerPaused: Boolean = false
     private var elapsedTimeMillis: Long = 0
 
     interface ApiService {
@@ -115,18 +114,16 @@ class MainActivity :
         timerBarLayout = findViewById(R.id.timerBarLayout)
         timerFillView = findViewById(R.id.timerFillView)
         timerControlsLayout = findViewById(R.id.timerControlsLayout) // ADD THIS LINE
-
         pauseButton = findViewById(R.id.pauseButton)
         cancelButton = findViewById(R.id.cancelButton)
         restartButton = findViewById(R.id.restartButton)
-
+        //make the buttons listen
         pauseButton.setOnClickListener { pauseTimer() }
         cancelButton.setOnClickListener { cancelTimer() }
         restartButton.setOnClickListener { restartTimer() }
-
-        // Initially hide the timer controls and show timer bar
+        // Initially hide the timer controls and timer bar
         timerControlsLayout.visibility = View.GONE
-        timerBarLayout.visibility = View.VISIBLE
+        timerBarLayout.visibility = View.GONE
 
         imageView = findViewById(R.id.pdfImageView)
         loadingTextView = findViewById(R.id.loadingTextView)
@@ -300,12 +297,12 @@ class MainActivity :
     private fun showTimerMenu(view: View) {
         val popup = PopupMenu(this, view)
         popup.menuInflater.inflate(R.menu.timer_menu, popup.menu)
-
         // Handle menu item clicks
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_15mins -> {
                     setTimerDuration(15 * 60 * 10) // 15 minutes in milliseconds
+                    //actually shorter for testing
                     startTimer()
                     true
                 }
@@ -653,10 +650,10 @@ class MainActivity :
         timerControlsLayout.visibility = View.VISIBLE
         timerBarLayout.visibility = View.VISIBLE
         timerFillView.setBackgroundColor(ContextCompat.getColor(this, R.color.my_green))
-        pauseButton.setImageResource(R.drawable.ic_pause) // Ensure pause icon is set
+        pauseButton.setImageResource(R.drawable.ic_pause) //make button the pause button
         elapsedTimeMillis = 0 // this is critical to the calculation
 
-        timer = object : CountDownTimer(timeLeftMillis, 100) { // Update every 100 milliseconds
+        timer = object : CountDownTimer(timeLeftMillis, 100) { //update every 100 miliseconds
             override fun onTick(millisUntilFinished: Long) {
                 timeLeftMillis = millisUntilFinished
                 elapsedTimeMillis = timerDuration - timeLeftMillis
@@ -680,7 +677,7 @@ class MainActivity :
         if (isTimerRunning) {
             timer?.cancel()
             isTimerRunning = false
-            pauseButton.setImageResource(R.drawable.ic_resume)
+            pauseButton.setImageResource(R.drawable.ic_resume) //make the pause button back to play
             timerFillView.setBackgroundColor(ContextCompat.getColor(this, R.color.my_yellow))
         } else {
             startTimer()
@@ -705,12 +702,12 @@ class MainActivity :
         timeLeftMillis = timerDuration
         updateTimerBar()
         val params = timerFillView.layoutParams as LinearLayout.LayoutParams
-        params.weight = 0.0f // makes the bar go away
-        timerFillView.layoutParams = params // Reset the timer bar to full
+        params.weight = 0.0f //makes the bar go away
+        timerFillView.layoutParams = params //resets the timer bar to full
     }
 
     private fun updateTimerBar() {
-        val progress = (elapsedTimeMillis).toFloat() / timerDuration.toFloat() // elapsed time
+        val progress = (elapsedTimeMillis).toFloat() / timerDuration.toFloat() //elapsed time
         val params = timerFillView.layoutParams as LinearLayout.LayoutParams
         params.weight = progress
         timerFillView.layoutParams = params
