@@ -35,7 +35,7 @@ struct SplashView: View {
 
                     Button("Reload", action: {
                         initManager.loadFailed = false
-                        initManager.loadInitialData()
+                        initManager.loadInitialData(delay: 1000)
                     })
                     .font(.title3)
                     .buttonStyle(.bordered)

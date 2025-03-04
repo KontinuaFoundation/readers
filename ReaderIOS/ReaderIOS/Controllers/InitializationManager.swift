@@ -15,13 +15,13 @@ final class InitializationManager: ObservableObject {
     @Published var workbooks: [Workbook] = []
     @Published var pdfDocument: PDFDocument?
 
-    // Optionally load other data (chapters, covers, etc.) as needed
-
     init() {
         loadInitialData()
     }
 
-    func loadInitialData() {
+    func loadInitialData(delay: Int = 0) {
+        let start = DispatchTime.now()
+
         NetworkingService.shared.fetchWorkbooks { [weak self] result in
             switch result {
             case let .success(workbooks):
@@ -35,8 +35,9 @@ final class InitializationManager: ObservableObject {
                 }
             case let .failure(error):
                 print("Error fetching workbooks: \(error)")
-                // Handle error appropriately
-                DispatchQueue.main.async {
+
+                // if delay is set, does not show failure until after delay is elapsed
+                DispatchQueue.main.asyncAfter(deadline: start + .milliseconds(delay)) {
                     self?.loadFailed = true
                 }
             }
