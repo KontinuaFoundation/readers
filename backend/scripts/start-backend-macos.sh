@@ -31,6 +31,9 @@ source venv/bin/activate
 # 3.) Install requirements.txt in the virtual environment.
 pip install -r requirements.txt
 
+# Set the environment variables for Django.
+export DJANGO_DEBUG=True
+
 # 4.) Run any database migrations
 python3 manage.py migrate
 
@@ -50,5 +53,4 @@ echo ""
 echo "============================================"
 echo ""
 
-export DJANGO_DEBUG=True
 python3 manage.py runserver $IP:8000
