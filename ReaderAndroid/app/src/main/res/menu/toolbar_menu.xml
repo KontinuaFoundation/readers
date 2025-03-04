@@ -5,36 +5,11 @@
         android:id="@+id/action_timer"
         android:title="Timer"
         app:showAsAction="ifRoom">
-        <menu>
-            <item
-                android:id="@+id/timer_15_min"
-                android:title="15 Minutes" />
-            <item
-                android:id="@+id/timer_20_min"
-                android:title="20 Minutes" />
-            <item
-                android:id="@+id/timer_25_min"
-                android:title="25 Minutes" />
-        </menu>
     </item>
     <item
         android:id="@+id/action_markup"
         android:title="Markup"
         app:showAsAction="ifRoom" >
-    <menu>
-        <item
-            android:id="@+id/markup_pen"
-            android:title="Pen" />
-        <item
-            android:id="@+id/markup_highlight"
-            android:title="Highlighter" />
-        <item
-            android:id="@+id/markup_erase"
-            android:title="Erase" />
-        <item
-            android:id="@+id/markup_text"
-            android:title="Text" />
-    </menu>
     </item>
     <item
         android:id="@+id/action_resources"

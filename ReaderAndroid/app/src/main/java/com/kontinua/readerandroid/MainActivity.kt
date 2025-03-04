@@ -205,18 +205,19 @@ class MainActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_timer -> {
+            showTimerMenu(findViewById(R.id.action_timer))
             // Handle timer button click
             Log.d("MainActivity", "timer button clicked")
             true
         }
         R.id.action_markup -> {
             showMarkupMenu(findViewById(R.id.action_markup))
-            // Handle timer button click
+            // Handle markup button click
             Log.d("MainActivity", "markup button clicked")
             true
         }
         R.id.action_resources -> {
-            // Handle timer button click
+            // Handle resources button click
             Log.d("MainActivity", "resources button clicked")
             true
         }
@@ -249,6 +250,33 @@ class MainActivity :
                 }
                 R.id.action_exit -> {
                     annotationView.setDrawingMode(false, "exit", Color.TRANSPARENT)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popup.show()
+    }
+
+    // Function to show the popup menu
+    private fun showTimerMenu(view: View) {
+        val popup = PopupMenu(this, view)
+        popup.menuInflater.inflate(R.menu.timer_menu, popup.menu)
+
+        // Handle menu item clicks
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_15mins -> {
+                    Log.d("MainActivity", "15 mins timer button clicked")
+                    true
+                }
+                R.id.action_20mins -> {
+                    Log.d("MainActivity", "20 mins timer button clicked")
+                    true
+                }
+                R.id.action_25mins -> {
+                    Log.d("MainActivity", "25 mins timer button clicked")
                     true
                 }
                 else -> false
