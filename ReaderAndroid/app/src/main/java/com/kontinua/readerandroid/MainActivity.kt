@@ -3,6 +3,7 @@ package com.kontinua.readerandroid
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.pdf.PdfRenderer
 import android.os.Bundle
@@ -19,6 +20,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -69,6 +71,7 @@ class MainActivity :
     private val chapterMap = mutableMapOf<Int, Int>()
     private val workbookMap = mutableMapOf<Int, WorkbookData>()
     private var workbookSelected = true
+    private lateinit var annotationView: AnnotationView
 
     interface ApiService {
         @GET
@@ -97,6 +100,7 @@ class MainActivity :
         chapterView = findViewById(R.id.chapter_view)
         workbookView = findViewById(R.id.workbook_view)
         drawerLayout = findViewById(R.id.drawer_layout)
+        annotationView = findViewById(R.id.drawingView)
         val openWorkbookNavButton = findViewById<Button>(R.id.open_workbook_nav_button)
         setSupportActionBar(toolbar) // Set toolbar as the action bar
         supportActionBar?.title = ""
@@ -181,6 +185,7 @@ class MainActivity :
                 if (workbookSelected) {
                     Log.d("MainActivity", "Clicked on Chapter: ${item.title}")
                     currentPageIndex = chapterMap[item.itemId]!!
+                    annotationView.setPage(currentPageIndex - 1)
                     displayPage(currentPageIndex - 1)
                 } else {
                     Log.d("MainActivity", "Clicked on Workbook: ${item.title}")
@@ -190,6 +195,7 @@ class MainActivity :
                     workbookSelected = true
                     loadChaptersFromServer()
                     loadPdfFromUrl()
+                    annotationView.setWorkbook(pdfFileName)
                 }
             }
         }
@@ -204,6 +210,7 @@ class MainActivity :
             true
         }
         R.id.action_markup -> {
+            showMarkupMenu(findViewById(R.id.action_markup))
             // Handle timer button click
             Log.d("MainActivity", "markup button clicked")
             true
@@ -214,6 +221,41 @@ class MainActivity :
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    // Function to show the popup menu
+    private fun showMarkupMenu(view: View) {
+        val popup = PopupMenu(this, view)
+        popup.menuInflater.inflate(R.menu.markup_menu, popup.menu)
+
+        // Handle menu item clicks
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_pen -> {
+                    annotationView.setDrawingMode(true, "pen", Color.BLACK)
+                    true
+                }
+                R.id.action_highlight -> {
+                    annotationView.setDrawingMode(true, "highlight", Color.YELLOW)
+                    true
+                }
+                R.id.action_eraser -> {
+                    annotationView.setEraseMode(true) // Enable eraser mode
+                    true
+                }
+                R.id.action_clear -> {
+                    annotationView.clearCanvas() // Clear the canvas
+                    true
+                }
+                R.id.action_exit -> {
+                    annotationView.setDrawingMode(false, "exit", Color.TRANSPARENT)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popup.show()
     }
 
     override fun onBackPressed() {
@@ -241,6 +283,7 @@ class MainActivity :
             withContext(Dispatchers.Main) {
                 // Switch to Main thread for UI updates
                 call.enqueue(object : Callback<ResponseBody> {
+                    @SuppressLint("SetTextI18n")
                     override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                         if (response.isSuccessful) {
                             response.body()?.let { body ->
@@ -267,6 +310,7 @@ class MainActivity :
                         }
                     }
 
+                    @SuppressLint("SetTextI18n")
                     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                         Log.e("MyFragment", "Network error: ${t.message}")
                         loadingTextView.text = "Error with network request"
@@ -307,6 +351,7 @@ class MainActivity :
                 parcelFileDescriptor = descriptor
                 pdfRenderer = renderer
                 displayPage(0) // Load the first page
+                annotationView.loadAnnotations() // Load annotations on startup
             }
         } catch (e: IOException) {
             Log.e("MainActivity", "Error opening PDF: ${e.message}")
@@ -356,6 +401,8 @@ class MainActivity :
 
     override fun onDestroy() {
         super.onDestroy()
+        annotationView.saveAnnotations()
+        Log.d("MainActivity", "Saved Annotations to")
         try {
             pdfRenderer?.close()
             parcelFileDescriptor?.close()
@@ -399,6 +446,7 @@ class MainActivity :
         CoroutineScope(Dispatchers.Main).launch {
             val renderer = pdfRenderer ?: return@launch
             if (currentPageIndex < renderer.pageCount - 1) {
+                annotationView.setPage(currentPageIndex + 1)
                 displayPage(currentPageIndex + 1)
             }
         }
@@ -407,6 +455,7 @@ class MainActivity :
     private fun goToPreviousPage() {
         CoroutineScope(Dispatchers.Main).launch {
             if (currentPageIndex > 0) {
+                annotationView.setPage(currentPageIndex - 1)
                 displayPage(currentPageIndex - 1)
             }
         }
@@ -416,6 +465,7 @@ class MainActivity :
             val renderer = pdfRenderer ?: return@launch
             if (pageNumber >= 0 && pageNumber < renderer.pageCount) {
                 displayPage(pageNumber)
+                annotationView.setPage(currentPageIndex)
             } else {
                 // Handle invalid page number (e.g., show an error message)
                 Log.e("MainActivity", "Invalid page number entered")
