@@ -76,7 +76,7 @@ class MainActivity :
     private var workbookSelected = true
     private lateinit var annotationView: AnnotationView
 
-    //timer variables
+    // timer variables
     private lateinit var timerBarLayout: LinearLayout
     private lateinit var timerControlsLayout: LinearLayout
     private lateinit var timerFillView: View
@@ -84,9 +84,9 @@ class MainActivity :
     private lateinit var cancelButton: ImageButton
     private lateinit var restartButton: ImageButton
     private var timer: CountDownTimer? = null
-    private var timerDuration: Long = 300 //hrd coded
-    private var timeLeftMillis: Long = timerDuration //hard coded
-    private var isTimerRunning: Boolean = false //state management
+    private var timerDuration: Long = 300 // hrd coded
+    private var timeLeftMillis: Long = timerDuration // hard coded
+    private var isTimerRunning: Boolean = false // state management
     private var isTimerPaused: Boolean = false
     private var elapsedTimeMillis: Long = 0
 
@@ -111,9 +111,9 @@ class MainActivity :
         setSupportActionBar(toolbar) // Set toolbar as the action bar
         supportActionBar?.title = ""
 
-        //timer stuff
-        timerBarLayout = findViewById(R.id.timerBarLayout);
-        timerFillView = findViewById(R.id.timerFillView);
+        // timer stuff
+        timerBarLayout = findViewById(R.id.timerBarLayout)
+        timerFillView = findViewById(R.id.timerFillView)
         timerControlsLayout = findViewById(R.id.timerControlsLayout) // ADD THIS LINE
 
         pauseButton = findViewById(R.id.pauseButton)
@@ -328,8 +328,9 @@ class MainActivity :
         timerDuration = durationMillis
         timeLeftMillis = durationMillis // Reset time left to the new duration
     }
+
     // Function to show the popup menu
-    //does not currently actually do anything
+    // does not currently actually do anything
     private fun showResourcesMenu(view: View) {
         val popup = PopupMenu(this, view)
         popup.menuInflater.inflate(R.menu.resources_menu, popup.menu)
@@ -652,8 +653,8 @@ class MainActivity :
         timerControlsLayout.visibility = View.VISIBLE
         timerBarLayout.visibility = View.VISIBLE
         timerFillView.setBackgroundColor(ContextCompat.getColor(this, R.color.my_green))
-        pauseButton.setImageResource(R.drawable.ic_pause) //Ensure pause icon is set
-        elapsedTimeMillis = 0 //this is critical to the calculation
+        pauseButton.setImageResource(R.drawable.ic_pause) // Ensure pause icon is set
+        elapsedTimeMillis = 0 // this is critical to the calculation
 
         timer = object : CountDownTimer(timeLeftMillis, 100) { // Update every 100 milliseconds
             override fun onTick(millisUntilFinished: Long) {
@@ -671,7 +672,6 @@ class MainActivity :
                 timeLeftMillis = timerDuration
                 elapsedTimeMillis = timerDuration
                 updateTimerBar()
-
             }
         }.start()
     }
@@ -705,8 +705,8 @@ class MainActivity :
         timeLeftMillis = timerDuration
         updateTimerBar()
         val params = timerFillView.layoutParams as LinearLayout.LayoutParams
-        params.weight = 0.0f //makes the bar go away
-        timerFillView.layoutParams = params// Reset the timer bar to full
+        params.weight = 0.0f // makes the bar go away
+        timerFillView.layoutParams = params // Reset the timer bar to full
     }
 
     private fun updateTimerBar() {
