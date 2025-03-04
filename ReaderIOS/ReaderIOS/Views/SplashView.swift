@@ -33,12 +33,15 @@ struct SplashView: View {
                         .font(.title3)
                         .foregroundColor(.red)
 
-                    Button("Reload", action: {
-                        initManager.loadFailed = false
-                        initManager.loadInitialData(delay: 1000)
-                    })
-                    .font(.title3)
-                    .buttonStyle(.bordered)
+                    if(initManager.attempts < FetchConstants.maxAttempts){
+                        Button("Reload", action: {
+                            initManager.loadFailed = false
+                            initManager.loadInitialData(delay: FetchConstants.attemptDelay * initManager.attempts)
+                        })
+                        .font(.title3)
+                        .buttonStyle(.bordered)
+                    }
+                    
                 } else {
                     // Show progress bar and loading text.
                     ProgressView()

@@ -9,11 +9,17 @@ import Foundation
 import PDFKit
 import SwiftUI
 
+enum FetchConstants {
+    static let maxAttempts = 6
+    static let attemptDelay = 1000
+}
+
 final class InitializationManager: ObservableObject {
     @Published var isInitialized = false
     @Published var loadFailed = false
     @Published var workbooks: [Workbook] = []
     @Published var pdfDocument: PDFDocument?
+    @Published var attempts: Int = 0
 
     init() {
         loadInitialData()
@@ -21,6 +27,7 @@ final class InitializationManager: ObservableObject {
 
     func loadInitialData(delay: Int = 0) {
         let start = DispatchTime.now()
+        self.attempts += 1
 
         NetworkingService.shared.fetchWorkbooks { [weak self] result in
             switch result {
