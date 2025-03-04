@@ -19,6 +19,7 @@ final class InitializationManager: ObservableObject {
     @Published var loadFailed = false
     @Published var workbooks: [Workbook] = []
     @Published var pdfDocument: PDFDocument?
+    @Published var workbookID: String?
     @Published var attempts: Int = 0
 
     init() {
@@ -34,8 +35,11 @@ final class InitializationManager: ObservableObject {
             case let .success(workbooks):
                 DispatchQueue.main.async {
                     self?.workbooks = workbooks
-                    if let firstWorkbook = workbooks.first {
-                        self?.fetchPDF(for: firstWorkbook.pdfName)
+                    if let savedState = StateRestoreManager.shared.loadState() {
+                        if let open = workbooks.first(where: { $0.id == savedState.workbookID }) {
+                            self?.workbookID = savedState.workbookID
+                            self?.fetchPDF(for: open.pdfName)
+                        }
                     } else {
                         self?.isInitialized = true
                     }
