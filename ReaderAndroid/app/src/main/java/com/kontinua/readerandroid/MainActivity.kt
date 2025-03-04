@@ -28,6 +28,7 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -77,14 +78,18 @@ class MainActivity :
 
     //timer variables
     private lateinit var timerBarLayout: LinearLayout
+    private lateinit var timerControlsLayout: LinearLayout
     private lateinit var timerFillView: View
-    private lateinit var pauseButton: Button
-    private lateinit var cancelButton: Button
-    private lateinit var restartButton: Button
-    private var countDownTimer: CountDownTimer? = null
-    private var timerDuration: Long = 0 // Total duration of the timer
-    private var timeLeftMillis: Long = 0 // Remaining time
+
+    private lateinit var pauseButton: ImageButton
+    private lateinit var cancelButton: ImageButton
+    private lateinit var restartButton: ImageButton
+    private var timer: CountDownTimer? = null
+    private var timerDuration: Long = 3000 //hrd coded
+    private var timeLeftMillis: Long = timerDuration //hard coded
     private var isTimerRunning: Boolean = false //state management
+    private var isTimerPaused: Boolean = false
+
 
     interface ApiService {
         @GET
@@ -103,9 +108,15 @@ class MainActivity :
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar) // Set toolbar as the action bar
+        supportActionBar?.title = ""
+
         //timer stuff
-        timerBarLayout = findViewById(R.id.timerBarLayout)
-        timerFillView = findViewById(R.id.timerFillView)
+        timerBarLayout = findViewById(R.id.timerBarLayout);
+        timerControlsLayout = findViewById(R.id.timerControlsLayout)
+        timerFillView = findViewById(R.id.timerFillView);
+
         pauseButton = findViewById(R.id.pauseButton)
         cancelButton = findViewById(R.id.cancelButton)
         restartButton = findViewById(R.id.restartButton)
@@ -114,20 +125,21 @@ class MainActivity :
         cancelButton.setOnClickListener { cancelTimer() }
         restartButton.setOnClickListener { restartTimer() }
 
+        // Initially hide the timer controls and show timer bar
+        timerControlsLayout.visibility = View.GONE
+        timerBarLayout.visibility = View.VISIBLE
+
         imageView = findViewById(R.id.pdfImageView)
         loadingTextView = findViewById(R.id.loadingTextView)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         nextButton = findViewById(R.id.nextButton)
         previousButton = findViewById(R.id.previousButton)
         pageNumberEditText = findViewById(R.id.pageNumberEditText)
-        toolbar = findViewById(R.id.toolbar)
         chapterView = findViewById(R.id.chapter_view)
         workbookView = findViewById(R.id.workbook_view)
         drawerLayout = findViewById(R.id.drawer_layout)
         annotationView = findViewById(R.id.drawingView)
         val openWorkbookNavButton = findViewById<Button>(R.id.open_workbook_nav_button)
-        setSupportActionBar(toolbar) // Set toolbar as the action bar
-        supportActionBar?.title = ""
 
         // Initialize gesture detector
         gestureDetector = GestureDetectorCompat(this, this)
@@ -196,6 +208,8 @@ class MainActivity :
 
         chapterView.setNavigationItemSelectedListener(this)
         workbookView.setNavigationItemSelectedListener(this)
+
+        startTimer() // Start timer when activity is created
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -294,13 +308,15 @@ class MainActivity :
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_15mins -> {
-                    startTimer(15 * 60) // 15 minutes
+                    startTimer() // 15 minutes
                     true
                 }
                 R.id.action_20mins -> {
+//                    startTimer(20 * 60 * 1000) // 20 minutes
                     true
                 }
                 R.id.action_25mins -> {
+//                    startTimer(25 * 60 * 1000) // 25 minutes
                     true
                 }
                 else -> false
@@ -309,6 +325,7 @@ class MainActivity :
         popup.show()
     }
     // Function to show the popup menu
+    //does not currently actually do anything
     private fun showResourcesMenu(view: View) {
         val popup = PopupMenu(this, view)
         popup.menuInflater.inflate(R.menu.resources_menu, popup.menu)
@@ -329,7 +346,6 @@ class MainActivity :
 
         popup.show()
     }
-
 
     override fun onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -474,8 +490,8 @@ class MainActivity :
 
     override fun onDestroy() {
         super.onDestroy()
-        if (countDownTimer != null) {
-            countDownTimer?.cancel()
+        if (timer != null) {
+            timer?.cancel()
         }
         annotationView.saveAnnotations()
         Log.d("MainActivity", "Saved Annotations to")
@@ -625,19 +641,12 @@ class MainActivity :
         }
     }
 
-    private fun startTimer(durationMillis: Long) {
-        timerDuration = durationMillis
-        timeLeftMillis = durationMillis
+    private fun startTimer() {
         isTimerRunning = true
+        timerControlsLayout.visibility = View.VISIBLE
+        pauseButton.setImageResource(R.drawable.ic_pause) //Ensure pause icon is set
 
-        timerBarLayout.visibility = View.VISIBLE
-        pauseButton.visibility = View.VISIBLE
-        cancelButton.visibility = View.VISIBLE
-        restartButton.visibility = View.VISIBLE
-
-        updateTimerBar()
-
-        countDownTimer = object : CountDownTimer(timeLeftMillis, 1000) {
+        timer = object : CountDownTimer(timeLeftMillis, 100) { // Update every 100 milliseconds
             override fun onTick(millisUntilFinished: Long) {
                 timeLeftMillis = millisUntilFinished
                 updateTimerBar()
@@ -645,50 +654,44 @@ class MainActivity :
 
             override fun onFinish() {
                 isTimerRunning = false
-                timerFillView.layoutParams = timerFillView.layoutParams.apply {
-                    (this as LinearLayout.LayoutParams).weight = 1f
-                }
-                timerFillView.setBackgroundColor(Color.GREEN)
+                timerControlsLayout.visibility = View.GONE
+                timeLeftMillis = timerDuration // Reset for next use, if needed
+                updateTimerBar() //Set to full, or empty depending on desired finish state
+
             }
         }.start()
     }
-
     private fun pauseTimer() {
-        if (countDownTimer != null) {
-            countDownTimer?.cancel()
+        if (isTimerRunning) {
+            timer?.cancel()
             isTimerRunning = false
-            timerFillView.setBackgroundColor(Color.YELLOW)
+            pauseButton.setImageResource(R.drawable.ic_resume) //Change to play icon
+        } else {
+            startTimer()
+            pauseButton.setImageResource(R.drawable.ic_pause)
         }
-    }
-
-    private fun cancelTimer() {
-        if (countDownTimer != null) {
-            countDownTimer?.cancel()
-        }
-        isTimerRunning = false
-        timerBarLayout.visibility = View.GONE
-        countDownTimer = null
     }
 
     private fun restartTimer() {
-        if (timerDuration > 0) {
-            if (countDownTimer != null) {
-                countDownTimer?.cancel()
-            }
-            startTimer(timerDuration) // Restart with the same duration
-        }
+        timer?.cancel()
+        timeLeftMillis = timerDuration
+        startTimer()
+    }
+
+    private fun cancelTimer() {
+        timer?.cancel()
+        isTimerRunning = false
+        timerControlsLayout.visibility = View.GONE
+        timeLeftMillis = timerDuration
+        updateTimerBar() // Reset the timer bar to empty
     }
 
     private fun updateTimerBar() {
-        if (isTimerRunning) {
-            val progress = (timerDuration - timeLeftMillis).toFloat() / timerDuration.toFloat()
-            timerFillView.layoutParams = timerFillView.layoutParams.apply {
-                (this as LinearLayout.LayoutParams).weight = progress
-            }
-            timerFillView.setBackgroundColor(Color.GREEN)
-        }
+        val progress = (timerDuration - timeLeftMillis).toFloat() / timerDuration.toFloat() // calculate elapsed time
+        val params = timerFillView.layoutParams as LinearLayout.LayoutParams
+        params.weight = progress
+        timerFillView.layoutParams = params
     }
-
     private fun loadWorkbooks() {
         CoroutineScope(Dispatchers.IO).launch {
             val response = apiService.getWorkbooks().execute()
