@@ -647,7 +647,11 @@ class MainActivity :
 
     private fun startTimer() {
         isTimerRunning = true
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val timerControlsLayout = toolbar.findViewById<LinearLayout>(R.id.timerControlsLayout)
         timerControlsLayout.visibility = View.VISIBLE
+        timerBarLayout.visibility = View.VISIBLE
+        timerFillView.setBackgroundColor(ContextCompat.getColor(this, R.color.my_green))
         pauseButton.setImageResource(R.drawable.ic_pause) //Ensure pause icon is set
         elapsedTimeMillis = 0 //this is critical to the calculation
 
@@ -660,10 +664,13 @@ class MainActivity :
 
             override fun onFinish() {
                 isTimerRunning = false
+                val toolbar = findViewById<Toolbar>(R.id.toolbar)
+                val timerControlsLayout = toolbar.findViewById<LinearLayout>(R.id.timerControlsLayout)
                 timerControlsLayout.visibility = View.GONE
-                timeLeftMillis = timerDuration // Reset for next use, if needed
+                timerBarLayout.visibility = View.GONE
+                timeLeftMillis = timerDuration
                 elapsedTimeMillis = timerDuration
-                updateTimerBar() //Set to full, or empty depending on desired finish state
+                updateTimerBar()
 
             }
         }.start()
@@ -673,10 +680,12 @@ class MainActivity :
         if (isTimerRunning) {
             timer?.cancel()
             isTimerRunning = false
-            pauseButton.setImageResource(R.drawable.ic_resume) //Change to play icon
+            pauseButton.setImageResource(R.drawable.ic_resume)
+            timerFillView.setBackgroundColor(ContextCompat.getColor(this, R.color.my_yellow))
         } else {
             startTimer()
             pauseButton.setImageResource(R.drawable.ic_pause)
+            timerFillView.setBackgroundColor(ContextCompat.getColor(this, R.color.my_green))
         }
     }
 
@@ -689,11 +698,14 @@ class MainActivity :
     private fun cancelTimer() {
         timer?.cancel()
         isTimerRunning = false
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val timerControlsLayout = toolbar.findViewById<LinearLayout>(R.id.timerControlsLayout)
         timerControlsLayout.visibility = View.GONE
+        timerBarLayout.visibility = View.GONE
         timeLeftMillis = timerDuration
         updateTimerBar()
         val params = timerFillView.layoutParams as LinearLayout.LayoutParams
-        params.weight = 1.0f
+        params.weight = 0.0f //makes the bar go away
         timerFillView.layoutParams = params// Reset the timer bar to full
     }
 

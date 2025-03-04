@@ -32,49 +32,7 @@
                 android:layout_weight="0" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/timerControlsLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@+id/timerBarLayout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <ImageButton
-                android:id="@+id/pauseButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_pause"
-                android:contentDescription="@string/pause"
-                android:scaleType="fitCenter"
-                android:layout_marginRight="8dp"
-                android:visibility="visible"/>
-
-            <ImageButton
-                android:id="@+id/restartButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_restart"
-                android:contentDescription="@string/restart"
-                android:scaleType="fitCenter"
-                android:visibility="visible"/>
-
-            <ImageButton
-                android:id="@+id/cancelButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_cancel"
-                android:contentDescription="@string/cancel"
-                android:scaleType="fitCenter"
-                android:layout_marginRight="8dp"
-                android:visibility="visible"/>
-        </LinearLayout>
+        <!-- REMOVED SEPARATE timerControlsLayout -->
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -82,12 +40,50 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             android:elevation="4dp"
-            app:layout_constraintTop_toBottomOf="@+id/timerControlsLayout"
+            app:layout_constraintTop_toBottomOf="@+id/timerBarLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:theme="@style/ToolbarTheme"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
-            <!--  Removed timer content from here -->
+
+            <LinearLayout
+                android:id="@+id/timerControlsLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_gravity="end"
+                android:visibility="gone">
+
+                <ImageButton
+                    android:id="@+id/pauseButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_pause"
+                    android:contentDescription="@string/pause"
+                    android:scaleType="fitCenter"
+                    android:layout_marginRight="8dp"/>
+
+                <ImageButton
+                    android:id="@+id/restartButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_restart"
+                    android:contentDescription="@string/restart"
+                    android:scaleType="fitCenter"/>
+
+                <ImageButton
+                    android:id="@+id/cancelButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_cancel"
+                    android:contentDescription="@string/cancel"
+                    android:scaleType="fitCenter"
+                    android:layout_marginLeft="8dp"/>
+            </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 
         <ImageView
