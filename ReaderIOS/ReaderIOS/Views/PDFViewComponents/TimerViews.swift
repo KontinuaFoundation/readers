@@ -38,8 +38,15 @@ struct TimerControlsView: View {
                     timerManager.startTimer(duration: TimeInterval(Int(customMinutes) * 60))
                 }
 
-                Slider(value: $customMinutes, in: 5 ... 60, step: 5)
+                Slider(value: $customMinutes, in: 0 ... 65, step: 5)
                     .padding(.horizontal)
+                    .onChange(of: customMinutes) {
+                        if customMinutes == 65 {
+                            customMinutes = 5
+                        } else if customMinutes == 0 {
+                            customMinutes = 60
+                        }
+                    }
             }
         } label: {
             Text("Timer")
