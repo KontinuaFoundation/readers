@@ -35,6 +35,22 @@
             android:visibility="gone"
             android:scaleType="fitCenter"/>
 
+        <FrameLayout
+            android:id="@+id/drawingContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/toolbar"
+            android:layout_above="@+id/bottomNavigationView">
+
+            <!-- Drawing View (Custom View for drawing over the PDF) -->
+            <com.kontinua.readerandroid.AnnotationView
+                android:id="@+id/drawingView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"/>
+
+        </FrameLayout>
+
         <TextView
             android:id="@+id/loadingTextView"
             android:layout_width="wrap_content"

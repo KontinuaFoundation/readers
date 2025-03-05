@@ -1,0 +1,51 @@
+[
+  {
+    "title": "Volumes with Integrals",
+    "id": "volume_single_integral",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Double Integrals over Rectangular Regions",
+    "id": "volume_double_integral",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 15
+  },
+  {
+    "title": "Double Integrals Over Non-Rectangular Regions",
+    "id": "double_int_regions",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 23
+  },
+  {
+    "title": "Applications of Double Integrals",
+    "id": "double_int_applications",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 37
+  },
+  {
+    "title": "Multivariate Distributions",
+    "id": "multiv_dist",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 55
+  },
+  {
+    "title": "The Multivariate Normal Distribution",
+    "id": "multiv_normal",
+    "chap_num": 6,
+    "covers": [],
+    "start_page": 57
+  },
+  {
+    "title": "Numerical Double Integration",
+    "id": "numerical_multi_int",
+    "chap_num": 7,
+    "covers": [],
+    "start_page": 63
+  }
+]

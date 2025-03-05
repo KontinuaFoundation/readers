@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Neural Nets for Regression",
+    "id": "nn_regression",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Neural Networks for Classification",
+    "id": "nn_classification",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 5
+  },
+  {
+    "title": "Deep Learning",
+    "id": "deep_learning",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 7
+  }
+]
