@@ -9,34 +9,47 @@ import Foundation
 import PDFKit
 import SwiftUI
 
+enum FetchConstants {
+    static let maxAttempts = 6
+    static let attemptDelay = 1000
+}
+
 final class InitializationManager: ObservableObject {
     @Published var isInitialized = false
     @Published var loadFailed = false
     @Published var workbooks: [Workbook] = []
     @Published var pdfDocument: PDFDocument?
-
-    // Optionally load other data (chapters, covers, etc.) as needed
+    @Published var workbookID: String?
+    @Published var attempts: Int = 0
 
     init() {
         loadInitialData()
     }
 
-    func loadInitialData() {
+    func loadInitialData(delay: Int = 0) {
+        let start = DispatchTime.now()
+        attempts += 1
+
         NetworkingService.shared.fetchWorkbooks { [weak self] result in
             switch result {
             case let .success(workbooks):
                 DispatchQueue.main.async {
                     self?.workbooks = workbooks
-                    if let firstWorkbook = workbooks.first {
-                        self?.fetchPDF(for: firstWorkbook.pdfName)
+                    if let savedState = StateRestoreManager.shared.loadState() {
+                        if let open = workbooks.first(where: { $0.id == savedState.workbookID }) {
+                            self?.workbookID = savedState.workbookID
+                            self?.fetchPDF(for: open.pdfName)
+                        }
                     } else {
+                        self?.workbookID = workbooks.first?.id
                         self?.isInitialized = true
                     }
                 }
             case let .failure(error):
                 print("Error fetching workbooks: \(error)")
-                // Handle error appropriately
-                DispatchQueue.main.async {
+
+                // if delay is set, does not show failure until after delay is elapsed
+                DispatchQueue.main.asyncAfter(deadline: start + .milliseconds(delay)) {
                     self?.loadFailed = true
                 }
             }

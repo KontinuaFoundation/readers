@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SplitView: View {
     var initialWorkbooks: [Workbook] = []
+    var initialWorkbookID: String?
     var initialPDFDocument: PDFDocument?
 
     // Loaded workbooks information state vars
@@ -51,7 +52,7 @@ struct SplitView: View {
                     .onAppear {
                         if !initialWorkbooks.isEmpty {
                             workbooks = initialWorkbooks
-                            selectedWorkbookID = initialWorkbooks.first?.id
+                            selectedWorkbookID = initialWorkbookID
                         }
                     }
             }
@@ -152,10 +153,12 @@ struct SplitView: View {
                         currentPage = savedState.pageNumber
                     } else {
                         // Fallback: default to the first workbook if the saved one isn't found.
+                        print("defaulting to first ")
                         selectedWorkbookID = workbookResponse.first?.id
                     }
                 } else {
                     // No saved state, so select the first workbook by default.
+                    print("no saved state")
                     selectedWorkbookID = workbookResponse.first?.id
                 }
             case let .failure(error):
