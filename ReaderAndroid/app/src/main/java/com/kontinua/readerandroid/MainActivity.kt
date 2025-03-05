@@ -92,8 +92,6 @@ class MainActivity :
     private var twentyminutes: Long = (20 * 60 * 1000)
     private var twentyfiveminutes: Long = (25 * 60 * 1000)
 
-
-
     interface ApiService {
         @GET
         fun getPdfData(@Url url: String): Call<ResponseBody>
@@ -306,7 +304,7 @@ class MainActivity :
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_15mins -> {
-                    setTimerDuration(fifteenminutes)  // actually shorter for testing
+                    setTimerDuration(fifteenminutes) // actually shorter for testing
                     startTimer()
                     true
                 }
