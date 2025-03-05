@@ -1,0 +1,123 @@
+[
+  {
+    "title": "Sound",
+    "id": "sound",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "requires": [
+      "dc"
+    ],
+    "title": "Alternating Current",
+    "id": "ac",
+    "chap_num": 2,
+    "covers": [
+      {
+        "id": "ac",
+        "desc": "Definition of Alternating Current",
+        "videos": [
+          {
+            "link": "https://youtu.be/qaz3gL3-vvY",
+            "title": "AC voltage applied to resistors | Alternating currents | Physics | Khan Academy - YouTube"
+          },
+          {
+            "link": "https://youtu.be/qaz3gL3-vvY",
+            "title": "AC voltage applied to resistors | Alternating currents | Physics | Khan Academy - YouTube"
+          }
+        ],
+        "references": [
+          {
+            "link": "https://en.wikipedia.org/wiki/Alternating_current",
+            "title": "Alternating current - Wikipedia"
+          },
+          {
+            "link": "https://en.wikipedia.org/wiki/Alternating_current",
+            "title": "Alternating current - Wikipedia"
+          }
+        ]
+      },
+      {
+        "id": "ac_transformer",
+        "desc": "Use of Transformer to Change Voltage of AC",
+        "videos": [
+          {
+            "link": "https://youtu.be/zf8vnCcETqM",
+            "title": "Transformers -  working & applications (step up and step down) | A.C. | Physics | Khan Academy - YouTube"
+          }
+        ],
+        "references": [
+          {
+            "link": "https://en.wikipedia.org/wiki/Transformer",
+            "title": "Transformer - Wikipedia"
+          }
+        ]
+      }
+    ],
+    "start_page": 11
+  },
+  {
+    "title": "Electric Motor",
+    "id": "electric_motors_generators",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 17
+  },
+  {
+    "title": "Drag",
+    "id": "drag",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 19
+  },
+  {
+    "title": "Vector-valued Functions",
+    "id": "vector_functions",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 25
+  },
+  {
+    "title": "Circular Motion",
+    "id": "circular",
+    "chap_num": 6,
+    "covers": [],
+    "start_page": 29
+  },
+  {
+    "title": "Orbits",
+    "id": "orbits",
+    "chap_num": 7,
+    "covers": [],
+    "start_page": 35
+  },
+  {
+    "title": "Rocketry",
+    "id": "rocketry",
+    "chap_num": 8,
+    "covers": [],
+    "start_page": 39
+  },
+  {
+    "title": "Simulation with Vectors",
+    "id": "vector_sim",
+    "chap_num": 9,
+    "covers": [],
+    "start_page": 47
+  },
+  {
+    "title": "Longitude and Latitude",
+    "id": "long_lat_dist",
+    "chap_num": 10,
+    "covers": [],
+    "start_page": 63
+  },
+  {
+    "title": "Tides and Eclipses",
+    "id": "tides",
+    "chap_num": 11,
+    "covers": [],
+    "start_page": 69
+  }
+]

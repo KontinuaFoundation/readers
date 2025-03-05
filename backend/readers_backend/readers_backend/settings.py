@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-
 def get_required_env_var(key):
     '''
     Retrieves a required environment variable.
@@ -36,9 +35,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-3r+kj$$&^pg-av4%scddw6bjiiufkrrpkh7%0+osn#vi!$6f83'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
+# If we're not in debug, we're going to assume we're in production.
+# That is we will integrate with some AWS services and we will expect some environment variables.
 DEBUG = get_required_env_var("DJANGO_DEBUG") == "True"
 
-ALLOWED_HOSTS = []
+# EC2 Elastic IP
+ALLOWED_HOSTS = ["18.189.208.93"]
+
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -94,21 +100,31 @@ DATABASES = {
     }
 }
 
-# Storage Backend
+# Default storage backend
 STORAGES = {
     "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {},
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-AWS_ACCESS_KEY_ID = get_required_env_var("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = get_required_env_var("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = get_required_env_var("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_REGION_NAME = get_required_env_var("AWS_S3_REGION_NAME")
-AWS_S3_ADDRESSING_STYLE = get_required_env_var("AWS_S3_ADDRESSING_STYLE")
+
+# Static files storage directory in debug.
+if DEBUG:
+    MEDIA_URL = "/files/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "files")
+
+# If we're in production we need to use S3 as our storage backend.
+if not DEBUG:
+    AWS_STORAGE_BUCKET_NAME = get_required_env_var("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = get_required_env_var("AWS_S3_REGION_NAME")
+    AWS_S3_ADDRESSING_STYLE = get_required_env_var("AWS_S3_ADDRESSING_STYLE")
+
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {},
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -151,6 +167,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # DJANGO REST FRAMEWORK
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
