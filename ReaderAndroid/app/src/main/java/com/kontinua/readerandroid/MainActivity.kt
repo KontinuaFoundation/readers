@@ -88,6 +88,11 @@ class MainActivity :
     private var timeLeftMillis: Long = timerDuration
     private var isTimerRunning: Boolean = false // state management
     private var elapsedTimeMillis: Long = 0
+    private var fifteenminutes: Long = (15 * 60 * 10)
+    private var twentyminutes: Long = (20 * 60 * 1000)
+    private var twentyfiveminutes: Long = (25 * 60 * 1000)
+
+
 
     interface ApiService {
         @GET
@@ -301,18 +306,17 @@ class MainActivity :
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_15mins -> {
-                    setTimerDuration(15 * 60 * 10) // 15 minutes in milliseconds
-                    // actually shorter for testing
+                    setTimerDuration(fifteenminutes)  // actually shorter for testing
                     startTimer()
                     true
                 }
                 R.id.action_20mins -> {
-                    setTimerDuration(20 * 60 * 1000) // 20 minutes in milliseconds
+                    setTimerDuration(twentyminutes)
                     startTimer()
                     true
                 }
                 R.id.action_25mins -> {
-                    setTimerDuration(25 * 60 * 1000) // 25 minutes in milliseconds
+                    setTimerDuration(twentyfiveminutes)
                     startTimer()
                     true
                 }
