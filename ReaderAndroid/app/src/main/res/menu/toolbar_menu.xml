@@ -4,11 +4,13 @@
     <item
         android:id="@+id/action_timer"
         android:title="Timer"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom">
+    </item>
     <item
         android:id="@+id/action_markup"
         android:title="Markup"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" >
+    </item>
     <item
         android:id="@+id/action_resources"
         android:title="Digital Resources"
