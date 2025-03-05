@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.FrameLayout
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -18,7 +20,8 @@ class NavbarManager(
     private val drawerLayout: DrawerLayout,
     private val chapterView: NavigationView,
     private val workbookView: NavigationView,
-    private val apiService: MainActivity.ApiService
+    private val apiService: MainActivity.ApiService,
+    private val sidebar: FrameLayout
 ) : NavigationView.OnNavigationItemSelectedListener {
     private var workbookSelected = true
     private val chapterMap = mutableMapOf<Int, Int>()
@@ -28,13 +31,33 @@ class NavbarManager(
     data class WorkbookData(val id: String, val metaName: String, val pdfName: String)
 
     fun setupNavbar(toolbar: androidx.appcompat.widget.Toolbar) {
-        val toggle = ActionBarDrawerToggle(
+        val toggle = object : ActionBarDrawerToggle(
             context as MainActivity,
             drawerLayout,
             toolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
-        )
+        ){
+            override fun onDrawerOpened(drawerView: View) {
+                super.onDrawerOpened(drawerView)
+
+                // If the second menu is open, reset back to one menu
+                if (sidebar.width == 960) {
+                    chapterView.animate()
+                        .translationX(0f)
+                        .setDuration(300)
+                        .withEndAction {
+                            sidebar.layoutParams.width = 560
+                            // Hide workbook_view
+                            workbookView.animate().alpha(0f).setDuration(300).withEndAction {
+                                workbookView.visibility = View.GONE
+                            }.start()
+                        }
+                        .start()
+                    workbookSelected = true
+                }
+            }
+        }
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
@@ -43,20 +66,36 @@ class NavbarManager(
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        val itemId = item.itemId
+        when {
+            chapterMap.containsKey(itemId) -> { // It's a Chapter
+                Log.d("NavbarManager", "Clicked on Chapter: ${item.title}")
+                val page = chapterMap[itemId]!!
+                (context as MainActivity).loadPageNumber(page)
+            }
+
+            workbookMap.containsKey(itemId) -> { // It's a Workbook
+                Log.d("NavbarManager", "Clicked on Workbook: ${item.title}")
+                val workbook = workbookMap[itemId]!!
+                (context as MainActivity).loadNewWorkbook(workbook)
+            }
+
             else -> {
-                if (workbookSelected) {
-                    Log.d("MainActivity", "Clicked on Chapter: ${item.title}")
-                    val page = chapterMap[item.itemId]!!
-                    (context as MainActivity).loadPageNumber(page)
-                } else {
-                    Log.d("MainActivity", "Clicked on Workbook: ${item.title}")
-                    workbookSelected = true
-                    val workbook = workbookMap[item.itemId]!!
-                    (context as MainActivity).loadNewWorkbook(workbook)
-                }
+                Log.e("NavbarManager", "Unknown item clicked: ${item.title}")
             }
         }
+        chapterView.animate()
+            .translationX(0f)
+            .setDuration(300)
+            .withEndAction {
+                sidebar.layoutParams.width = 560
+                // Hide workbook_view
+                workbookView.animate().alpha(0f).setDuration(300).withEndAction {
+                    workbookView.visibility = View.GONE
+                }.start()
+            }
+            .start()
+        workbookSelected = true
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
@@ -78,12 +117,13 @@ class NavbarManager(
     }
 
     private fun populateWorkbookMenu(workbooks: List<WorkbookData>) {
-        val menu = chapterView.menu
+        val menu = workbookView.menu
         menu.clear()
 
         for (workbook in workbooks) {
-            val menuItem = menu.add(Menu.NONE, workbook.id.hashCode(), Menu.NONE, workbook.id)
-            workbookMap[workbook.id.hashCode()] = workbook
+            val menuItem = menu.add(Menu.NONE, -workbook.id.hashCode(), Menu.NONE, workbook.id)
+            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
+            workbookMap[-workbook.id.hashCode()] = workbook
         }
     }
 

@@ -11,6 +11,7 @@ import android.os.CountDownTimer
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.view.GestureDetector
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -19,6 +20,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -65,6 +67,7 @@ class MainActivity :
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var chapterView: NavigationView
     private lateinit var workbookView: NavigationView
+    private lateinit var sidebar: FrameLayout
     private var pdfRenderer: PdfRenderer? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
     private var currentPageIndex: Int = 0 // Track the current page index
@@ -135,6 +138,8 @@ class MainActivity :
         workbookView = findViewById(R.id.workbook_view)
         drawerLayout = findViewById(R.id.drawer_layout)
         annotationView = findViewById(R.id.drawingView)
+        sidebar = findViewById(R.id.sidebar_container)
+
         val openWorkbookNavButton = findViewById<Button>(R.id.open_workbook_nav_button)
 
         // Initialize gesture detector
@@ -174,17 +179,38 @@ class MainActivity :
         loadPdfFromUrl()
 
         // Initialize SidebarManager
-        navbarManager = NavbarManager(this, drawerLayout, chapterView, workbookView, apiService)
+        navbarManager = NavbarManager(this, drawerLayout, chapterView, workbookView, apiService, sidebar)
         navbarManager.setupNavbar(toolbar)
         navbarManager.loadChaptersFromServer(baseUrl, metaFileName)
+        navbarManager.loadWorkbooks()
 
         openWorkbookNavButton.setOnClickListener {
             if (navbarManager.getWorkbookSelected()) {
-                navbarManager.loadWorkbooks()
                 navbarManager.setWorkbookSelected(false)
+                sidebar.layoutParams.width = 960
+                chapterView.animate()
+                    .translationXBy(400f)
+                    .setDuration(300)
+                    .withEndAction {
+                        // Show workbook_view in its place
+                        workbookView.visibility = View.VISIBLE
+                        workbookView.alpha = 0f
+                        workbookView.animate().alpha(1f).setDuration(300).start()
+                    }
+                    .start()
             } else {
-                navbarManager.loadChaptersFromServer(baseUrl, metaFileName)
                 navbarManager.setWorkbookSelected(true)
+                chapterView.animate()
+                    .translationX(0f)
+                    .setDuration(300)
+                    .withEndAction {
+                        sidebar.layoutParams.width = 560
+                        // Hide workbook_view
+                        workbookView.animate().alpha(0f).setDuration(300).withEndAction {
+                            workbookView.visibility = View.GONE
+                        }.start()
+                    }
+                    .start()
             }
         }
 

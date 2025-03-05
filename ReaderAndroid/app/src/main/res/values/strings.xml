@@ -12,4 +12,5 @@
     <string name="previous_page">Previous Page</string>
     <string name="next_page">Next Page</string>
     <string name="workbooks">Workbooks</string>
+    <string name="back">Back</string>
 </resources>

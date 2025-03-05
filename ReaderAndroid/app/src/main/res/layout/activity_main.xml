@@ -175,39 +175,39 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- chapter Sidebar -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/chapter_view"
+    <FrameLayout
+        android:id="@+id/sidebar_container"
         android:layout_width="280dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:paddingTop="20dp"
-        app:menu="@menu/chapter_menu">
+        android:layout_gravity="start">
+        <!-- chapter Sidebar -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/chapter_view"
+            android:layout_width="280dp"
+            android:layout_height="match_parent"
+            android:paddingTop="20dp"
+            app:menu="@menu/chapter_menu">
+
         <LinearLayout
             android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="50dp">
+            android:layout_width="280dp"
+            android:layout_height="wrap_content">
 
-            <!-- Button to Open Workbook Sidebar -->
-            <Button
-                android:id="@+id/open_workbook_nav_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/workbooks"/>
+                <!-- Button to Open Workbook Sidebar -->
+                <Button
+                    android:id="@+id/open_workbook_nav_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/back"/>
+            </LinearLayout>
+        </com.google.android.material.navigation.NavigationView>
 
-            <com.google.android.material.navigation.NavigationView
-                android:id="@+id/chapter_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-        </LinearLayout>
-    </com.google.android.material.navigation.NavigationView>
-
-    <!-- Second Sidebar (Workbooks) -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/workbook_view"
-        android:layout_width="280dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:menu="@menu/workbook_menu"
-        android:visibility="gone"/>
+        <!-- Second Sidebar (Workbooks) -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/workbook_view"
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:menu="@menu/workbook_menu"/>
+    </FrameLayout>
 </androidx.drawerlayout.widget.DrawerLayout>
