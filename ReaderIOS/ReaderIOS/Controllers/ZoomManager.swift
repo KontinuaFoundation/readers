@@ -30,10 +30,7 @@ class ZoomManager: ObservableObject {
         var reset: some Gesture {
             TapGesture(count: 2)
                 .onEnded { _ in
-                    self.currentZoom = 0.0
-                    self.totalZoom = 1.2
-                    self.zoomedIn = false
-                    self.zoomPoint = .center
+                    self.resetZoom()
                 }
         }
         return reset
@@ -62,5 +59,21 @@ class ZoomManager: ObservableObject {
 
     func getZoomPoint() -> UnitPoint {
         zoomPoint
+    }
+
+    func panZoomCenter(by translation: CGSize, in viewSize: CGSize) {
+        // Normalize the translation relative to the view size.
+        let deltaX = translation.width / viewSize.width
+        let deltaY = translation.height / viewSize.height
+
+        // Update the zoom point.
+        var newX = zoomPoint.x - deltaX
+        var newY = zoomPoint.y - deltaY
+
+        // Clamp the new values to [0, 1] so the anchor stays within bounds.
+        newX = min(max(newX, 0), 1)
+        newY = min(max(newY, 0), 1)
+
+        zoomPoint = UnitPoint(x: newX, y: newY)
     }
 }
