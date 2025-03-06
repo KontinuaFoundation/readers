@@ -11,7 +11,6 @@ import android.os.CountDownTimer
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.view.GestureDetector
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -27,7 +26,6 @@ import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -652,10 +650,10 @@ class MainActivity :
         timerFillView.layoutParams = params
     }
 
-    fun loadPageNumber(pageNumber: Int){
+    fun loadPageNumber(pageNumber: Int) {
         currentPageIndex = pageNumber
-        annotationView.setPage(pageNumber-1)
-        displayPage(pageNumber-1)
+        annotationView.setPage(pageNumber - 1)
+        displayPage(pageNumber - 1)
     }
 
     fun loadNewWorkbook(workbook: WorkbookData) {

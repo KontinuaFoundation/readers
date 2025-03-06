@@ -21,7 +21,7 @@ class NavbarManager(
     private val chapterView: NavigationView,
     private val workbookView: NavigationView,
     private val apiService: MainActivity.ApiService,
-    private val sidebar: FrameLayout
+    private val sidebar: FrameLayout,
 ) : NavigationView.OnNavigationItemSelectedListener {
     private var workbookSelected = true
     private val chapterMap = mutableMapOf<Int, Int>()
@@ -36,8 +36,8 @@ class NavbarManager(
             drawerLayout,
             toolbar,
             R.string.navigation_drawer_open,
-            R.string.navigation_drawer_close
-        ){
+            R.string.navigation_drawer_close,
+        ) {
             override fun onDrawerOpened(drawerView: View) {
                 super.onDrawerOpened(drawerView)
 
@@ -169,9 +169,7 @@ class NavbarManager(
         }
     }
 
-    fun getWorkbookSelected(): Boolean {
-        return workbookSelected
-    }
+    fun getWorkbookSelected(): Boolean = workbookSelected
 
     fun setWorkbookSelected(selected: Boolean) {
         workbookSelected = selected

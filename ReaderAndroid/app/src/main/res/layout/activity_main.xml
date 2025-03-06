@@ -198,7 +198,9 @@
                     android:id="@+id/open_workbook_nav_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/back"/>
+                    android:text="@string/workbooks"
+                    android:drawableStart="@drawable/ic_arrow_right"
+                    android:drawablePadding="8dp"/>
             </LinearLayout>
         </com.google.android.material.navigation.NavigationView>
 
