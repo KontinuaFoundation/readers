@@ -16,14 +16,11 @@ struct ReaderIOSApp: App {
             if initManager.isInitialized {
                 // Pass any initial data to SplitView as needed.
                 SplitView(initialWorkbooks: initManager.workbooks,
+                          initialWorkbookID: initManager.workbookID,
                           initialPDFDocument: initManager.pdfDocument)
             } else {
-                SplashView(loadFailed: initManager.loadFailed)
+                SplashView(initManager: initManager)
             }
         }
     }
-}
-
-#Preview {
-    SplashView()
 }

@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Evaluating the Fit of a Linear Regression Model",
+    "id": "lin_reg_r2_anova",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Linear Regression and Gradient Descent",
+    "id": "lin_reg_gradient_descent",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 5
+  },
+  {
+    "title": "Generalized Linear Models",
+    "id": "glm",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Link Functions",
+    "id": "link_functions",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 9
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Introduction to Discrete Probability",
+    "id": "discrete_probability",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "Beginning Combinatorics",
+    "id": "combinatorics",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 13
+  },
+  {
+    "title": "Permutations and Sorting",
+    "id": "permutations",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 17
+  }
+]

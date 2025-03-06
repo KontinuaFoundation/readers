@@ -1,0 +1,37 @@
+[
+  {
+    "title": "Projections",
+    "id": "projections",
+    "chap_num": 1,
+    "covers": [],
+    "start_page": 3
+  },
+  {
+    "title": "The Gram-Schmidt Process",
+    "id": "gram-schmidt",
+    "chap_num": 2,
+    "covers": [],
+    "start_page": 7
+  },
+  {
+    "title": "Eigenvectors and Eigenvalues",
+    "id": "eigen",
+    "chap_num": 3,
+    "covers": [],
+    "start_page": 13
+  },
+  {
+    "title": "Singular Value Decomposition",
+    "id": "decomposition",
+    "chap_num": 4,
+    "covers": [],
+    "start_page": 19
+  },
+  {
+    "title": "Tackling Difficult Problems: Positive Semidefinite Matrices",
+    "id": "positive-semidefinite",
+    "chap_num": 5,
+    "covers": [],
+    "start_page": 27
+  }
+]
