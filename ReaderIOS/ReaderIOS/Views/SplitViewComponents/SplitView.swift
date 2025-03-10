@@ -23,10 +23,6 @@ struct SplitView: View {
     @State private var selectedChapterID: String?
     @State private var currentWorkbook: Workbook?
     @State private var currentPage: Int = 0
-    // FIXME:
-    // Cant use current pdf file name anymore.
-    // We should instead pass the entire workbook down then children can use whatever they need...
-
     @State private var columnVisibility = NavigationSplitViewVisibility.automatic
 
     // Bookmark state vars
