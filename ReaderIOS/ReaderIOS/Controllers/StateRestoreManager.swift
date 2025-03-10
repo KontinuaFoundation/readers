@@ -23,17 +23,15 @@ final class StateRestoreManager {
     // MARK: - Save State
 
     /// Saves the current workbook identifier and its corresponding page number.
-    func saveState(workbookID: String, pageNumber: Int) {
+    func saveState(workbookID: Int, pageNumber: Int) {
         let defaults = UserDefaults.standard
 
-        // Save the last opened workbook.
         defaults.set(workbookID, forKey: lastWorkbookKey)
 
-        // Retrieve the current dictionary of workbook page numbers, or create one if it doesn't exist.
         var workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [String: Int] ?? [String: Int]()
-        workbookPages[workbookID] = pageNumber
+        
+        workbookPages[String(workbookID)] = pageNumber
 
-        // Save the updated dictionary back to UserDefaults.
         defaults.set(workbookPages, forKey: workbookPagesKey)
     }
 
@@ -43,31 +41,31 @@ final class StateRestoreManager {
     ///
     /// - Returns: A tuple containing the workbook identifier and page number,
     ///            or `nil` if no state was saved.
-    func loadState() -> (workbookID: String, pageNumber: Int)? {
+    func loadState() -> (workbookID: Int, pageNumber: Int)? {
         let defaults = UserDefaults.standard
 
-        // Retrieve the last opened workbook ID.
-        guard let workbookID = defaults.string(forKey: lastWorkbookKey) else {
+        // Retrieve the last opened workbook ID as an Int
+        guard let workbookID = defaults.object(forKey: lastWorkbookKey) as? Int else {
             return nil
         }
 
         // Retrieve the dictionary of workbook page numbers.
-        if let workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [String: Int],
-           let pageNumber = workbookPages[workbookID]
-        {
+        if let workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [Int: Int],
+           let pageNumber = workbookPages[workbookID] {
             return (workbookID, pageNumber)
         } else {
             return (workbookID, 0)
         }
     }
 
+
     /// Loads the saved page number for a specific workbook.
     ///
     /// - Parameter workbookID: The identifier of the workbook.
     /// - Returns: The saved page number, or nil if not found.
-    func loadPageNumber(for workbookID: String) -> Int {
+    func loadPageNumber(for workbookID: Int) -> Int {
         let defaults = UserDefaults.standard
-        if let workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [String: Int],
+        if let workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [Int: Int],
            let page = workbookPages[workbookID]
         {
             return page

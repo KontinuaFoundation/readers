@@ -5,32 +5,35 @@
 //  Created by Ethan Handelman on 2/19/25.
 //
 import PDFKit
+import Foundation
 
-struct Chapter: Identifiable, Codable {
+struct Chapter: Identifiable, Codable, Hashable {
     let id: String
     let title: String
-    let book: String
     let chapNum: Int
-    let covers: [Cover]
     let startPage: Int
+    let covers: [Cover]
     let requires: [String]?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, book, covers, requires
+        case id, title, covers, requires
         case chapNum = "chap_num"
         case startPage = "start_page"
     }
 }
 
-struct Cover: Identifiable, Codable {
+struct Cover: Identifiable, Codable, Hashable {
     let id: String
     let desc: String
     let videos: [Video]?
     let references: [Reference]?
+
+    enum CodingKeys: String, CodingKey {
+        case id, desc, videos, references
+    }
 }
 
-struct Video: Identifiable, Codable {
-    var id = UUID()
+struct Video: Codable, Hashable {
     let link: String
     let title: String
 
@@ -39,8 +42,7 @@ struct Video: Identifiable, Codable {
     }
 }
 
-struct Reference: Identifiable, Codable {
-    var id = UUID()
+struct Reference: Codable, Hashable {
     let link: String
     let title: String
 
@@ -48,9 +50,18 @@ struct Reference: Identifiable, Codable {
         case link, title
     }
 }
+
 
 struct Workbook: Codable, Hashable, Identifiable {
-    let id: String
-    let metaName: String
-    let pdfName: String
+    let id: Int
+    let number: Int
+    let pdf: String
+    let chapters: [Chapter]
+    let collection: Int
+}
+
+// When we are seeing which workbooks a collection has...
+struct WorkbookPreview: Identifiable, Codable {
+    let id: Int
+    let number: Int
 }

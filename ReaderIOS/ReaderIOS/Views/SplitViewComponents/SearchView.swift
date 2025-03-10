@@ -20,7 +20,7 @@ struct SearchView: View {
 
     // Data passed from the parent
     var chapters: [Chapter]?
-    var fetchChapters: () -> Void
+    var fetchWorkbookAndChapters: () -> Void
     var pdfDocument: PDFDocument?
 
     // Computed properties using the local searchText and wordsIndex
@@ -104,7 +104,7 @@ struct SearchView: View {
                 }
             } else {
                 ProgressView()
-                    .onAppear(perform: fetchChapters)
+                    .onAppear(perform: fetchWorkbookAndChapters)
             }
         }
         .onAppear {

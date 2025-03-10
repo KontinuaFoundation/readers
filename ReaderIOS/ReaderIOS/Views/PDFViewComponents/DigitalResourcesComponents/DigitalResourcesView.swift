@@ -15,87 +15,99 @@ struct URLItem: Identifiable {
 struct DigitalResourcesView: View {
     var covers: [Cover]?
     @State private var selectedLink: URLItem?
-    @State private var showWebView = false
-    @Environment(\.dismiss) private var dismiss // iOS 15+ environment dismiss action
+    @Environment(\.dismiss) private var dismiss // iOS 15+ dismiss action
 
     var body: some View {
         NavigationView {
-            if let covers = covers, !covers.isEmpty {
-                List {
-                    ForEach(covers) { cover in
-                        Section(header: Text(cover.desc)
-                            .font(.title3)
-                            .foregroundColor(.black)
-                            .textCase(nil))
-                        {
-                            if let videos = cover.videos, !videos.isEmpty {
-                                Section(header: Text("Videos")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.gray)
-                                    .textCase(.uppercase))
-                                {
-                                    ForEach(videos) { video in
-                                        Button(video.title) {
-                                            if let url = URL(string: video.link) {
-                                                selectedLink = URLItem(url: url)
-                                                showWebView = true
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if let references = cover.references, !references.isEmpty {
-                                Section(header: Text("References")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.gray)
-                                    .textCase(.uppercase))
-                                {
-                                    ForEach(references) { reference in
-                                        Button(reference.title) {
-                                            if let url = URL(string: reference.link) {
-                                                selectedLink = URLItem(url: url)
-                                                showWebView = true
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if cover.videos?.isEmpty ?? true, cover.references?.isEmpty ?? true {
-                                Text("No Videos or References Available")
-                            }
-                        }
+            List {
+                if let covers = covers, !covers.isEmpty {
+                    ForEach(covers, id: \.id) { cover in
+                        coverSection(cover)
                     }
-                }
-                .navigationTitle("Digital Resources")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Close") {
-                            dismiss()
-                        }
-                    }
-                }
-                .fullScreenCover(item: $selectedLink, onDismiss: {
-                    print("Content view dismissed. Cleaning up resources.")
-                    showWebView = false
-                }, content: { linkItem in
-                    AdaptiveContentView(url: linkItem.url)
-                })
-
-            } else {
-                VStack {
-                    Text("No Digital Resources Available")
-                        .foregroundColor(.gray)
-                        .padding()
-
-                    Button("Close") {
-                        dismiss()
-                    }
-                    .padding()
+                } else {
+                    emptyStateView()
                 }
             }
+            .navigationTitle("Digital Resources")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                }
+            }
+            .fullScreenCover(item: $selectedLink) { linkItem in
+                AdaptiveContentView(url: linkItem.url)
+            }
+        }
+    }
+
+    // MARK: - Helper Views
+
+    @ViewBuilder
+    private func coverSection(_ cover: Cover) -> some View {
+        Section(header: Text(cover.desc)
+            .font(.title3)
+            .foregroundColor(.black)
+            .textCase(nil))
+        {
+            videoSection(cover.videos)
+            referenceSection(cover.references)
+
+            if (cover.videos?.isEmpty ?? true) && (cover.references?.isEmpty ?? true) {
+                Text("No Videos or References Available").foregroundColor(.gray)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func videoSection(_ videos: [Video]?) -> some View {
+        if let videos = videos, !videos.isEmpty {
+            Section(header: Text("Videos")
+                .font(.system(size: 12))
+                .foregroundColor(.gray)
+                .textCase(.uppercase))
+            {
+                ForEach(videos, id: \.link) { video in
+                    linkButton(title: video.title, urlString: video.link)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func referenceSection(_ references: [Reference]?) -> some View {
+        if let references = references, !references.isEmpty {
+            Section(header: Text("References")
+                .font(.system(size: 12))
+                .foregroundColor(.gray)
+                .textCase(.uppercase))
+            {
+                ForEach(references, id: \.link) { reference in
+                    linkButton(title: reference.title, urlString: reference.link)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func linkButton(title: String, urlString: String) -> some View {
+        if let url = URL(string: urlString) {
+            Button(title) {
+                selectedLink = URLItem(url: url)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func emptyStateView() -> some View {
+        VStack {
+            Text("No Digital Resources Available")
+                .foregroundColor(.gray)
+                .padding()
+            Button("Close") {
+                dismiss()
+            }
+            .padding()
         }
     }
 }

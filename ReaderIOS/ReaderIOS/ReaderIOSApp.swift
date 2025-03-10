@@ -15,6 +15,9 @@ struct ReaderIOSApp: App {
         WindowGroup {
             if initManager.isInitialized {
                 // Pass any initial data to SplitView as needed.
+                // TODO:
+                // Why is initial data seperate from current? Wouldnt current just start as initial?
+                // - Devin
                 SplitView(initialWorkbooks: initManager.workbooks,
                           initialWorkbookID: initManager.workbookID,
                           initialPDFDocument: initManager.pdfDocument)

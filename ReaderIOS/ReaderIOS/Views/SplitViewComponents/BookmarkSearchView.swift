@@ -9,12 +9,12 @@ import SwiftUI
 
 struct BookmarkSearchView: View {
     @Binding var currentPage: Int
-    var currentPdfFileName: String?
+    var currentWorkbook: Workbook?
     @ObservedObject var bookmarkManager: BookmarkManager
 
     var body: some View {
-        if let currentPdfFileName = currentPdfFileName,
-           let bookmarks = bookmarkManager.bookmarkLookup[currentPdfFileName]
+        if let currentWorkbook = currentWorkbook,
+           let bookmarks = bookmarkManager.bookmarkLookup[currentWorkbook.id]
         {
             List(Array(bookmarks).sorted(), id: \.self) { bookmark in
                 HStack {

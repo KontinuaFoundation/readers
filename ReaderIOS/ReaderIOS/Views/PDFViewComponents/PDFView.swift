@@ -4,7 +4,7 @@ import SwiftUI
 struct PDFView: View {
     // MARK: - Bindings
 
-    @Binding var fileName: String?
+    @Binding var currentWorkbook: Workbook?
     @Binding var currentPage: Int
     @Binding var covers: [Cover]?
     @Binding var pdfDocument: PDFDocument?
@@ -147,10 +147,10 @@ struct PDFView: View {
                                     })
 
                                     Button {
-                                        bookmarkManager.toggleBookmark(for: fileName, currentPage: currentPage)
+                                        bookmarkManager.toggleBookmark(for: currentWorkbook, currentPage: currentPage)
                                     } label: {
                                         Image(systemName: bookmarkManager.isBookmarked(
-                                            fileName: fileName,
+                                            workbook: currentWorkbook,
                                             currentPage: currentPage
                                         ) ? "bookmark.fill" : "bookmark")
                                             .foregroundColor(.yellow)
@@ -193,7 +193,7 @@ struct PDFView: View {
             .sheet(isPresented: $showingFeedback) {
                 FeedbackView()
             }
-            .onChange(of: fileName) { _, _ in
+            .onChange(of: currentWorkbook) { _, _ in
                 loadPDFDocument()
             }
         }
@@ -202,8 +202,11 @@ struct PDFView: View {
     // MARK: - Helper Methods
 
     private func loadPDFDocument() {
-        guard let fileName = fileName else { return }
-        NetworkingService.shared.fetchPDF(fileName: fileName) { result in
+        guard let currentWorkbook = currentWorkbook else { return }
+        
+        
+        
+        NetworkingService.shared.fetchPDF(workbook: currentWorkbook) { result in
             switch result {
             case let .success(document):
                 pdfDocument = document
@@ -220,8 +223,8 @@ struct PDFView: View {
     }
 
     private func uniqueKey(for pageIndex: Int) -> String {
-        guard let fileName = fileName else { return "\(pageIndex)" }
-        return "\(fileName)-\(pageIndex)"
+        guard let workbook = currentWorkbook else { return "\(pageIndex)" }
+        return "\(workbook.id)-\(pageIndex)"
     }
 
     private func clearMarkup() {
