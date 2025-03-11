@@ -30,16 +30,14 @@ class Workbook(models.Model):
 # Feedback Model
 class Feedback(models.Model):
     workbook = models.ForeignKey(Workbook, on_delete=models.CASCADE)
-    page_number = models.IntegerField(blank=False, null=False, default=0)
-    chapter_number = models.IntegerField(blank=False, null=False, default=0)
-    description = models.TextField(blank=False, null=False, default="")
-    user_email = models.EmailField(blank=False, null=False, default="")
+    page_number = models.IntegerField(blank=False, null=False)
+    chapter_number = models.IntegerField(blank=False, null=False)
+    description = models.TextField(blank=False, null=False)
+    user_email = models.EmailField(blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    major_version = models.IntegerField(blank=False, null=False, default=1)
-    minor_version = models.IntegerField(blank=False, null=False, default=0)
-    localization = models.CharField(
-        max_length=5, blank=False, null=False, default="en-US"
-    )
+    major_version = models.IntegerField(blank=False, null=False)
+    minor_version = models.IntegerField(blank=False, null=False)
+    localization = models.CharField(max_length=5, blank=False, null=False)
 
     def __str__(self):
         return f"Feedback on Workbook {self.workbook.number} v{self.major_version}.{self.minor_version} - Chapter {self.chapter_number} - Page {self.page_number}"

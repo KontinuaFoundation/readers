@@ -134,10 +134,10 @@ class FeedbackView(APIView):
         try:
             # Extract data from the request
             workbook_id = request.data.get("workbook_id")
-            page_number = request.data.get("page_number")
             chapter_number = request.data.get("chapter_number")
+            page_number = request.data.get("page_number")
+            user_email = request.data.get("user_email")
             description = request.data.get("description")
-            user_email = request.data.get("email")
 
             # Extract version information
             major_version = request.data.get("major_version")
@@ -148,10 +148,10 @@ class FeedbackView(APIView):
             if not all(
                 [
                     workbook_id,
-                    page_number,
                     chapter_number,
-                    description,
+                    page_number,
                     user_email,
+                    description,
                     major_version,
                     minor_version,
                     localization,
