@@ -8,21 +8,21 @@ import PDFKit
 import SwiftUI
 
 struct SplitView: View {
-    var initialWorkbooks: [Workbook] = []
-    var initialWorkbookID: String?
+    var initialWorkbooks: [WorkbookPreview] = []
+    var initialWorkbookID: Int?
     var initialPDFDocument: PDFDocument?
+    var initialCollection: Collection?
 
     // Loaded workbooks information state vars
-    @State private var workbooks: [Workbook]?
+    @State private var workbooks: [WorkbookPreview]?
     @State private var chapters: [Chapter]?
     @State private var covers: [Cover]?
 
     // User selection (what they are viewing) state vars
-    @State private var selectedWorkbookID: String?
+    @State private var selectedWorkbookID: Int?
     @State private var selectedChapterID: String?
+    @State private var currentWorkbook: Workbook?
     @State private var currentPage: Int = 0
-    @State private var currentPdfFileName: String?
-
     @State private var columnVisibility = NavigationSplitViewVisibility.automatic
 
     // Bookmark state vars
@@ -43,7 +43,7 @@ struct SplitView: View {
                         Image(systemName: "icloud.and.arrow.down") // Download icon
                             .font(.caption)
                             .foregroundColor(.blue)
-                        Text(workbook.id)
+                        Text("Workbook \(workbook.number)")
                             .tag(workbook.id)
                     }
                 }
@@ -65,14 +65,14 @@ struct SplitView: View {
                         currentPage: $currentPage,
                         columnVisibility: $columnVisibility,
                         chapters: chapters,
-                        fetchChapters: fetchChapters,
+                        fetchWorkbookAndChapters: fetchWorkbookAndChapters,
                         pdfDocument: pdfDocument
                     )
                 } else {
                     // Bookmarks view
                     BookmarkSearchView(
                         currentPage: $currentPage,
-                        currentPdfFileName: currentPdfFileName,
+                        currentWorkbook: currentWorkbook,
                         bookmarkManager: bookmarkManager
                     )
                 }
@@ -89,10 +89,10 @@ struct SplitView: View {
                 }
             }
         } detail: {
-            if currentPdfFileName != nil {
+            if currentWorkbook != nil {
                 // TODO: Only give access to bookmarks for current file.
                 PDFView(
-                    fileName: $currentPdfFileName,
+                    currentWorkbook: $currentWorkbook,
                     currentPage: $currentPage,
                     covers: $covers,
                     pdfDocument: $pdfDocument,
@@ -111,11 +111,7 @@ struct SplitView: View {
         .onChange(of: selectedWorkbookID) {
             guard let selectedWorkbook = selectedWorkbook else { return }
 
-            if currentPdfFileName != selectedWorkbook.pdfName {
-                currentPdfFileName = selectedWorkbook.pdfName
-            }
-
-            fetchChapters()
+            fetchWorkbookAndChapters()
 
             if let selectedWorkbookID {
                 currentPage = StateRestoreManager.shared.loadPageNumber(for: selectedWorkbookID)
@@ -130,7 +126,7 @@ struct SplitView: View {
         }
     }
 
-    var selectedWorkbook: Workbook? {
+    var selectedWorkbook: WorkbookPreview? {
         workbooks?.first(where: { $0.id == selectedWorkbookID })
     }
 
@@ -141,7 +137,9 @@ struct SplitView: View {
     }
 
     func fetchWorkbooks() {
-        NetworkingService.shared.fetchWorkbooks { result in
+        guard let initialCollection else { return }
+
+        NetworkingService.shared.fetchWorkbooks(collection: initialCollection) { result in
             switch result {
             case let .success(workbookResponse):
                 workbooks = workbookResponse
@@ -167,14 +165,15 @@ struct SplitView: View {
         }
     }
 
-    func fetchChapters() {
-        guard let fileName = selectedWorkbook?.metaName else { return }
+    func fetchWorkbookAndChapters() {
+        guard let id = selectedWorkbook?.id else { return }
 
-        NetworkingService.shared.fetchChapters(metaName: fileName) { result in
+        NetworkingService.shared.fetchWorkbook(id: id) { result in
             switch result {
-            case let .success(chapterResponse):
-                chapters = chapterResponse
+            case let .success(workbookRes):
+                chapters = workbookRes.chapters
                 selectedChapterID = chapters?.first?.id
+                currentWorkbook = workbookRes
                 setupChapterManager()
             case let .failure(error):
                 print("Error fetching chapters: \(error)")

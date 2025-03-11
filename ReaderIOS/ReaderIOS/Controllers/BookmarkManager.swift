@@ -9,26 +9,27 @@ import Combine
 import Foundation
 
 final class BookmarkManager: ObservableObject {
-    @Published var bookmarkLookup: [String: Set<Int>] = [:]
+    @Published var bookmarkLookup: [Int: Set<Int>] = [:]
 
     /// Checks if the current page is bookmarked for the given file.
-    func isBookmarked(fileName: String?, currentPage: Int) -> Bool {
-        guard let fileName = fileName else { return false }
-        return bookmarkLookup[fileName]?.contains(currentPage) ?? false
+    func isBookmarked(workbook: Workbook?, currentPage: Int) -> Bool {
+        guard let id = workbook?.id else { return false }
+        return bookmarkLookup[id]?.contains(currentPage) ?? false
     }
 
     /// Toggles the bookmark status for the given file and page.
-    func toggleBookmark(for fileName: String?, currentPage: Int) {
-        guard let fileName = fileName else { return }
-        if var pages = bookmarkLookup[fileName] {
+    func toggleBookmark(for workbook: Workbook?, currentPage: Int) {
+        guard let id = workbook?.id else { return }
+
+        if var pages = bookmarkLookup[id] {
             if pages.contains(currentPage) {
                 pages.remove(currentPage)
             } else {
                 pages.insert(currentPage)
             }
-            bookmarkLookup[fileName] = pages
+            bookmarkLookup[id] = pages
         } else {
-            bookmarkLookup[fileName] = [currentPage]
+            bookmarkLookup[id] = [currentPage]
         }
     }
 }

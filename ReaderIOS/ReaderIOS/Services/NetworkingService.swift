@@ -8,10 +8,16 @@
 import Foundation
 import PDFKit.PDFDocument
 
+let APIURL = "http://18.189.208.93/api/"
+
 enum NetworkError: Error {
     case invalidURL
     case noData
 }
+
+// 1.) /api/collections/?localization=en-US to get latest collection
+// 2.) /api/collections/<id>/ to get workbooks for that collection
+// 3.) Then we can fetch workbooks / pdfs as needed...
 
 final class NetworkingService {
     static let shared = NetworkingService()
@@ -26,8 +32,47 @@ final class NetworkingService {
         return URLSession(configuration: config)
     }()
 
-    func fetchWorkbooks(completion: @escaping (Result<[Workbook], Error>) -> Void) {
-        guard let url = URL(string: "http://localhost:8000/workbooks.json") else {
+    func fetchLatestCollection(completion: @escaping (Result<Collection, Error>) -> Void) {
+        guard let url = URL(string: APIURL + "collections/?localization=en-US") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+        var request = URLRequest(url: url)
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+
+        let task = session.dataTask(with: request) { data, _, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            guard let data = data else {
+                completion(.failure(NetworkError.noData))
+                return
+            }
+            do {
+                let decoder = JSONDecoder()
+                let collections = try decoder.decode([Collection].self, from: data)
+
+                if collections.isEmpty {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+
+                let latestCollection = collections[0]
+
+                DispatchQueue.main.async {
+                    completion(.success(latestCollection))
+                }
+
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        task.resume()
+    }
+
+    func fetchWorkbooks(collection: Collection, completion: @escaping (Result<[WorkbookPreview], Error>) -> Void) {
+        guard let url = URL(string: APIURL + "collections/\(collection.id)/") else {
             completion(.failure(NetworkError.invalidURL))
             return
         }
@@ -46,9 +91,9 @@ final class NetworkingService {
             }
             do {
                 let decoder = JSONDecoder()
-                let workbooks = try decoder.decode([Workbook].self, from: data)
+                let detailedCollection = try decoder.decode(DetailedCollection.self, from: data)
                 DispatchQueue.main.async {
-                    completion(.success(workbooks))
+                    completion(.success(detailedCollection.workbooks))
                 }
             } catch {
                 completion(.failure(error))
@@ -57,8 +102,8 @@ final class NetworkingService {
         task.resume()
     }
 
-    func fetchChapters(metaName: String, completion: @escaping (Result<[Chapter], Error>) -> Void) {
-        guard let url = URL(string: "http://localhost:8000/meta/\(metaName)") else {
+    func fetchWorkbook(id: Int, completion: @escaping (Result<Workbook, Error>) -> Void) {
+        guard let url = URL(string: APIURL + "workbooks/\(id)/") else {
             completion(.failure(NetworkError.invalidURL))
             return
         }
@@ -67,17 +112,19 @@ final class NetworkingService {
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
         let task = session.dataTask(with: request) { data, _, error in
+
             if let error = error {
                 completion(.failure(error))
                 return
             }
+
             guard let data = data else {
                 completion(.failure(NetworkError.noData))
                 return
             }
             do {
                 let decoder = JSONDecoder()
-                let chapters = try decoder.decode([Chapter].self, from: data)
+                let chapters = try decoder.decode(Workbook.self, from: data)
                 DispatchQueue.main.async {
                     completion(.success(chapters))
                 }
@@ -89,13 +136,13 @@ final class NetworkingService {
     }
 
     /// Fetches a PDF document given its file name.
-    func fetchPDF(fileName: String, completion: @escaping (Result<PDFDocument, Error>) -> Void) {
-        let baseURL = "http://localhost:8000/pdfs/"
-        let urlString = baseURL + fileName
-        guard let url = URL(string: urlString) else {
+    func fetchPDF(workbook: Workbook, completion: @escaping (Result<PDFDocument, Error>) -> Void) {
+        guard let url = URL(string: workbook.pdf) else {
             completion(.failure(NetworkError.invalidURL))
             return
         }
+
+        print("Downloading the pdf from \(url)")
 
         let task = session.dataTask(with: url) { data, _, error in
             if let error = error {
