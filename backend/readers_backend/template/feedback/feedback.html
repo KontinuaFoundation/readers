@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        background-color: #f4f4f4;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .content {
+        padding: 20px 0;
+      }
+      .footer {
+        font-size: 12px;
+        color: #999;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+      }
+      .info-row {
+        margin-bottom: 10px;
+      }
+      .label {
+        font-weight: bold;
+        width: 150px;
+        display: inline-block;
+      }
+      .description {
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-left: 4px solid #ddd;
+        margin: 15px 0;
+      }
+      .version-info {
+        background-color: #e9f7fd;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>User Feedback Received</h2>
+      </div>
+
+      <div class="content">
+        <div class="version-info">
+          <div><span class="label">Workbook:</span> #{{ workbook_number }}</div>
+          <div>
+            <span class="label">Version:</span> {{ major_version }}.{{
+            minor_version }}
+          </div>
+          <div><span class="label">Localization:</span> {{ localization }}</div>
+        </div>
+
+        <div class="info-row">
+          <span class="label">From:</span> {{ user_email }}
+        </div>
+
+        <div class="info-row">
+          <span class="label">Chapter:</span> {{ chapter_number }}
+        </div>
+
+        <div class="info-row">
+          <span class="label">Page:</span> {{ page_number }}
+        </div>
+
+        <div class="info-row">
+          <span class="label">Submitted:</span> {{ date_submitted }}
+        </div>
+
+        <div class="info-row">
+          <span class="label">Feedback:</span>
+          <div class="description">{{ description|linebreaks }}</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>
+          This is an automated message from your Reader's Backend application.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

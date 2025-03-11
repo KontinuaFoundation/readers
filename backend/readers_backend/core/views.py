@@ -2,14 +2,20 @@ from rest_framework import mixins
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .utils import send_feedback_email
 from rest_framework.viewsets import GenericViewSet
 
-from core.models import Collection, Workbook
-from core.serializers import CollectionListSerializer, WorkbookCreateSerializer, CollectionCreateSerializer, \
-    CollectionRetrieveSerializer, WorkbookRetrieveSerializer
+from core.models import Feedback, Collection, Workbook
+from core.serializers import (
+    CollectionListSerializer,
+    WorkbookCreateSerializer,
+    CollectionCreateSerializer,
+    CollectionRetrieveSerializer,
+    WorkbookRetrieveSerializer,
+)
 
 
 class DestroyAuthTokenView(APIView):
@@ -17,21 +23,30 @@ class DestroyAuthTokenView(APIView):
 
     def delete(self, request):
         Token.objects.filter(user=request.user).delete()
-        return Response({"message": "Token deleted."}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"message": "Token deleted."}, status=status.HTTP_204_NO_CONTENT
+        )
 
-class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+
+class CollectionViewSet(
+    GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+):
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == "create":
             return CollectionCreateSerializer
-        elif self.action == 'list':
+        elif self.action == "list":
             return CollectionListSerializer
-        elif self.action == 'retrieve':
+        elif self.action == "retrieve":
             return CollectionRetrieveSerializer
         return None
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ["list", "retrieve"]:
             return []
         return [IsAuthenticated()]
 
@@ -43,15 +58,15 @@ class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyM
             queryset = queryset.filter(is_released=True)
 
         # Query param filtering only applies for listing collections.
-        if self.action != 'list':
+        if self.action != "list":
             return queryset
 
         params = self.request.query_params
 
-        major_version = params.get('major_version')
-        minor_version = params.get('minor_version')
-        localization = params.get('localization')
-        is_released = params.get('is_released')
+        major_version = params.get("major_version")
+        minor_version = params.get("minor_version")
+        localization = params.get("localization")
+        is_released = params.get("is_released")
 
         if major_version is not None:
             queryset = queryset.filter(major_version=major_version)
@@ -64,37 +79,126 @@ class CollectionViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyM
 
         # We've already filtered for released collections if the user is not authenticated so doesn't matter if we apply this here.
         if is_released is not None:
-            is_released_bool = is_released.lower() == 'true'
+            is_released_bool = is_released.lower() == "true"
             queryset = queryset.filter(is_released=is_released_bool)
 
         return queryset
 
-    @action(detail=True, methods=['patch'])
+    @action(detail=True, methods=["patch"])
     def release(self, request, pk=None):
         collection = self.get_object()
         collection.is_released = True
         collection.save()
         return Response({"message": "Collection released."}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['patch'])
+    @action(detail=True, methods=["patch"])
     def unrelease(self, request, pk=None):
         collection = self.get_object()
         collection.is_released = False
         collection.save()
-        return Response({"message": "Collection un-released."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Collection un-released."}, status=status.HTTP_200_OK
+        )
 
-class WorkbookViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.RetrieveModelMixin):
+
+class WorkbookViewSet(
+    GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.RetrieveModelMixin,
+):
     queryset = Workbook.objects.all()
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == "create":
             return WorkbookCreateSerializer
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return WorkbookRetrieveSerializer
         return None
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ["list", "retrieve"]:
             return []
 
         return [IsAuthenticated()]
+
+
+class FeedbackView(APIView):
+    """
+    API endpoint that allows users to submit feedback.
+    """
+
+    permission_classes = [AllowAny]  # Allow unauthenticated users to submit feedback
+
+    def post(self, request):
+        try:
+            # Extract data from the request
+            workbook_id = request.data.get("workbook_id")
+            page_number = request.data.get("page_number")
+            chapter_number = request.data.get("chapter_number")
+            description = request.data.get("description")
+            user_email = request.data.get("email")
+
+            # Extract version information
+            major_version = request.data.get("major_version")
+            minor_version = request.data.get("minor_version")
+            localization = request.data.get("localization")
+
+            # Validate required fields
+            if not all(
+                [
+                    workbook_id,
+                    page_number,
+                    chapter_number,
+                    description,
+                    user_email,
+                    major_version,
+                    minor_version,
+                    localization,
+                ]
+            ):
+                return Response(
+                    {
+                        "error": "Missing required fields. Please provide workbook_id, page_number, chapter_number, "
+                        "description, email, major_version, minor_version, and localization."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Check if workbook exists
+            try:
+                workbook = Workbook.objects.get(id=workbook_id)
+            except Workbook.DoesNotExist:
+                return Response(
+                    {"error": f"Workbook with ID {workbook_id} does not exist."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Create feedback record with version info
+            feedback = Feedback.objects.create(
+                workbook=workbook,
+                page_number=page_number,
+                chapter_number=chapter_number,
+                description=description,
+                user_email=user_email,
+                major_version=major_version,
+                minor_version=minor_version,
+                localization=localization,
+            )
+
+            # Send email notification
+            email_sent = send_feedback_email(feedback)
+
+            return Response(
+                {
+                    "message": "Feedback submitted successfully",
+                    "feedback_id": feedback.id,
+                    "email_sent": email_sent,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
