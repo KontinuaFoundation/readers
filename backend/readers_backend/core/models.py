@@ -34,7 +34,7 @@ class Feedback(models.Model):
     chapter_number = models.IntegerField(blank=False, null=False, default=0)
     description = models.TextField(blank=False, null=False, default="")
     user_email = models.EmailField(blank=False, null=False, default="")
-    created_at = models.DateTimeField(auto_now_add=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
     major_version = models.IntegerField(blank=False, null=False, default=1)
     minor_version = models.IntegerField(blank=False, null=False, default=0)
     localization = models.CharField(
