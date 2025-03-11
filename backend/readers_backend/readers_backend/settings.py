@@ -74,22 +74,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "readers_backend.urls"
 
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-]
-
 WSGI_APPLICATION = "readers_backend.wsgi.application"
 
 # Database
@@ -196,10 +180,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
-EMAIL_HOST_USER = os.environ.get(
-    "EMAIL_HOST_USER", "jonasschiessl.personal@gmail.com"
-)  # App's email address
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "zeoc uiyt vqxu bozb")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")  # App's email address
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 FEEDBACK_EMAIL = os.environ.get(
     "FEEDBACK_EMAIL", EMAIL_HOST_USER
@@ -208,7 +190,7 @@ FEEDBACK_EMAIL = os.environ.get(
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

@@ -7,6 +7,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .utils import send_feedback_email
 from rest_framework.viewsets import GenericViewSet
+import logging
+
+logger = logging.getLogger(__name__)
 
 from core.models import Feedback, Collection, Workbook
 from core.serializers import (
@@ -132,6 +135,8 @@ class FeedbackView(APIView):
 
     def post(self, request):
         try:
+            logger.debug(f"Feedback request data: {request.data}")
+
             # Extract data from the request
             workbook_id = request.data.get("workbook_id")
             chapter_number = request.data.get("chapter_number")
@@ -144,9 +149,40 @@ class FeedbackView(APIView):
             minor_version = request.data.get("minor_version")
             localization = request.data.get("localization")
 
+            # Log the entire request
+            print(f"FEEDBACK REQUEST DATA: {request.data}")
+
+            # Extract data and explicitly check each value
+            workbook_id = request.data.get("workbook_id")
+            page_number = request.data.get("page_number")
+            chapter_number = request.data.get("chapter_number")
+            description = request.data.get("description")
+            user_email = request.data.get("email")
+            major_version = request.data.get("major_version")
+            minor_version = request.data.get("minor_version")
+            localization = request.data.get("localization")
+
+            # Print each value and its boolean evaluation
+            print(f"VALIDATION CHECK:")
+            print(f"- workbook_id: {workbook_id}, evaluates to {bool(workbook_id)}")
+            print(f"- page_number: {page_number}, evaluates to {bool(page_number)}")
+            print(
+                f"- chapter_number: {chapter_number}, evaluates to {bool(chapter_number)}"
+            )
+            print(f"- description: {description}, evaluates to {bool(description)}")
+            print(f"- user_email: {user_email}, evaluates to {bool(user_email)}")
+            print(
+                f"- major_version: {major_version}, evaluates to {bool(major_version)}"
+            )
+            print(
+                f"- minor_version: {minor_version}, evaluates to {bool(minor_version)}"
+            )
+            print(f"- localization: {localization}, evaluates to {bool(localization)}")
+
             # Validate required fields
-            if not all(
-                [
+            if any(
+                field is None or (isinstance(field, str) and not field.strip())
+                for field in [
                     workbook_id,
                     chapter_number,
                     page_number,
@@ -159,8 +195,8 @@ class FeedbackView(APIView):
             ):
                 return Response(
                     {
-                        "error": "Missing required fields. Please provide workbook_id, page_number, chapter_number, "
-                        "description, email, major_version, minor_version, and localization."
+                        "error": "Missing required fields. Please provide workbook_id, chapter_number, page_number, "
+                        "email, description, major_version, minor_version, and localization."
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )

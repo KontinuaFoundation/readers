@@ -31,6 +31,9 @@ def send_feedback_email(feedback):
         "date_submitted": feedback.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
 
+    print(f"Context being passed to template: {context}")
+    print(f"Specifically, minor_version = {context.get('minor_version')}")
+
     # Create email body
     html_message = render_to_string("emails/feedback.html", context)
 

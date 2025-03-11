@@ -56,10 +56,9 @@
 
       <div class="content">
         <div class="version-info">
-          <div><span class="label">Workbook:</span> #{{ workbook_number }}</div>
+          <div><span class="label">Workbook:</span> {{ workbook_number }}</div>
           <div>
-            <span class="label">Version:</span> {{ major_version }}.{{
-            minor_version }}
+            <span class="label">Version:</span> {{ major_version }}.<span style="white-space:nowrap">{{ minor_version }}
           </div>
           <div><span class="label">Localization:</span> {{ localization }}</div>
         </div>
