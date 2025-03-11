@@ -20,7 +20,7 @@ final class BookmarkManager: ObservableObject {
     /// Toggles the bookmark status for the given file and page.
     func toggleBookmark(for workbook: Workbook?, currentPage: Int) {
         guard let id = workbook?.id else { return }
-        
+
         if var pages = bookmarkLookup[id] {
             if pages.contains(currentPage) {
                 pages.remove(currentPage)

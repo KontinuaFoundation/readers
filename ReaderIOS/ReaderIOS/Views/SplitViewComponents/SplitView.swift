@@ -138,7 +138,7 @@ struct SplitView: View {
 
     func fetchWorkbooks() {
         guard let initialCollection else { return }
-        
+
         NetworkingService.shared.fetchWorkbooks(collection: initialCollection) { result in
             switch result {
             case let .success(workbookResponse):
@@ -167,7 +167,6 @@ struct SplitView: View {
 
     func fetchWorkbookAndChapters() {
         guard let id = selectedWorkbook?.id else { return }
-        
 
         NetworkingService.shared.fetchWorkbook(id: id) { result in
             switch result {

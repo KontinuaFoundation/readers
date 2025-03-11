@@ -53,7 +53,7 @@ struct DigitalResourcesView: View {
             videoSection(cover.videos)
             referenceSection(cover.references)
 
-            if (cover.videos?.isEmpty ?? true) && (cover.references?.isEmpty ?? true) {
+            if cover.videos?.isEmpty ?? true, cover.references?.isEmpty ?? true {
                 Text("No Videos or References Available").foregroundColor(.gray)
             }
         }

@@ -14,7 +14,7 @@ struct Collection: Identifiable, Codable {
     let localization: String
     let createdAt: String
     let isReleased: Bool
-    
+
     enum CodingKeys: String, CodingKey {
         case id
         case majorVersion = "major_version"
@@ -22,9 +22,7 @@ struct Collection: Identifiable, Codable {
         case localization
         case createdAt = "creation_date"
         case isReleased = "is_released"
-        
     }
-    
 }
 
 struct DetailedCollection: Identifiable, Codable {
@@ -35,7 +33,7 @@ struct DetailedCollection: Identifiable, Codable {
     let createdAt: String
     let isReleased: Bool
     let workbooks: [WorkbookPreview]
-    
+
     enum CodingKeys: String, CodingKey {
         case id
         case majorVersion = "major_version"

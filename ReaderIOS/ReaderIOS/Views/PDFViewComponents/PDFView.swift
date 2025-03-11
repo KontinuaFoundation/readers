@@ -203,9 +203,7 @@ struct PDFView: View {
 
     private func loadPDFDocument() {
         guard let currentWorkbook = currentWorkbook else { return }
-        
-        
-        
+
         NetworkingService.shared.fetchPDF(workbook: currentWorkbook) { result in
             switch result {
             case let .success(document):

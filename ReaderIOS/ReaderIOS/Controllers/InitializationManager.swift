@@ -29,17 +29,15 @@ final class InitializationManager: ObservableObject {
         loadInitialData()
     }
 
-    
     func loadInitialData(delay: Int = 0) {
         self.delay = delay
         attempts += 1
         fetchLatestCollection()
     }
-    
+
     private func fetchLatestCollection() {
         NetworkingService.shared.fetchLatestCollection { [weak self] result in
             switch result {
-                
             case let .success(collection):
                 DispatchQueue.main.async {
                     self?.latestCollection = collection
@@ -47,12 +45,10 @@ final class InitializationManager: ObservableObject {
                 }
             case let .failure(error):
                 print("Failed to fetch latest collection: \(error)")
-                
             }
-            
         }
     }
-    
+
     private func fetchWorkbookList(collection: Collection) {
         let start = DispatchTime.now()
 
@@ -71,10 +67,9 @@ final class InitializationManager: ObservableObject {
                         if let workbookID = self?.workbookID {
                             self?.fetchWorkbook(for: workbookID)
                             self?.isInitialized = true
-                        }
-                        else {
+                        } else {
                             print("workbook list returned empty list, this should never happen.")
-                            self?.loadFailed = true;
+                            self?.loadFailed = true
                         }
                     }
                 }
@@ -88,7 +83,7 @@ final class InitializationManager: ObservableObject {
             }
         }
     }
-    
+
     private func fetchWorkbook(for id: Int) {
         NetworkingService.shared.fetchWorkbook(id: id) { [weak self] result in
             DispatchQueue.main.async {
@@ -106,15 +101,13 @@ final class InitializationManager: ObservableObject {
     }
 
     private func fetchPDF(for workbook: Workbook) {
-        
         NetworkingService.shared.fetchPDF(workbook: workbook) { [weak self] result in
             switch result {
-                case let .success(pdf):
+            case let .success(pdf):
                 self?.pdfDocument = pdf
             case let .failure(error):
                 print("Error fetching PDF: \(error)")
             }
         }
     }
-
 }

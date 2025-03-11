@@ -29,7 +29,7 @@ final class StateRestoreManager {
         defaults.set(workbookID, forKey: lastWorkbookKey)
 
         var workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [String: Int] ?? [String: Int]()
-        
+
         workbookPages[String(workbookID)] = pageNumber
 
         defaults.set(workbookPages, forKey: workbookPagesKey)
@@ -51,13 +51,13 @@ final class StateRestoreManager {
 
         // Retrieve the dictionary of workbook page numbers.
         if let workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [Int: Int],
-           let pageNumber = workbookPages[workbookID] {
+           let pageNumber = workbookPages[workbookID]
+        {
             return (workbookID, pageNumber)
         } else {
             return (workbookID, 0)
         }
     }
-
 
     /// Loads the saved page number for a specific workbook.
     ///

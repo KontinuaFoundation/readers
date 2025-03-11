@@ -4,8 +4,8 @@
 //
 //  Created by Ethan Handelman on 2/19/25.
 //
-import PDFKit
 import Foundation
+import PDFKit
 
 struct Chapter: Identifiable, Codable, Hashable {
     let id: String
@@ -50,7 +50,6 @@ struct Reference: Codable, Hashable {
         case link, title
     }
 }
-
 
 struct Workbook: Codable, Hashable, Identifiable {
     let id: Int
