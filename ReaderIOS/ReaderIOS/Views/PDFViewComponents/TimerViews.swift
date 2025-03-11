@@ -13,10 +13,10 @@ enum TimerConstants {
     static let options: [Int] = [15, 20, 25]
 
     // must be a multiple of customStep
-    static let defaultCustomOption: Double = 20
-    static let customStep: Double = 2
-    static let customMin: Double = 2
-    static let customMax: Double = 30
+    static let defaultCustomOption: Double = 35
+    static let customStep: Double = 5
+    static let customMin: Double = 5
+    static let customMax: Double = 60
 
     // DO NOT MODIFY: Calculated constants
     static let actualMin: Double = customMin - customStep
