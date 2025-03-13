@@ -137,21 +137,13 @@ class FeedbackView(APIView):
         serializer = FeedbackSerializer(data=request.data)
 
         if serializer.is_valid():
-            # Extract data from the serializer
-            valid_data = serializer.validated_data
-
-            # Get the workbook explicitly from the validated data
-            workbook = valid_data.pop("workbook")
-
-            # Create a Feedback instance with proper relationships
-            feedback = Feedback(workbook=workbook, **valid_data)
-
-            # Set the created_at field to the current time
-            feedback.created_at = timezone.now()
-
             # Save the feedback to the database
             if not settings.DEBUG:
-                feedback.save()
+                feedback = serializer.save()
+            else:
+                feedback = Feedback(**serializer.validated_data)
+                feedback.created_at = timezone.now()  # Only need this when not saving
+                print("DEBUG mode: Feedback not saved to database")
 
             # Send email notification without saving to DB
             email_sent = send_feedback_email(feedback)
