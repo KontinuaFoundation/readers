@@ -7,14 +7,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .utils import send_feedback_email
 from rest_framework.viewsets import GenericViewSet
+from django.utils import timezone
 
-from core.models import Feedback, Collection, Workbook
+from core.models import Collection, Workbook, Feedback
 from core.serializers import (
     CollectionListSerializer,
     WorkbookCreateSerializer,
     CollectionCreateSerializer,
     CollectionRetrieveSerializer,
     WorkbookRetrieveSerializer,
+    FeedbackSerializer,
 )
 
 
@@ -131,74 +133,30 @@ class FeedbackView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated users to submit feedback
 
     def post(self, request):
-        try:
+        serializer = FeedbackSerializer(data=request.data)
 
-            # Extract data and explicitly check each value
-            workbook_id = request.data.get("workbook_id")
-            page_number = request.data.get("page_number")
-            chapter_number = request.data.get("chapter_number")
-            description = request.data.get("description")
-            user_email = request.data.get("email")
-            major_version = request.data.get("major_version")
-            minor_version = request.data.get("minor_version")
-            localization = request.data.get("localization")
+        if serializer.is_valid():
+            # Extract data from the serializer
+            valid_data = serializer.validated_data
 
-            # Validate required fields
-            if any(
-                field is None or (isinstance(field, str) and not field.strip())
-                for field in [
-                    workbook_id,
-                    chapter_number,
-                    page_number,
-                    user_email,
-                    description,
-                    major_version,
-                    minor_version,
-                    localization,
-                ]
-            ):
-                return Response(
-                    {
-                        "error": "Missing required fields. Please provide workbook_id, chapter_number, page_number, "
-                        "email, description, major_version, minor_version, and localization."
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            # Get the workbook explicitly from the validated data
+            workbook = valid_data.pop("workbook")
 
-            # Check if workbook exists
-            try:
-                workbook = Workbook.objects.get(id=workbook_id)
-            except Workbook.DoesNotExist:
-                return Response(
-                    {"error": f"Workbook with ID {workbook_id} does not exist."},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            # Create a Feedback instance with proper relationships
+            feedback = Feedback(workbook=workbook, **valid_data)
 
-            # Create feedback record with version info
-            feedback = Feedback.objects.create(
-                workbook=workbook,
-                page_number=page_number,
-                chapter_number=chapter_number,
-                description=description,
-                user_email=user_email,
-                major_version=major_version,
-                minor_version=minor_version,
-                localization=localization,
-            )
+            # Set the created_at field to the current time
+            feedback.created_at = timezone.now()
 
-            # Send email notification
+            # Send email notification without saving to DB
             email_sent = send_feedback_email(feedback)
 
             return Response(
                 {
                     "message": "Feedback submitted successfully",
-                    "feedback_id": feedback.id,
                     "email_sent": email_sent,
                 },
                 status=status.HTTP_201_CREATED,
             )
 
-        except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
