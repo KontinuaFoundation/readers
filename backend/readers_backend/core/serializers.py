@@ -153,15 +153,7 @@ class CollectionRetrieveSerializer(serializers.ModelSerializer):
 
 class FeedbackSerializer(serializers.ModelSerializer):
 
-    workbook_id = serializers.PrimaryKeyRelatedField(
-        source="workbook",
-        queryset=Workbook.objects.all(),
-        error_messages={
-            "does_not_exist": "Workbook with this ID does not exist",
-            "required": "Workbook ID is required",
-        },
-    )
-
+    # Validate the fields in the feedback object
     class Meta:
         model = Feedback
         fields = [
@@ -175,6 +167,17 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "localization",
         ]
 
+    # Validate that the workbook_id exists
+    workbook_id = serializers.PrimaryKeyRelatedField(
+        source="workbook",
+        queryset=Workbook.objects.all(),
+        error_messages={
+            "does_not_exist": "Workbook with this ID does not exist",
+            "required": "Workbook ID is required",
+        },
+    )
+
+    # Validate that the version (major_version, minor_version, localization) exists
     def validate(self, data):
         """
         Validate that the version (major_version, minor_version, localization) exists
@@ -185,6 +188,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
         minor_version = data.get("minor_version")
         localization = data.get("localization")
 
+        # If any of the fields are missing, return the data as is
         if not all(
             [
                 workbook,
@@ -202,6 +206,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
             localization=localization,
         ).exists()
 
+        # If the version does not exist, raise a validation error
         if not version_exists:
             logger.debug("DEBUG: Raising validation error")
             raise serializers.ValidationError(

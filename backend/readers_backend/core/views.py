@@ -148,6 +148,9 @@ class FeedbackView(APIView):
             # Set the created_at field to the current time
             feedback.created_at = timezone.now()
 
+            # Save the feedback to the database
+            feedback.save()
+
             # Send email notification without saving to DB
             email_sent = send_feedback_email(feedback)
 

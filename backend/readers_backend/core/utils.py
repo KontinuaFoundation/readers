@@ -1,8 +1,6 @@
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-
 
 def send_feedback_email(feedback):
     """

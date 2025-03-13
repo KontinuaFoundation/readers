@@ -102,12 +102,6 @@ if DEBUG:
     MEDIA_URL = "/files/"
     MEDIA_ROOT = os.path.join(BASE_DIR, "files")
 
-    # Email Configuration for development
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-    EMAIL_HOST_USER = "dev@example.com"
-    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-    FEEDBACK_EMAIL = EMAIL_HOST_USER
-
 # If we're in production we need to use S3 as our storage backend.
 if not DEBUG:
     AWS_STORAGE_BUCKET_NAME = get_required_env_var("AWS_STORAGE_BUCKET_NAME")
@@ -177,11 +171,11 @@ REST_FRAMEWORK = {
 
 # Email Configuration for production
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com") # Gmail's SMTP server
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587)) # Gmail's SMTP port
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True" # TLS is required for Gmail 
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")  # App's email address
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") # App's email password
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 FEEDBACK_EMAIL = os.environ.get(
     "FEEDBACK_EMAIL", EMAIL_HOST_USER
