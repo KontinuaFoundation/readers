@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from .utils import send_feedback_email
 from rest_framework.viewsets import GenericViewSet
 from django.utils import timezone
+from django.conf import settings
 
 from core.models import Collection, Workbook, Feedback
 from core.serializers import (
@@ -149,7 +150,8 @@ class FeedbackView(APIView):
             feedback.created_at = timezone.now()
 
             # Save the feedback to the database
-            feedback.save()
+            if not settings.DEBUG:
+                feedback.save()
 
             # Send email notification without saving to DB
             email_sent = send_feedback_email(feedback)
