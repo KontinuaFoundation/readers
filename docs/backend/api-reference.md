@@ -57,13 +57,13 @@ All authenticated endpoints require a valid **DRF TokenAuthentication** token in
 - **GET** `/api/collections/`
 - **Description**: Retrieves filtered collections list
 - **Query Parameters**:
-    - `major_version` (integer, optional)
-    - `minor_version` (integer, optional)
-    - `localization` (string, optional)
-    - `is_released` (boolean, optional)
+  - `major_version` (integer, optional)
+  - `minor_version` (integer, optional)
+  - `localization` (string, optional)
+  - `is_released` (boolean, optional)
 - **Notes**:
-    - Invalid parameters are ignored
-    - Results ordered by major_version DESC, minor_version DESC
+  - Invalid parameters are ignored
+  - Results ordered by major_version DESC, minor_version DESC
 - **Response**:
 
 ```json
@@ -120,10 +120,10 @@ All authenticated endpoints require a valid **DRF TokenAuthentication** token in
 - **Authentication**: Required
 - **Content-Type**: multipart/form-data
 - **Request Parameters**:
-    - `number` (string, required)
-    - `collection` (integer, required): Collection ID
-    - `chapters` (JSON string, required): Workbook metadata
-    - `pdf` (file, required): Workbook PDF file
+  - `number` (string, required)
+  - `collection` (integer, required): Collection ID
+  - `chapters` (JSON string, required): Workbook metadata
+  - `pdf` (file, required): Workbook PDF file
 
 #### Get Workbook Details
 
@@ -172,3 +172,25 @@ All authenticated endpoints require a valid **DRF TokenAuthentication** token in
 - **DELETE** `/api/workbooks/{id}`
 - **Description**: Removes workbook
 - **Authentication**: Required
+
+#### Send Email
+
+- **POST** `/api/feedback/`
+- **Description**: Sends an email to Kontinua email account
+- **ENV**: Create an .env file and add the following
+  - EMAIL_HOST=smtp.emailprovider.com #Whatever email host you use
+  - EMAIL_PORT="your port" #defaults to 587
+  - EMAIL_USE_TLS=True/False #TLS is recommended for security reasons
+  - EMAIL_HOST_USER=your.email@gmail.com
+  - EMAIL_HOST_PASSWORD=your-app-password
+- **Authentication**: Not required
+- **Content-Type**: application/json
+- **Request Parameters**:
+- `workbook_id` (Integer, Required): Workbook number
+- `chapter_number` (Integer, Required)
+- `page_number` (Integer, Required)
+- `email` (string, required): User email
+- `description` (string, required): User submitted feedback
+- `major_version` (Integer, Required)
+- `minor_version` (Integer, Required)
+- `localization` (string, required)
