@@ -68,7 +68,7 @@ class FeedbackManager: ObservableObject {
 
     private func submitToAPI(data: [String: Any], completion: @escaping (Bool, String?) -> Void) {
         guard let url = URL(string: ApplicationConstants.API.baseURLString +
-                            ApplicationConstants.APIEndpoints.feedback)
+            ApplicationConstants.APIEndpoints.feedback)
         else {
             completion(false, "Invalid URL configuration")
             return
