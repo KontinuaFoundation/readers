@@ -96,6 +96,7 @@ struct SplitView: View {
                     currentPage: $currentPage,
                     covers: $covers,
                     pdfDocument: $pdfDocument,
+                    collection: initialCollection,
                     bookmarkManager: bookmarkManager
                 )
             } else {
@@ -109,7 +110,7 @@ struct SplitView: View {
             }
         }
         .onChange(of: selectedWorkbookID) {
-            guard let selectedWorkbook = selectedWorkbook else { return }
+            guard selectedWorkbook != nil else { return }
 
             fetchWorkbookAndChapters()
 

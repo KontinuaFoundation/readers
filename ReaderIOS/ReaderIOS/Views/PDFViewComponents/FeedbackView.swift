@@ -7,13 +7,56 @@
 
 import SwiftUI
 
+struct FeedbackButton: View {
+    @ObservedObject var feedbackManager: FeedbackManager
+    var workbook: Workbook?
+    var currentPage: Int
+    var collection: Collection?
+
+    var body: some View {
+        Button(action: {
+            // Update current context
+            feedbackManager.currentWorkbook = workbook
+            feedbackManager.currentPage = currentPage
+            feedbackManager.collection = collection
+
+            // Show feedback
+            feedbackManager.showFeedback()
+        }, label: {
+            Image(systemName: "message.fill")
+                .font(.system(size: 20))
+                .foregroundColor(.white)
+                .padding(8)
+                .background(Color.blue)
+                .clipShape(Circle())
+                .shadow(radius: 2)
+        })
+    }
+}
+
 struct FeedbackView: View {
+    @ObservedObject var feedbackManager: FeedbackManager
     @Environment(\.dismiss) var dismiss
     @State private var email: String = ""
     @State private var feedback: String = ""
     @State private var isSubmitting = false
     @State private var showError = false
     @State private var errorMessage = ""
+
+    static func button(
+        feedbackManager: FeedbackManager,
+        workbook: Workbook?,
+        currentPage: Int,
+        collection: Collection?
+    ) -> some View {
+        FeedbackButton(
+            feedbackManager: feedbackManager,
+            workbook: workbook,
+            currentPage: currentPage,
+            collection: collection
+        )
+    }
+
     var body: some View {
         NavigationView {
             Form {
@@ -48,59 +91,15 @@ struct FeedbackView: View {
     private func submitFeedback() {
         isSubmitting = true
 
-        guard let url = URL(string: "http://localhost:8000/mentapp/api/feedback/") else {
-            showError(message: "Invalid URL configuration")
-            return
-        }
+        feedbackManager.submitFeedback(email: email, description: feedback) { success, errorMsg in
+            isSubmitting = false
 
-        let feedbackData = [
-            "email": email,
-            "feedback": feedback
-        ]
-
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: feedbackData) else {
-            showError(message: "Error preparing feedback data")
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                isSubmitting = false
-
-                if let error = error {
-                    showError(message: "Error submitting feedback: \(error.localizedDescription)")
-                    return
-                }
-
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    showError(message: "Invalid server response")
-                    return
-                }
-
-                if httpResponse.statusCode == 200 {
-                    dismiss()
-                } else {
-                    if let data = data,
-                       let errorResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let message = errorResponse["message"] as? String
-                    {
-                        showError(message: message)
-                    } else {
-                        showError(message: "Error submitting feedback. Status: \(httpResponse.statusCode)")
-                    }
-                }
+            if success {
+                dismiss()
+            } else if let message = errorMsg {
+                errorMessage = message
+                showError = true
             }
-        }.resume()
-    }
-
-    private func showError(message: String) {
-        errorMessage = message
-        showError = true
-        isSubmitting = false
+        }
     }
 }
