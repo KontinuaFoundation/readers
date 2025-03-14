@@ -40,9 +40,6 @@ struct SplitView: View {
             if let workbooks = workbooks {
                 List(workbooks, selection: $selectedWorkbookID) { workbook in
                     HStack {
-                        Image(systemName: "icloud.and.arrow.down") // Download icon
-                            .font(.caption)
-                            .foregroundColor(.blue)
                         Text("Workbook \(workbook.number)")
                             .tag(workbook.id)
                     }
