@@ -169,7 +169,7 @@ struct SplitView: View {
             switch result {
             case let .success(workbookRes):
                 chapters = workbookRes.chapters
-                selectedChapterID = chapters?.first?.id
+                // selectedChapterID = chapters?.first?.id
                 currentWorkbook = workbookRes
                 setupChapterManager()
             case let .failure(error):

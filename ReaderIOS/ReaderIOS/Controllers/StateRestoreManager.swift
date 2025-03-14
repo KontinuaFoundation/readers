@@ -49,14 +49,7 @@ final class StateRestoreManager {
             return nil
         }
 
-        // Retrieve the dictionary of workbook page numbers.
-        if let workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [Int: Int],
-           let pageNumber = workbookPages[workbookID]
-        {
-            return (workbookID, pageNumber)
-        } else {
-            return (workbookID, 0)
-        }
+        return (workbookID, loadPageNumber(for: workbookID))
     }
 
     /// Loads the saved page number for a specific workbook.
@@ -65,11 +58,13 @@ final class StateRestoreManager {
     /// - Returns: The saved page number, or nil if not found.
     func loadPageNumber(for workbookID: Int) -> Int {
         let defaults = UserDefaults.standard
-        if let workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [Int: Int],
-           let page = workbookPages[workbookID]
+
+        if let workbookPages = defaults.dictionary(forKey: workbookPagesKey) as? [String: Int],
+           let page = workbookPages[String(workbookID)]
         {
             return page
         }
+
         return 0
     }
 }
