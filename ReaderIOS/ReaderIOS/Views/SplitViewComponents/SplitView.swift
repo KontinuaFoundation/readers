@@ -12,7 +12,6 @@ struct SplitView: View {
     var initialWorkbookID: Int?
     var initialPDFDocument: PDFDocument?
     var initialCollection: Collection?
-    
 
     // Loaded workbooks information state vars
     @State private var workbooks: [WorkbookPreview]?
@@ -108,11 +107,8 @@ struct SplitView: View {
         .onAppear {
             if let collection = initialCollection {
                 // Initialize currentCollection from initialCollection
-                print("Setting currentCollection from initialCollection: ID=\(collection.id)")
                 currentCollection = collection
-            } else {
-                print("initialCollection is nil in SplitView.onAppear")
-            }
+            } 
             // Optionally, if initialPDFDocument is available, set it.
             if let initialPDF = initialPDFDocument {
                 pdfDocument = initialPDF

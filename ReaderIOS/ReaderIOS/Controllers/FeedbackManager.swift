@@ -9,6 +9,7 @@ import Combine
 import SwiftUI
 
 class FeedbackManager: ObservableObject {
+    // Published property to trigger the feedback view
     @Published var isShowingFeedback = false
 
     // Store the context needed for feedback
@@ -21,21 +22,34 @@ class FeedbackManager: ObservableObject {
         isShowingFeedback = true
     }
 
+
     func submitFeedback(email: String, description: String, completion: @escaping (Bool, String?) -> Void) {
-        print("FeedbackManager - Collection object before submission:")
+        """ 
+        Submit feedback to the API with the given email and description.
+        - Parameters:
+            - email: The email address of the user submitting the feedback.
+            - description: The feedback description.
+            - completion: A closure that will be called with the result of the submission.
+        """
+        // Print the current context
         if let collection = collection {
             print(
-                "  Collection available: ID=\(collection.id), majorVersion=\(collection.majorVersion), minorVersion=\(collection.minorVersion), localization=\(collection.localization)"
+                "Collection available: ID=\(collection.id)," +
+                    "majorVersion=\(collection.majorVersion)," +
+                    "minorVersion=\(collection.minorVersion)," +
+                    "localization=\(collection.localization)"
             )
         } else {
-            print("  Collection is nil")
+            print(" Collection is nil")
         }
 
+        // Email is required
         guard !email.isEmpty else {
             completion(false, "Email is required")
             return
         }
 
+        // Description is required
         guard !description.isEmpty else {
             completion(false, "Feedback description is required")
             return
@@ -67,6 +81,8 @@ class FeedbackManager: ObservableObject {
                 chapterNumber = chapter.chapNum
             }
         }
+
+        // Add chapter number
         feedbackData["chapter_number"] = chapterNumber
 
         // Add page number
@@ -82,11 +98,19 @@ class FeedbackManager: ObservableObject {
         submitToAPI(data: feedbackData, completion: completion)
     }
 
-    // Submit feedback to the API
+    
     private func submitToAPI(data: [String: Any], completion: @escaping (Bool, String?) -> Void) {
-        print("Submitting feedback with data: \(data)")
+        """
+        Submit the feedback data to the API. This method handles the network request and response.
+        - Parameters:
+            - data: The feedback data to submit.
+            - completion: A closure that will be called with the result of the submission.
+        - Note: This method assumes the API endpoint is configured correctly in the Constants file.
+        """
+
         // Prepare the request
-        guard let url = URL(string: ApplicationConstants.API.baseURLString +
+        guard let url = URL(string:
+            ApplicationConstants.API.baseURLString +
             ApplicationConstants.APIEndpoints.feedback)
         else {
             completion(false, "Invalid URL configuration")
@@ -94,7 +118,8 @@ class FeedbackManager: ObservableObject {
         }
 
         // Prepare the JSON data
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: data) else {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: data)
+        else {
             completion(false, "Error preparing feedback data")
             return
         }
@@ -106,29 +131,20 @@ class FeedbackManager: ObservableObject {
 
         // Send the request
         URLSession.shared.dataTask(with: request) { data, response, error in
+            // Handle the response on the main thread
             DispatchQueue.main.async {
                 if let error = error {
-                    print("Network error: \(error.localizedDescription)")
                     completion(false, "Error: \(error.localizedDescription)")
                     return
                 }
-
                 // Check the response
                 guard let httpResponse = response as? HTTPURLResponse else {
                     completion(false, "Invalid server response")
                     return
                 }
 
-                // Log the full response for debugging
-                print("Server response status code: \(httpResponse.statusCode)")
-
-                // Try to extract and print response data regardless of status code
-                if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                    print("Server response body: \(responseString)")
-                }
-
                 // Check the status code
-                if httpResponse.statusCode == 200 {
+                if httpResponse.statusCode == 201 {
                     completion(true, nil)
                 } else {
                     // Attempt to parse error message from response
@@ -159,6 +175,13 @@ class FeedbackManager: ObservableObject {
 
     // Determine the current chapter based on the current page
     private func determineCurrentChapter(workbook: Workbook, page: Int) -> Chapter? {
+    """
+    Determine the current chapter based on the current page number.
+    - Parameters:
+        - workbook: The workbook to search for the current chapter.
+        - page: The current page number.
+    - Returns: The current chapter if found, otherwise nil.
+    """
         workbook.chapters.first { chapter in
             let chapterIndex = workbook.chapters.firstIndex(where: { $0.id == chapter.id })!
             let nextChapterIndex = chapterIndex + 1
@@ -170,22 +193,31 @@ class FeedbackManager: ObservableObject {
     }
 
     func getRequiredCollectionValues() -> (majorVersion: Int, minorVersion: Int, localization: String) {
+        """
+        Get the required collection values for feedback submission. 
+        This method first checks if a collection is available in the FeedbackManager, 
+        then falls back to the InitializationManager, and finally uses default values.
+        - Returns: A tuple containing the majorVersion, minorVersion, and localization.
+        """
         // First check if we have a collection in our FeedbackManager
         if let collection = collection {
             print(
-                "Using collection values from FeedbackManager: majorVersion=\(collection.majorVersion), minorVersion=\(collection.minorVersion), localization=\(collection.localization)"
+                "Using collection values from FeedbackManager: " +
+                    "majorVersion=\(collection.majorVersion)," +
+                    "minorVersion=\(collection.minorVersion)," +
+                    "localization=\(collection.localization)"
             )
             return (collection.majorVersion, collection.minorVersion, collection.localization)
         }
 
-        // Try to create a new InitializationManager to access its properties
+        // Else try to create a new InitializationManager to access its properties
         let initManager = InitializationManager()
         if let latestCollection = initManager.latestCollection {
             print(
-                "Using latestCollection from InitializationManager:" + 
-                "majorVersion=\(latestCollection.majorVersion), " +
-                "minorVersion=\(latestCollection.minorVersion)," + 
-                "localization=\(latestCollection.localization)"
+                "Using latestCollection from InitializationManager:" +
+                    "majorVersion=\(latestCollection.majorVersion), " +
+                    "minorVersion=\(latestCollection.minorVersion)," +
+                    "localization=\(latestCollection.localization)"
             )
             return (latestCollection.majorVersion, latestCollection.minorVersion, latestCollection.localization)
         }
