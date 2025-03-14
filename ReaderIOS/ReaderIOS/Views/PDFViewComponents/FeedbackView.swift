@@ -15,13 +15,38 @@ struct FeedbackButton: View {
 
     var body: some View {
         Button(action: {
-            // Update current context
-            feedbackManager.currentWorkbook = workbook
-            feedbackManager.currentPage = currentPage
-            feedbackManager.collection = collection
-
-            // Show feedback
-            feedbackManager.showFeedback()
+            // Debug logging
+    print("FeedbackButton - Setting context:")
+    if let workbook = workbook {
+        print("  Passing workbook ID: \(workbook.id)")
+    } else {
+        print("  No workbook to pass")
+    }
+    
+    print("  Passing page: \(currentPage)")
+    
+    // Try to get collection from multiple sources
+    var effectiveCollection = collection
+    if effectiveCollection == nil {
+        // Try to get from InitializationManager
+        let initManager = InitializationManager()
+        effectiveCollection = initManager.latestCollection
+        print("  Using collection from InitializationManager: \(effectiveCollection?.id ?? -1)")
+    }
+    
+    if let effectiveCollection = effectiveCollection {
+        print("  Using collection: ID=\(effectiveCollection.id)")
+    } else {
+        print("  No collection available from any source")
+    }
+    
+    // Update current context
+    feedbackManager.currentWorkbook = workbook
+    feedbackManager.currentPage = currentPage
+    feedbackManager.collection = effectiveCollection // Use the effective collection
+    
+    // Show feedback
+    feedbackManager.showFeedback()
         }, label: {
             Image(systemName: "message.fill")
                 .font(.system(size: 20))

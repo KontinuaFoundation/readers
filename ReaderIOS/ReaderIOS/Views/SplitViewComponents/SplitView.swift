@@ -12,11 +12,13 @@ struct SplitView: View {
     var initialWorkbookID: Int?
     var initialPDFDocument: PDFDocument?
     var initialCollection: Collection?
+    
 
     // Loaded workbooks information state vars
     @State private var workbooks: [WorkbookPreview]?
     @State private var chapters: [Chapter]?
     @State private var covers: [Cover]?
+    @State private var currentCollection: Collection?
 
     // User selection (what they are viewing) state vars
     @State private var selectedWorkbookID: Int?
@@ -96,7 +98,7 @@ struct SplitView: View {
                     currentPage: $currentPage,
                     covers: $covers,
                     pdfDocument: $pdfDocument,
-                    collection: initialCollection,
+                    collection: $currentCollection,
                     bookmarkManager: bookmarkManager
                 )
             } else {
@@ -104,6 +106,13 @@ struct SplitView: View {
             }
         }
         .onAppear {
+            if let collection = initialCollection {
+                // Initialize currentCollection from initialCollection
+                print("Setting currentCollection from initialCollection: ID=\(collection.id)")
+                currentCollection = collection
+            } else {
+                print("initialCollection is nil in SplitView.onAppear")
+            }
             // Optionally, if initialPDFDocument is available, set it.
             if let initialPDF = initialPDFDocument {
                 pdfDocument = initialPDF

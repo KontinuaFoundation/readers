@@ -8,7 +8,7 @@ struct PDFView: View {
     @Binding var currentPage: Int
     @Binding var covers: [Cover]?
     @Binding var pdfDocument: PDFDocument?
-    var collection: Collection?
+    @Binding var collection: Collection?
 
     // MARK: - Observed Objects
 
