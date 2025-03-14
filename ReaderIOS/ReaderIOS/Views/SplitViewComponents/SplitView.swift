@@ -108,7 +108,7 @@ struct SplitView: View {
             if let collection = initialCollection {
                 // Initialize currentCollection from initialCollection
                 currentCollection = collection
-            } 
+            }
             // Optionally, if initialPDFDocument is available, set it.
             if let initialPDF = initialPDFDocument {
                 pdfDocument = initialPDF

@@ -22,15 +22,15 @@ class FeedbackManager: ObservableObject {
         isShowingFeedback = true
     }
 
-
-    func submitFeedback(email: String, description: String, completion: @escaping (Bool, String?) -> Void) {
-        """ 
-        Submit feedback to the API with the given email and description.
-        - Parameters:
+    func submitFeedback(email: String, feedbackBody: String, completion: @escaping (Bool, String?) -> Void) {
+        /**
+         - Description:
+            - Submit feedback to the API with the given email and description.
+         - Parameters:
             - email: The email address of the user submitting the feedback.
-            - description: The feedback description.
+            - feedbackBody: The feedback description.
             - completion: A closure that will be called with the result of the submission.
-        """
+         */
         // Print the current context
         if let collection = collection {
             print(
@@ -50,7 +50,7 @@ class FeedbackManager: ObservableObject {
         }
 
         // Description is required
-        guard !description.isEmpty else {
+        guard !feedbackBody.isEmpty else {
             completion(false, "Feedback description is required")
             return
         }
@@ -66,7 +66,7 @@ class FeedbackManager: ObservableObject {
         // Prepare the feedback data
         var feedbackData: [String: Any] = [
             "user_email": email,
-            "description": description
+            "description": feedbackBody
         ]
 
         // Add required workbook info
@@ -98,20 +98,20 @@ class FeedbackManager: ObservableObject {
         submitToAPI(data: feedbackData, completion: completion)
     }
 
-    
     private func submitToAPI(data: [String: Any], completion: @escaping (Bool, String?) -> Void) {
-        """
-        Submit the feedback data to the API. This method handles the network request and response.
-        - Parameters:
+        /**
+         - Description:
+            Submit the feedback data to the API. This method handles the network request and response.
+         - Parameters:
             - data: The feedback data to submit.
-            - completion: A closure that will be called with the result of the submission.
-        - Note: This method assumes the API endpoint is configured correctly in the Constants file.
-        """
+            - completion:  A closure that will be called with the result of the submission.
+         - Note: This method assumes the API endpoint is configured correctly in the Constants file.
+         */
 
         // Prepare the request
         guard let url = URL(string:
             ApplicationConstants.API.baseURLString +
-            ApplicationConstants.APIEndpoints.feedback)
+                ApplicationConstants.APIEndpoints.feedback)
         else {
             completion(false, "Invalid URL configuration")
             return
@@ -175,13 +175,14 @@ class FeedbackManager: ObservableObject {
 
     // Determine the current chapter based on the current page
     private func determineCurrentChapter(workbook: Workbook, page: Int) -> Chapter? {
-    """
-    Determine the current chapter based on the current page number.
-    - Parameters:
-        - workbook: The workbook to search for the current chapter.
-        - page: The current page number.
-    - Returns: The current chapter if found, otherwise nil.
-    """
+        /**
+         - Description:
+         - Determine the current chapter based on the current page number.
+         - Parameters:
+             - workbook: The workbook to search for the current chapter.
+             - page: The current page number.
+         - Returns: The current chapter if found, otherwise nil.
+         */
         workbook.chapters.first { chapter in
             let chapterIndex = workbook.chapters.firstIndex(where: { $0.id == chapter.id })!
             let nextChapterIndex = chapterIndex + 1
@@ -193,12 +194,13 @@ class FeedbackManager: ObservableObject {
     }
 
     func getRequiredCollectionValues() -> (majorVersion: Int, minorVersion: Int, localization: String) {
-        """
-        Get the required collection values for feedback submission. 
-        This method first checks if a collection is available in the FeedbackManager, 
-        then falls back to the InitializationManager, and finally uses default values.
-        - Returns: A tuple containing the majorVersion, minorVersion, and localization.
-        """
+        /**
+         - Description:
+            - Get the required collection values for feedback submission.
+            - This method first checks if a collection is available in the FeedbackManager,
+            - then falls back to the InitializationManager, and finally uses default values.
+         - Returns: A tuple containing the majorVersion, minorVersion, and localization.
+        */
         // First check if we have a collection in our FeedbackManager
         if let collection = collection {
             print(

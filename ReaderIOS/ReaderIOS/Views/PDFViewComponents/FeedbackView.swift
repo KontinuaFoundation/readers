@@ -8,16 +8,16 @@
 import SwiftUI
 
 struct FeedbackButton: View {
-    """
-    Displays a button that triggers the feedback view.
-    - Parameters:
-        - feedbackManager: The feedback manager to handle the feedback view.
-        - workbook: The workbook to provide context for the feedback.
-        - currentPage: The current page number to provide context for the feedback.
-        - collection: The collection to provide context for the feedback.
-    - Returns: A button that triggers the feedback view.
-    - Note: The feedback view will be displayed with the provided context.
-    """
+    /**
+     Displays a button that triggers the feedback view.
+     - Parameters:
+         - feedbackManager: The feedback manager to handle the feedback view.
+         - workbook: The workbook to provide context for the feedback.
+         - currentPage: The current page number to provide context for the feedback.
+         - collection: The collection to provide context for the feedback.
+     - Returns: A button that triggers the feedback view.
+     - Note: The feedback view will be displayed with the provided context.
+     */
     @ObservedObject var feedbackManager: FeedbackManager
     var workbook: Workbook?
     var currentPage: Int
@@ -70,13 +70,13 @@ struct FeedbackButton: View {
 }
 
 struct FeedbackView: View {
-    """
-    Displays a form for submitting feedback.
-    - Parameters:
-        - feedbackManager: The feedback manager to handle the feedback submission.
-    - Returns: A form for submitting feedback.
-    - Note: The feedback view allows the user to submit feedback with an email address and description.
-    """
+    /**
+     Displays a form for submitting feedback.
+     - Parameters:
+         - feedbackManager: The feedback manager to handle the feedback submission.
+     - Returns: A form for submitting feedback.
+     - Note: The feedback view allows the user to submit feedback with an email address and description.
+     */
     @ObservedObject var feedbackManager: FeedbackManager
     @Environment(\.dismiss) var dismiss
     @State private var email: String = ""
@@ -118,19 +118,22 @@ struct FeedbackView: View {
                         .focused($isFeedbackFocused)
                 }
 
-                Button(action: {
-                    // Dismiss keyboard first, then submit
-                    isEmailFocused = false
-                    isFeedbackFocused = false
-                    submitFeedback()
-                }) 
-                { HStack {
-                        Text(isSubmitting ? "Submitting..." : "Submit Feedback")
-                        if isSubmitting {
-                            ProgressView()
+                Button(
+                    action: {
+                        // Dismiss keyboard first, then submit
+                        isEmailFocused = false
+                        isFeedbackFocused = false
+                        submitFeedback()
+                    },
+                    label: {
+                        HStack {
+                            Text(isSubmitting ? "Submitting..." : "Submit Feedback")
+                            if isSubmitting {
+                                ProgressView()
+                            }
                         }
                     }
-                }
+                )
                 .disabled(isSubmitting || email.isEmpty || feedback.isEmpty)
             }
             .navigationTitle("Feedback")
@@ -164,13 +167,13 @@ struct FeedbackView: View {
     }
 
     private func submitFeedback() {
-        """
-        Submits the feedback with the current email and description.
-        - Note: This method will trigger the feedback submission and handle the result.
-        """
+        /**
+         - Submits the feedback with the current email and description.
+         - Note: This method will trigger the feedback submission and handle the result.
+          */
         isSubmitting = true
         // Submit feedback to the API via the feedback manager instance
-        feedbackManager.submitFeedback(email: email, description: feedback) { success, errorMsg in
+        feedbackManager.submitFeedback(email: email, feedbackBody: feedback) { success, errorMsg in
             // Handle the result on the main queue
             DispatchQueue.main.async {
                 isSubmitting = false
