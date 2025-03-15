@@ -57,6 +57,10 @@ struct Workbook: Codable, Hashable, Identifiable {
     let pdf: String
     let chapters: [Chapter]
     let collection: Int
+
+    var collectionReference: Collection? {
+        nil
+    }
 }
 
 // When we are seeing which workbooks a collection has...

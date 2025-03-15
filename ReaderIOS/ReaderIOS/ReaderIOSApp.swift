@@ -16,7 +16,8 @@ struct ReaderIOSApp: App {
             if initManager.isInitialized {
                 SplitView(initialWorkbooks: initManager.workbooks,
                           initialWorkbookID: initManager.workbookID,
-                          initialPDFDocument: initManager.pdfDocument)
+                          initialPDFDocument: initManager.pdfDocument,
+                          initialCollection: initManager.latestCollection)
             } else {
                 SplashView(initManager: initManager)
             }
