@@ -195,12 +195,12 @@ class FeedbackManager: ObservableObject {
 
     func getRequiredCollectionValues() -> (majorVersion: Int, minorVersion: Int, localization: String) {
         /**
-         - Description:
-            - Get the required collection values for feedback submission.
-            - This method first checks if a collection is available in the FeedbackManager,
-            - then falls back to the InitializationManager, and finally uses default values.
-         - Returns: A tuple containing the majorVersion, minorVersion, and localization.
-        */
+          - Description:
+             - Get the required collection values for feedback submission.
+             - This method first checks if a collection is available in the FeedbackManager,
+             - then falls back to the InitializationManager, and finally uses default values.
+          - Returns: A tuple containing the majorVersion, minorVersion, and localization.
+         */
         // First check if we have a collection in our FeedbackManager
         if let collection = collection {
             print(
