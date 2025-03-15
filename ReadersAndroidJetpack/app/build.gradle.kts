@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -49,8 +50,11 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation("com.github.DImuthuUpe:AndroidPdfViewer:3.1.0-beta.1")
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation(libs.androidpdfviewer)
+    implementation(libs.okhttp)
+    implementation(libs.moshi)
+    implementation(libs.moshi.kotlin)
+    ksp(libs.moshi.kotlin.codegen)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
