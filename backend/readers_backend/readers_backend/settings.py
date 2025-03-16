@@ -37,8 +37,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-3r+kj$$&^pg-av4%scddw6bjiiufkrrpkh7%0+osn#vi!$6f83"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-
 # If we're not in debug, we're going to assume we're in production.
 # That is we will integrate with some AWS services and we will expect some environment variables.
 DEBUG = get_required_env_var("DJANGO_DEBUG") == "True"
@@ -75,22 +73,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "readers_backend.urls"
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-]
 
 WSGI_APPLICATION = "readers_backend.wsgi.application"
 
@@ -186,3 +168,31 @@ REST_FRAMEWORK = {
         "anon": "100/minute",
     },
 }
+
+# Email Configuration for production
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com") # Gmail's SMTP server
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587)) # Gmail's SMTP port
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True" # TLS is required for Gmail 
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")  # App's email address
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") # App's email password
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+FEEDBACK_EMAIL = os.environ.get(
+    "FEEDBACK_EMAIL", EMAIL_HOST_USER
+)  # Where feedback should be sent
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+]
