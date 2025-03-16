@@ -1,4 +1,4 @@
-package com.kontinua.readersandroidjetpack.models
+package com.kontinua.readersandroidjetpack.serialization
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

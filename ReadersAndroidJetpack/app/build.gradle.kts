@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.moshi)
     implementation(libs.moshi.kotlin)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     ksp(libs.moshi.kotlin.codegen)
 
     testImplementation(libs.junit)

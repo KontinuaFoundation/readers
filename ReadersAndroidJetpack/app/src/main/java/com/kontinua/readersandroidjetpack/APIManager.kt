@@ -1,15 +1,15 @@
 package com.kontinua.readersandroidjetpack
 
+import com.kontinua.readersandroidjetpack.serialization.Collection
+import com.kontinua.readersandroidjetpack.serialization.CollectionPreview
+import com.kontinua.readersandroidjetpack.serialization.Workbook
+import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import com.kontinua.readersandroidjetpack.models.CollectionPreview
-import com.kontinua.readersandroidjetpack.models.Collection
-import com.kontinua.readersandroidjetpack.models.Workbook
-import com.kontinua.readersandroidjetpack.models.WorkbookPreview
 
 object APIManager {
 
