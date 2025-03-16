@@ -3,11 +3,10 @@ package com.kontinua.readersandroidjetpack.models
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
+// When we list collections.
 @JsonClass(generateAdapter = true)
-data class DetailedCollection(
+data class CollectionPreview(
     val id: Int,
-
-    val workbooks: List<WorkbookPreview>,
 
     @Json(name = "major_version")
     val majorVersion: Int,

@@ -20,10 +20,19 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             try {
-                val collections = APIManager.getCollections()
-                Log.d("collections", collections.toString())
+                val collection = APIManager.getLatestCollection()
+
+                val firstWorkbookPreview = collection?.workbooks?.first()
+
+                if (firstWorkbookPreview == null) {
+                    throw Exception("Couldn't get first workbook")
+                }
+
+                val firstWorkbook = APIManager.getWorkbook(firstWorkbookPreview)
+
+                Log.d("workbook", firstWorkbook.toString())
             } catch (e: Exception) {
-                Log.e("collections", "Error fetching collections", e)
+                Log.e("workbook", "Error fetching collections", e)
             }
         }
 
@@ -34,7 +43,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding),
-                        pdfUrl = "https://kontinua-foundation-workbook-pdfs.s3.us-east-2.amazonaws.com/workbook-04-en-US-1.0.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIASDRANPQQ2D4O376I%2F20250315%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20250315T042715Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjELT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMiJHMEUCIH8ogE7NP3DvqfnMqKeu5QW%2F8wVBI9Nry7v2cL5KyWtmAiEAzatv%2FDo60OFq55AbfKl1UknDsS4KJkrCETN2z750p4YqxQUI%2Ff%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgwxNDUwMjMxMzg4NDkiDLsElkDO%2FBWJXLlv%2BCqZBdVrzMxk%2FNn5Pn2qEEgXf8KOrR1hbF5LnErDhztx6a2rAdE7G6%2B8t9CPNDQdbSadvPpe8KEkpbzeGFM4ahoebqQ5X8UB78RATDrWeUjKWeKR1q5vy7mkbeKFzrj%2FUPknT%2FUhAkBScVFAQaXAYWBzbFnfM3y%2B8gSrj1KoJQ1a8CyWGBT4n3Zr5E93V2UVrwEgFjNzWzM9oGzrtZ%2F5LvIRjcJF8BzwgqkGLyoqaGx8C3mxKLplTPCtYIbICdzdDEQ9LAmW%2BLzrU7Ktgqo1b1%2BC6XPhZGyzPBt%2BaLDZiVdAS55crvxojNM91Y5Pb0szc6BNirzksIGCmTCS7ikeNYszolt4ZEsMYgLJGVFPrlmcX3nDWvY8tTr65YhopivoLiQGJQDuMz2Ra%2F79BqJ2vMRnnaZuQS2HyBK5RhSVQ6zxZ%2F4m5idp6nLkNYcdnfqJcZLtXzQ1y50lljLBpF0gFW0uxqLXbdtMj%2B%2F1NeqSp831cjJkX04uJEtK%2BF8s1CRZuWrmwiNF2EO3w9uM3eH4qT6tujhggGn8ilTjlWh6%2BOGMJiGlV5ZTRuOur9jiB1R5%2BAAqkc41pXC79LyVTxj20j3VifBBILKm8pSAdynetD7Q%2FseOhMoGGoaVDWWmu1%2FKUqSVHHz8uv%2BMFo2nRTBvVh6C0RZpiQNLGkP5S1Dj4jAPXET1PV72I9Wdb0B50jQdEC41VBysBxGAyQuKFawkZcrZYxY8%2FHM6JjIX1I3LIpmwztERUnQ9db2wcknjLQYBWNzzYTGVnXyi0hw5isZA9AkSNM3o28YriBVti9q4fiZmaliITwh0%2FVm9axMMcamTby0vHqpR9Mdm4Z1ZWjfKzjf9vs%2B7YLA6GJugyfCxKQra0%2BIKTo5ellV%2BgBVhMMjy074GOrEBHcQHRc%2BKAqXG8Pi4EpKWC09ntKLE%2FW5gBU7hgvRZsavumlYC8aU6Kiu9hL4DOGG%2FFF8DS9xCXoSObg2TYJyS%2BhKUKCd9uGKyjmrav0aSHKocgefipiUK8LVrMTF7fbk2OgEWPD09cTdn66ZkN6UzRw%2Fyh7f6SzsTN1ZQw6Gi7iYaEZ1uLpSpo73wLAIW2IV0WfVLzDXuz%2BgOAijlhcilQXiG2VtqIEEKz5xvFgUTZZVS&X-Amz-Signature=47d8a710c91121dfbe4e85acbfc2b87414e43b29647a2a6e14cbbf6f06c75e9d"
+                        pdfUrl = "https://kontinua-foundation-workbook-pdfs.s3.us-east-2.amazonaws.com/workbook-01-en-US-1.0.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIASDRANPQQRRJ57MAC%2F20250316%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20250316T000419Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEMj%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMiJHMEUCIEnBHF9D2VgR1XUwxC5dS%2FWfp7Bji1zL1PPZZubLzsFpAiEA%2BZJyQhKkTKAbQT1MfV%2Bc8qNGxrZSHakw%2BeoPWfIqwScqvAUIIRAAGgwxNDUwMjMxMzg4NDkiDJOoAlgy78Ie3jGReyqZBZ%2F51WbQS%2FIAiVb0%2FF4kkwgQl%2Bnt2FO%2Fyg4VqdK6NdEvuC0ADmp3ruU9NGnWo%2BctEtrK%2BsYkeNU%2FjUFcE0djq01oS1h%2FeaVv3SrxHmMNRvJQk1B61ip1H3H%2FlCl238db2CSC757HVzy%2BPJddZ8YbasK5ytc22F2uMauRh%2BUy996oRAyReptYP5JkshkG3fAR%2Fc40EyuhzNOQKq2zspmYhLFAfjNai%2Fx%2FQ0rM8svif%2Berampji0ndJU3LPv7BIPdRMG9Y84NBF3q46HXhJmiVKZCKbfadJZ3RZkPWg0LVB9DbkyPLO8qTQoZFwtOqH9yJ5s1Ek0SZGD149N6vuIAV3Baag17l4vZPUyS%2FalZPrT87N%2FXzSn%2F9D8ibXdUFLDOAJc0TWwyxnUC7X1ipIAWEeQTpStuogUwLgqH9yIsDeh0sZf2NTeqIQENCJ2ug52piBS3qSlvzf3ZgD%2FryMVqq0opi8qvKMmUwQvPJAfj9fBDwi1zdnmdFi%2FA15vAtB8%2FGc7INTQoH9aoUHmbGtjtel0ytwk6pz%2BGGLXwpqcqglWyoJMYDoGqNoZF6lwnjiJVqa79Ai1I4UUOnELz%2BUP4pS%2FxLHXj2RfgGwkBeErTSNS3Nysq0GF%2Berd0BMVX82qKKeRO2ffJcCDDOuEc5bIgAYa78QhGpCGKJ97QuXw3NjrlLdgUlgsn2BLdyKgB9OlthgCkMvabjV6MD82ePFNQOa2ZxqFQpgjQpqQuE%2F0EQJBhcJj5lfry93WGgsUbF6In549MKs3h8i4%2F338LRJ7W%2FCvUhfGn8ovtkFIgLz4wSQXKUKY3lqKCIT7fEFUtx6MG0RCHNz46QC5TwLGtGf%2B3OvnBT2vFT5omUMetjbBrLu9L%2FQ9GcB%2FnVryu6MLGf2L4GOrEB7c56MxqAATZMOWhzctT6H5geh%2FGnChZyUjCTBEufSw7N3Atha6em%2FTJP4dgi%2BQKwmBqEFeQm3lzhyKv0qVHH3OJFKmKUqNx33DZUAu%2BJtJWHXyGmpfsxHt5oJxLocWNSyQ%2F0Blskm4yDPbJ6ZUmTYrE9lcMtCMmZmexnRcUdwGKA5CwZHHBUln08DtnAseScCODMQxrtRk5Z4uyWyQiLgDy0YIJ3CK%2BBA1CY%2Fngq2A%2Fg&X-Amz-Signature=7a795bf235a4b8d9c26cca3e8ff926faf92d539a534249cee8abe30d4b78d6d2"
                     )
                 }
             }
