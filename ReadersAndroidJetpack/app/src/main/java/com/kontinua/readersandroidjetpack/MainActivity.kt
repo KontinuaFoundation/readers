@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import com.kontinua.readersandroidjetpack.views.PDFViewer
 import com.kontinua.readersandroidjetpack.ui.theme.ReadersAndroidJetpackTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,7 +19,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ReadersAndroidJetpackTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    PdfViewerScreen(
+                    PDFViewer(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding),

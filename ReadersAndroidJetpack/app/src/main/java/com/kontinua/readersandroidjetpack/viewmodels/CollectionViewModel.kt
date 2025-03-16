@@ -1,8 +1,9 @@
-package com.kontinua.readersandroidjetpack
+package com.kontinua.readersandroidjetpack.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.serialization.Collection
 import com.kontinua.readersandroidjetpack.serialization.Workbook
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview

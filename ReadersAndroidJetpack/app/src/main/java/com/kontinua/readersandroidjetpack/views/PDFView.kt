@@ -1,6 +1,5 @@
-package com.kontinua.readersandroidjetpack
+package com.kontinua.readersandroidjetpack.views
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -13,14 +12,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okhttp3.Request
+import com.kontinua.readersandroidjetpack.util.APIManager
+import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
-import java.io.FileOutputStream
 
 @Composable
-fun PdfViewerScreen(modifier: Modifier = Modifier) {
+fun PDFViewer(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
 
@@ -32,7 +29,7 @@ fun PdfViewerScreen(modifier: Modifier = Modifier) {
 
 
     LaunchedEffect(workbook) {
-        val file = workbook?.let { downloadPdf(context, it.pdf) }
+        val file = workbook?.let { APIManager.getPDFFromWorkbook(context, it) }
         if (file != null) {
             pdfFile = file
         }
@@ -58,29 +55,4 @@ fun PdfViewerScreen(modifier: Modifier = Modifier) {
     )
 }
 
-suspend fun downloadPdf(context: android.content.Context, url: String): File? {
-    return withContext(Dispatchers.IO) {
-        try {
-            val request = Request.Builder().url(url).build()
-            val response = HttpClient.instance.newCall(request).execute()
 
-            if (!response.isSuccessful) {
-                Log.e("Download PDF", "Failed: ${response.code}")
-                return@withContext null
-            }
-
-            response.body?.let { body ->
-                val file = File(context.cacheDir, "downloaded.pdf")
-                val fos = FileOutputStream(file)
-                fos.use { output ->
-                    output.write(body.bytes())
-                }
-                return@withContext file
-            }
-        } catch (e: Exception) {
-            Log.e("Download PDF", "Error downloading PDF: ${e.message}")
-            e.printStackTrace()
-            null
-        }
-    }
-}
