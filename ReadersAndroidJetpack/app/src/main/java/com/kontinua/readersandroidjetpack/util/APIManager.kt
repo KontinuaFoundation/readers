@@ -1,6 +1,7 @@
 package com.kontinua.readersandroidjetpack.util
 
 import android.util.Log
+import com.kontinua.readersandroidjetpack.Constants.API_URL
 import com.kontinua.readersandroidjetpack.serialization.Collection
 import com.kontinua.readersandroidjetpack.serialization.CollectionPreview
 import com.kontinua.readersandroidjetpack.serialization.Workbook
@@ -14,13 +15,13 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 
+
 object APIManager {
     /*
     Manages any requests pertaining to the backend Kontinua Readers Service
     i.e. fetching workbooks/collections and downloading pdfs.
      */
 
-    private const val API_URL = "http://18.189.208.93/api"
     private final val CLIENT = OkHttpClient()
     private final val MOSHI = Moshi.Builder().build()
 
