@@ -173,14 +173,15 @@ struct FeedbackView: View {
           */
         isSubmitting = true
         // Submit feedback to the API via the feedback manager instance
-        feedbackManager.submitFeedback(email: email, feedbackBody: feedback) { success, errorMsg in
+        feedbackManager.submitFeedback(email: email, feedbackBody: feedback) { result in
             // Handle the result on the main queue
             DispatchQueue.main.async {
                 isSubmitting = false
-                if success {
+                switch result {
+                case .success:
                     showSuccessAlert = true
-                } else if let message = errorMsg {
-                    errorMessage = message
+                case let .failure(error):
+                    errorMessage = error.localizedDescription
                     showErrorAlert = true
                 }
             }
