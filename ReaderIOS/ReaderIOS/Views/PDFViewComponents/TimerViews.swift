@@ -50,9 +50,9 @@ struct TimerControlsView: View {
                 ZStack {
                     Button(action: {
                         timerManager.startTimer(duration: TimeInterval(Int(customMinutes) * 60))
-                    }) {
+                    }, label: {
                         Label("\(Int(customMinutes)) Minutes", systemImage: deltaSymbol)
-                    }
+                    })
                 }
 
                 Slider(
