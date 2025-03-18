@@ -50,11 +50,11 @@ struct TimerControlsView: View {
                 ZStack {
                     Button(action: {
                         timerManager.startTimer(duration: TimeInterval(Int(customMinutes) * 60))
-                    }){
+                    }) {
                         Label("\(Int(customMinutes)) Minutes", systemImage: deltaSymbol)
                     }
                 }
-                
+
                 Slider(
                     value: $customMinutes,
                     in: TimerConstants.actualMin ... TimerConstants.actualMax,
@@ -64,7 +64,7 @@ struct TimerControlsView: View {
                 .onChange(of: customMinutes) { newValue in
                     let delta = newValue - previousCustomMinutes
                     if abs(delta) == TimerConstants.customMax {
-                        deltaSymbol =  "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
+                        deltaSymbol = "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
                     } else {
                         deltaSymbol = delta > 0 ? "plus.circle" : "minus.circle"
                     }
@@ -72,9 +72,9 @@ struct TimerControlsView: View {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
                         deltaSymbol = ""
                     }
-                    
+
                     previousCustomMinutes = newValue
-                    
+
                     // Looping logic for the slider
                     if newValue == TimerConstants.actualMax {
                         customMinutes = TimerConstants.customMin
@@ -97,7 +97,6 @@ struct TimerControlsView: View {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }
-
 
 // MARK: - Timer Progress View
 
