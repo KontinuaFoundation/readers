@@ -53,7 +53,7 @@ fun BottomBarComponent(
                         timerViewModel.startTimer()
                     },
                     onCancel = {
-                        timerViewModel.cancelTimer()
+                        timerViewModel.resetTimer()
                     }
                 )
             }

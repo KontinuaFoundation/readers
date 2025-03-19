@@ -50,12 +50,6 @@ class TimerViewModel : ViewModel() {
         isTimerRunning = false
     }
 
-    fun cancelTimer() {
-        timerJob?.cancel()
-        timeLeftMillis = 0
-        isTimerRunning = false
-    }
-
     fun setDurationAndReset(durationMillis: Long) {
         timerDuration = durationMillis
         resetTimer()
