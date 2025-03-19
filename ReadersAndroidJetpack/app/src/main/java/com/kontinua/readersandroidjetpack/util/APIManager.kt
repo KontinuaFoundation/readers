@@ -1,8 +1,7 @@
 package com.kontinua.readersandroidjetpack.util
 
 import android.util.Log
-import com.kontinua.readersandroidjetpack.Constants.API_URL
-import com.kontinua.readersandroidjetpack.serialization.Chapter
+import com.kontinua.readersandroidjetpack.util.Constants.API_URL
 import com.kontinua.readersandroidjetpack.serialization.Collection
 import com.kontinua.readersandroidjetpack.serialization.CollectionPreview
 import com.kontinua.readersandroidjetpack.serialization.Workbook

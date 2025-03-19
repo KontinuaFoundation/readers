@@ -7,7 +7,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,37 +17,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.NavbarManager
-import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SidebarWithPDFViewer() {
-    var navbarManager: NavbarManager = remember { NavbarManager() }
-    val chapterWidthDp: Dp = 250.dp
+fun SidebarWithPDFViewer(navbarManager: NavbarManager) {
     val density = LocalDensity.current
 
     val animatedChapterSidebarWidth by animateDpAsState(
@@ -77,16 +65,6 @@ fun SidebarWithPDFViewer() {
                         }
                     })
         }
-
-        // Top Bar
-        TopAppBar(
-            title = { Text("") },
-            navigationIcon = {
-                IconButton(onClick = { navbarManager.toggleChapterSidebar() }) {
-                    Icon(Icons.Filled.Menu, contentDescription = "Menu")
-                }
-            }
-        )
 
         // Chapter Sidebar
         AnimatedVisibility(
@@ -118,8 +96,7 @@ fun SidebarWithPDFViewer() {
 @Composable
 fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager: NavbarManager) {
     val collectionVM = navbarManager.collectionVM
-    val collection = collectionVM!!.collectionState.collectAsState()
-    val chapters: List<Chapter> = collectionVM.chapters
+    val chapters: List<Chapter> = collectionVM?.chapters ?: emptyList()
     val scroll = rememberScrollState()
     Column(
         modifier = Modifier
@@ -136,7 +113,7 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
         WorkbookButton(onClick = onButtonClick)
         for (chapter in chapters){
             Text("Chapter ${chapter.chapNum}: ${chapter.title}", modifier = Modifier.clickable {
-                collectionVM.setWorkbook(collectionVM.currentWorkbook)
+                collectionVM?.setWorkbook(collectionVM.currentWorkbook)
                 navbarManager.setPage(chapter.startPage - 1)
                 onClose()
             })

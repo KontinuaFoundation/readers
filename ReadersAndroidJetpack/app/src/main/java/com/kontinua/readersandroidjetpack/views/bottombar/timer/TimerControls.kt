@@ -1,4 +1,4 @@
-package com.kontinua.readersandroidjetpack.views
+package com.kontinua.readersandroidjetpack.views.bottombar.timer
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
