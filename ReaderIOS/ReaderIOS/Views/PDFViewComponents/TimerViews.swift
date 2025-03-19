@@ -51,7 +51,13 @@ struct TimerControlsView: View {
                     Button(action: {
                         timerManager.startTimer(duration: TimeInterval(Int(customMinutes) * 60))
                     }, label: {
-                        Label("\(Int(customMinutes)) Minutes", systemImage: deltaSymbol)
+                        if deltaSymbol != "" {
+                            Label("\(Int(customMinutes)) Minutes", systemImage: deltaSymbol)
+                        } else {
+                            Label("\(Int(customMinutes)) Minutes", systemImage: "1.circle")
+                                .labelStyle(.titleOnly)
+                        }
+
                     })
                 }
 
