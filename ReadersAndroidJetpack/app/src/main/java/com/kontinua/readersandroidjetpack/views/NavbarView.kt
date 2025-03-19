@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.NavbarManager
-import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,8 +96,7 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager) {
 @Composable
 fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager: NavbarManager) {
     val collectionVM = navbarManager.collectionVM
-    val collection = collectionVM!!.collectionState.collectAsState()
-    val chapters: List<Chapter> = collectionVM.chapters
+    val chapters: List<Chapter> = collectionVM?.chapters ?: emptyList()
     val scroll = rememberScrollState()
     Column(
         modifier = Modifier
@@ -115,7 +113,7 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
         WorkbookButton(onClick = onButtonClick)
         for (chapter in chapters){
             Text("Chapter ${chapter.chapNum}: ${chapter.title}", modifier = Modifier.clickable {
-                collectionVM.setWorkbook(collectionVM.currentWorkbook)
+                collectionVM?.setWorkbook(collectionVM.currentWorkbook)
                 navbarManager.setPage(chapter.startPage - 1)
                 onClose()
             })
