@@ -12,7 +12,6 @@ struct SearchView: View {
     // Bindings from the parent for interactions that affect navigation
     @Binding var currentPage: Int
     @Binding var columnVisibility: NavigationSplitViewVisibility
-    @Binding var isContentLoading: Bool
 
     // Local search state – now maintained in SearchView
     @State private var searchText: String = ""
@@ -23,6 +22,9 @@ struct SearchView: View {
     var chapters: [Chapter]?
     var fetchWorkbookAndChapters: () -> Void
     var pdfDocument: PDFDocument?
+
+    // Observing networking service for blurring
+    @ObservedObject private var networkingSingleton = NetworkingService.shared
 
     // Computed properties using the local searchText and wordsIndex
     private var filteredChapters: [SearchResult<Chapter>] {
@@ -104,7 +106,7 @@ struct SearchView: View {
                         }
                     }
                 }
-                .blur(radius: isContentLoading ? 10 : 0)
+                .blur(radius: networkingSingleton.isContentLoading ? 10 : 0)
             } else {
                 ProgressView()
                     .onAppear(perform: fetchWorkbookAndChapters)
