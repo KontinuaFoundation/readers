@@ -3,6 +3,7 @@ package com.kontinua.readersandroidjetpack.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.serialization.Collection
 import com.kontinua.readersandroidjetpack.serialization.Workbook
@@ -19,6 +20,8 @@ class CollectionViewModel : ViewModel() {
 
     val collectionState: StateFlow<Collection?> = _collectionState.asStateFlow()
     val workbookState: StateFlow<Workbook?> = _workbookState.asStateFlow()
+    lateinit var currentWorkbook: WorkbookPreview
+    var chapters: List<Chapter> = emptyList()
 
     init {
         viewModelScope.launch {
@@ -32,7 +35,6 @@ class CollectionViewModel : ViewModel() {
             updateCollection(latestCollection)
             // Default to the first workbook for now...
             setWorkbook(latestCollection.workbooks.first())
-
         }
 
     }
@@ -63,11 +65,10 @@ class CollectionViewModel : ViewModel() {
                 return@launch
             }
 
+            currentWorkbook = preview
+            chapters = workbook.chapters
             updateWorkbook(workbook)
 
         }
-
-
     }
-
 }

@@ -13,11 +13,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
 import com.kontinua.readersandroidjetpack.util.APIManager
+import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
 @Composable
-fun PDFViewer(modifier: Modifier = Modifier) {
+fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
 
@@ -27,6 +28,7 @@ fun PDFViewer(modifier: Modifier = Modifier) {
     val collection by collectionViewModel.collectionState.collectAsState()
     val workbook by collectionViewModel.workbookState.collectAsState()
 
+    navbarManager.setCollection(collectionViewModel)
 
     LaunchedEffect(workbook) {
         val file = workbook?.let { APIManager.getPDFFromWorkbook(context, it) }
@@ -46,13 +48,16 @@ fun PDFViewer(modifier: Modifier = Modifier) {
                     .enableSwipe(true)
                     .swipeHorizontal(true)
                     .enableDoubletap(true)
-                    .defaultPage(0)
+                    .defaultPage(navbarManager.pageNumber)
                     .pageFling(true)
                     .pageSnap(true)
                     .load()
+                pdfView.jumpTo(navbarManager.pageNumber)
             }
         }
     )
+    pdfFile = null
 }
+
 
 

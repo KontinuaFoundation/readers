@@ -17,6 +17,7 @@ struct SplitView: View {
     @State private var workbooks: [WorkbookPreview]?
     @State private var chapters: [Chapter]?
     @State private var covers: [Cover]?
+    @State private var currentCollection: Collection?
 
     // User selection (what they are viewing) state vars
     @State private var selectedWorkbookID: Int?
@@ -35,14 +36,14 @@ struct SplitView: View {
     // Chapter manager, detemines chapter from current page
     @State private var chapterManager: ChapterManager?
 
+    // Observing networking service for blurring
+    @ObservedObject private var networkingSingleton = NetworkingService.shared
+
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             if let workbooks = workbooks {
                 List(workbooks, selection: $selectedWorkbookID) { workbook in
                     HStack {
-                        Image(systemName: "icloud.and.arrow.down") // Download icon
-                            .font(.caption)
-                            .foregroundColor(.blue)
                         Text("Workbook \(workbook.number)")
                             .tag(workbook.id)
                     }
@@ -75,6 +76,7 @@ struct SplitView: View {
                         currentWorkbook: currentWorkbook,
                         bookmarkManager: bookmarkManager
                     )
+                    .blur(radius: networkingSingleton.isContentLoading ? 10 : 0)
                 }
             }
             .toolbar {
@@ -96,21 +98,25 @@ struct SplitView: View {
                     currentPage: $currentPage,
                     covers: $covers,
                     pdfDocument: $pdfDocument,
+                    collection: $currentCollection,
                     bookmarkManager: bookmarkManager
                 )
+                .blur(radius: networkingSingleton.isContentLoading ? 10 : 0)
             } else {
                 ProgressView("Getting the latest workbook.")
             }
         }
         .onAppear {
+            if let collection = initialCollection {
+                // Initialize currentCollection from initialCollection
+                currentCollection = collection
+            }
             // Optionally, if initialPDFDocument is available, set it.
             if let initialPDF = initialPDFDocument {
                 pdfDocument = initialPDF
             }
         }
         .onChange(of: selectedWorkbookID) {
-            guard let selectedWorkbook = selectedWorkbook else { return }
-
             fetchWorkbookAndChapters()
 
             if let selectedWorkbookID {
@@ -172,7 +178,6 @@ struct SplitView: View {
             switch result {
             case let .success(workbookRes):
                 chapters = workbookRes.chapters
-                selectedChapterID = chapters?.first?.id
                 currentWorkbook = workbookRes
                 setupChapterManager()
             case let .failure(error):
