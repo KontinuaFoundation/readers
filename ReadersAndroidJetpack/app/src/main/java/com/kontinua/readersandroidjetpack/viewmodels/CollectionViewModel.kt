@@ -70,8 +70,5 @@ class CollectionViewModel : ViewModel() {
             updateWorkbook(workbook)
 
         }
-
-
     }
-
 }
