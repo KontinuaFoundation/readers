@@ -35,6 +35,9 @@ struct SplitView: View {
     // Chapter manager, detemines chapter from current page
     @State private var chapterManager: ChapterManager?
 
+    // UI state vars
+    @State private var isContentLoading: Bool = true
+
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             if let workbooks = workbooks {
@@ -61,6 +64,7 @@ struct SplitView: View {
                     SearchView(
                         currentPage: $currentPage,
                         columnVisibility: $columnVisibility,
+                        isContentLoading: $isContentLoading,
                         chapters: chapters,
                         fetchWorkbookAndChapters: fetchWorkbookAndChapters,
                         pdfDocument: pdfDocument
@@ -72,6 +76,7 @@ struct SplitView: View {
                         currentWorkbook: currentWorkbook,
                         bookmarkManager: bookmarkManager
                     )
+                    .blur(radius: isContentLoading ? 10 : 0)
                 }
             }
             .toolbar {
@@ -95,6 +100,7 @@ struct SplitView: View {
                     pdfDocument: $pdfDocument,
                     bookmarkManager: bookmarkManager
                 )
+                .blur(radius: isContentLoading ? 10 : 0)
             } else {
                 ProgressView("Getting the latest workbook.")
             }
@@ -106,8 +112,6 @@ struct SplitView: View {
             }
         }
         .onChange(of: selectedWorkbookID) {
-            guard let selectedWorkbook = selectedWorkbook else { return }
-
             fetchWorkbookAndChapters()
 
             if let selectedWorkbookID {
@@ -165,15 +169,21 @@ struct SplitView: View {
     func fetchWorkbookAndChapters() {
         guard let id = selectedWorkbook?.id else { return }
 
+        isContentLoading = true
+
         NetworkingService.shared.fetchWorkbook(id: id) { result in
-            switch result {
-            case let .success(workbookRes):
-                chapters = workbookRes.chapters
-                // selectedChapterID = chapters?.first?.id
-                currentWorkbook = workbookRes
-                setupChapterManager()
-            case let .failure(error):
-                print("Error fetching chapters: \(error)")
+            DispatchQueue.main.async {
+                switch result {
+                case let .success(workbookRes):
+                    chapters = workbookRes.chapters
+                    currentWorkbook = workbookRes
+                    setupChapterManager()
+                case let .failure(error):
+                    print("Error fetching chapters: \(error)")
+                }
+
+                // Set loading state to false once data is loaded
+                isContentLoading = false
             }
         }
     }

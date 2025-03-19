@@ -12,6 +12,7 @@ struct SearchView: View {
     // Bindings from the parent for interactions that affect navigation
     @Binding var currentPage: Int
     @Binding var columnVisibility: NavigationSplitViewVisibility
+    @Binding var isContentLoading: Bool
 
     // Local search state – now maintained in SearchView
     @State private var searchText: String = ""
@@ -50,58 +51,60 @@ struct SearchView: View {
                 searchHighlighter?.clearHighlights()
             })
             .padding(.horizontal)
-
             // List displaying chapters and word matches
             if chapters != nil {
-                List(selection: Binding(
-                    get: { currentPage },
-                    set: { newPage in
-                        if let page = newPage {
-                            currentPage = page
-                            columnVisibility = .detailOnly
-                        }
-                    }
-                )) {
-                    Section(header: Text("Chapters: ")) {
-                        if filteredChapters.isEmpty, !searchText.isEmpty {
-                            Text("No chapters found")
-                                .foregroundColor(.gray)
-                        } else {
-                            ForEach(filteredChapters, id: \.item.pageNumber) { searchResult in
-                                searchResult.highlightedTitleView()
-                                    .tag(searchResult.item.pageNumber)
+                Group {
+                    List(selection: Binding(
+                        get: { currentPage },
+                        set: { newPage in
+                            if let page = newPage {
+                                currentPage = page
+                                columnVisibility = .detailOnly
                             }
                         }
-                    }
-
-                    if searchText.count > 1 {
-                        Section(header: Text("Word Matches:")) {
-                            if wordSearchResults.isEmpty {
-                                Text("No word matches found")
+                    )) {
+                        Section(header: Text("Chapters: ")) {
+                            if filteredChapters.isEmpty, !searchText.isEmpty {
+                                Text("No chapters found")
                                     .foregroundColor(.gray)
                             } else {
-                                ForEach(wordSearchResults, id: \.page) { result in
-                                    VStack(alignment: .leading) {
-                                        Text(result.snippet)
-                                        Text("Page \(result.page + 1)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .onTapGesture {
-                                        currentPage = result.page
-                                        print("Highlighting \(result.snippet) on page \(result.page + 1)")
-                                        searchHighlighter?.clearHighlights()
-                                        searchHighlighter?.highlightSearchResult(
-                                            searchTerm: result.snippet,
-                                            onPage: result.page
-                                        )
-                                        columnVisibility = .detailOnly
+                                ForEach(filteredChapters, id: \.item.pageNumber) { searchResult in
+                                    searchResult.highlightedTitleView()
+                                        .tag(searchResult.item.pageNumber)
+                                }
+                            }
+                        }
+
+                        if searchText.count > 1 {
+                            Section(header: Text("Word Matches:")) {
+                                if wordSearchResults.isEmpty {
+                                    Text("No word matches found")
+                                        .foregroundColor(.gray)
+                                } else {
+                                    ForEach(wordSearchResults, id: \.page) { result in
+                                        VStack(alignment: .leading) {
+                                            Text(result.snippet)
+                                            Text("Page \(result.page + 1)")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .onTapGesture {
+                                            currentPage = result.page
+                                            print("Highlighting \(result.snippet) on page \(result.page + 1)")
+                                            searchHighlighter?.clearHighlights()
+                                            searchHighlighter?.highlightSearchResult(
+                                                searchTerm: result.snippet,
+                                                onPage: result.page
+                                            )
+                                            columnVisibility = .detailOnly
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+                .blur(radius: isContentLoading ? 10 : 0)
             } else {
                 ProgressView()
                     .onAppear(perform: fetchWorkbookAndChapters)
