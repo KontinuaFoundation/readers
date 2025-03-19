@@ -23,27 +23,39 @@ class FeedbackViewModel : ViewModel() {
     }
 
     // State for showing/hiding the feedback dialog
-    private val isShowingFeedbackForm = MutableStateFlow(false)
-    val feedbackVisibility: StateFlow<Boolean> = isShowingFeedbackForm.asStateFlow()
+    private val _isShowingFeedbackForm = MutableStateFlow(false)
+    val feedbackVisibility: StateFlow<Boolean> = _isShowingFeedbackForm.asStateFlow()
 
     // State to track feedback text
     private val _feedbackText = MutableStateFlow("")
     val feedbackText: StateFlow<String> = _feedbackText.asStateFlow()
 
+    // State to track user email
+    private val _userEmail = MutableStateFlow("")
+    val userEmail: StateFlow<String> = _userEmail.asStateFlow()
+
     /**
      * Shows the feedback dialog
      */
     fun showFeedbackForm() {
-        isShowingFeedbackForm.value = true
+        _isShowingFeedbackForm.value = true
     }
 
     /**
      * Hides the feedback dialog and clears input
      */
     fun dismissFeedbackForm() {
-        isShowingFeedbackForm.value = false
+        _isShowingFeedbackForm.value = false
         // Clear the feedback text when dialog is dismissed
         _feedbackText.value = ""
+        _userEmail.value = ""
+    }
+
+    /**
+     * Updates user email as user types
+     */
+    fun updateUserEmail(email: String) {
+        _userEmail.value = email
     }
 
     /**
@@ -56,24 +68,30 @@ class FeedbackViewModel : ViewModel() {
     /**
      * Submits feedback to the backend
      * - TODO: Replace with actual API call
-     *
+     * - TODO: Handle errors
+     * - TODO: Clear input after successful submission
+     * - TODO: Show success message
+     * - TODO: Validate email
      */
     fun submitFeedback() {
+        val email = _userEmail.value
         val feedback = _feedbackText.value
-        if (feedback.isBlank()) return
-
+        if (feedback.isBlank() || email.isBlank()) return
         viewModelScope.launch {
             try {
                 // Example: apiService.submitFeedback(feedback)
-                Log.d(TAG, "Feedback submitted: $feedback")
+                Log.d(TAG, "Feedback submitted from: $email with text: $feedback")
 
                 // Reset state after successful submission
+                _userEmail.value = ""
                 _feedbackText.value = ""
-                isShowingFeedbackForm.value = false
+                _isShowingFeedbackForm.value = false
             } catch (e: Exception) {
                 // Handle error (in a real app, you might want to show an error message)
                 Log.e(TAG, "Error submitting feedback", e)
             }
         }
     }
+
+
 }
