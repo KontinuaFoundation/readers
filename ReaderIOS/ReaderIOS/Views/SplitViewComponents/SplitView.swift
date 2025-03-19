@@ -36,14 +36,14 @@ struct SplitView: View {
     // Chapter manager, detemines chapter from current page
     @State private var chapterManager: ChapterManager?
 
+    // Observing networking service for blurring
+    @ObservedObject private var networkingSingleton = NetworkingService.shared
+
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             if let workbooks = workbooks {
                 List(workbooks, selection: $selectedWorkbookID) { workbook in
                     HStack {
-                        Image(systemName: "icloud.and.arrow.down") // Download icon
-                            .font(.caption)
-                            .foregroundColor(.blue)
                         Text("Workbook \(workbook.number)")
                             .tag(workbook.id)
                     }
@@ -76,6 +76,7 @@ struct SplitView: View {
                         currentWorkbook: currentWorkbook,
                         bookmarkManager: bookmarkManager
                     )
+                    .blur(radius: networkingSingleton.isContentLoading ? 10 : 0)
                 }
             }
             .toolbar {
@@ -100,6 +101,7 @@ struct SplitView: View {
                     collection: $currentCollection,
                     bookmarkManager: bookmarkManager
                 )
+                .blur(radius: networkingSingleton.isContentLoading ? 10 : 0)
             } else {
                 ProgressView("Getting the latest workbook.")
             }
@@ -115,8 +117,6 @@ struct SplitView: View {
             }
         }
         .onChange(of: selectedWorkbookID) {
-            guard selectedWorkbook != nil else { return }
-
             fetchWorkbookAndChapters()
 
             if let selectedWorkbookID {
@@ -178,7 +178,6 @@ struct SplitView: View {
             switch result {
             case let .success(workbookRes):
                 chapters = workbookRes.chapters
-                selectedChapterID = chapters?.first?.id
                 currentWorkbook = workbookRes
                 setupChapterManager()
             case let .failure(error):

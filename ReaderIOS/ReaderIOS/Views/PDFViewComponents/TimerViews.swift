@@ -28,9 +28,10 @@ enum TimerConstants {
 struct TimerControlsView: View {
     @ObservedObject var timerManager: TimerManager
     @State private var customMinutes: Double = TimerConstants.defaultCustomOption
+    @State private var previousCustomMinutes: Double = TimerConstants.defaultCustomOption
+    @State private var deltaSymbol: String = ""
 
     var body: some View {
-        // Timer Controls
         Menu {
             if timerManager.isTimerRunning || timerManager.isPaused {
                 let elapsed = timerManager.selectedDuration - timerManager.remainingDuration
@@ -38,17 +39,26 @@ struct TimerControlsView: View {
                     .foregroundColor(.gray)
             }
 
-            // creates Menu options based off options in TimerConstants
             ForEach(TimerConstants.options, id: \.self) { minutes in
                 Button("\(minutes) Minutes") {
                     timerManager.startTimer(duration: TimeInterval(minutes * 60))
                 }
             }
 
-            // Custom option with a slider below it
+            // Custom option with slider and delta text animation
             VStack(alignment: .leading) {
-                Button("\(Int(customMinutes)) Minutes") {
-                    timerManager.startTimer(duration: TimeInterval(Int(customMinutes) * 60))
+                ZStack {
+                    Button(action: {
+                        timerManager.startTimer(duration: TimeInterval(Int(customMinutes) * 60))
+                    }, label: {
+                        if deltaSymbol != "" {
+                            Label("\(Int(customMinutes)) Minutes", systemImage: deltaSymbol)
+                        } else {
+                            Label("\(Int(customMinutes)) Minutes", systemImage: "1.circle")
+                                .labelStyle(.titleOnly)
+                        }
+
+                    })
                 }
 
                 Slider(
@@ -57,11 +67,24 @@ struct TimerControlsView: View {
                     step: TimerConstants.customStep
                 )
                 .padding(.horizontal)
-                .onChange(of: customMinutes) {
-                    // logic to loop counter
-                    if customMinutes == TimerConstants.actualMax {
+                .onChange(of: customMinutes) { newValue in
+                    let delta = newValue - previousCustomMinutes
+                    if abs(delta) == TimerConstants.customMax {
+                        deltaSymbol = "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
+                    } else {
+                        deltaSymbol = delta > 0 ? "plus.circle" : "minus.circle"
+                    }
+                    // Hide the delta text after 0.75 seconds
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                        deltaSymbol = ""
+                    }
+
+                    previousCustomMinutes = newValue
+
+                    // Looping logic for the slider
+                    if newValue == TimerConstants.actualMax {
                         customMinutes = TimerConstants.customMin
-                    } else if customMinutes == TimerConstants.actualMin {
+                    } else if newValue == TimerConstants.actualMin {
                         customMinutes = TimerConstants.customMax
                     }
                 }

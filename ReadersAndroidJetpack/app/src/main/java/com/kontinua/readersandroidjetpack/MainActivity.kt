@@ -14,6 +14,8 @@ import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 import com.kontinua.readersandroidjetpack.views.BottomBarComponent
 import com.kontinua.readersandroidjetpack.views.FeedbackForm
 import com.kontinua.readersandroidjetpack.ui.theme.ReadersAndroidJetpackTheme
+import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.views.SidebarWithPDFViewer
 
 
 class MainActivity : ComponentActivity() {
@@ -39,8 +41,11 @@ class MainActivity : ComponentActivity() {
                     )
 
                 }
+                SidebarWithPDFViewer()
             }
         }
     }
+
+
 }
 
