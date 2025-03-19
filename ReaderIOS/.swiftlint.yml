@@ -14,6 +14,8 @@ disabled_rules:
   - todo
   - trailing_comma
   - opening_brace
+  - orphaned_doc_comment
+  - large_tuple
 
 type_body_length:
   warning: 400 # Warning threshold
@@ -32,3 +34,4 @@ type_name:
 identifier_name:
   min_length: # Only minimum length
     warning: 3 # Only error threshold
+
