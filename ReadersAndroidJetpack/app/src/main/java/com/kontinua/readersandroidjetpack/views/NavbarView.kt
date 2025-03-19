@@ -7,6 +7,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -117,16 +120,18 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
     val collectionVM = navbarManager.collectionVM
     val collection = collectionVM!!.collectionState.collectAsState()
     val chapters: List<Chapter> = collectionVM.chapters
+    val scroll = rememberScrollState()
     Column(
         modifier = Modifier
             .width(250.dp)
             .background(Color.White)
             .fillMaxHeight()
             .padding(48.dp)
+            .verticalScroll(state = scroll)
             .clickable(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }) { /* Prevent clicks from propagating */ },
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         WorkbookButton(onClick = onButtonClick)
         for (chapter in chapters){
@@ -144,16 +149,18 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
     val collectionVM = navbarManager.collectionVM
     val collection = collectionVM!!.collectionState.collectAsState()
     val workbooks: List<WorkbookPreview> = collection.value!!.workbooks
+    val scroll = rememberScrollState()
     Column(
         modifier = Modifier
             .width(200.dp)
             .background(Color.White)
             .fillMaxHeight()
             .padding(48.dp)
+            .verticalScroll(state = scroll)
             .clickable(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }) { /* Prevent clicks from propagating */ },
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         for (workbook in workbooks) {
             Text("Workbook ${workbook.number}", modifier = Modifier.clickable {
