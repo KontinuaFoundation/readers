@@ -45,6 +45,7 @@ final class InitializationManager: ObservableObject {
                 }
             case let .failure(error):
                 print("Failed to fetch latest collection: \(error)")
+                print("Network error details: \(error.localizedDescription)")
             }
         }
     }
