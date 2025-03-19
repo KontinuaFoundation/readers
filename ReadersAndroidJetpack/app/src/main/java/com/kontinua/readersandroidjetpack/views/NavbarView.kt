@@ -1,0 +1,173 @@
+package com.kontinua.readersandroidjetpack.views
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.kontinua.readersandroidjetpack.serialization.Chapter
+import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
+import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SidebarWithPDFViewer() {
+    var navbarManager: NavbarManager = remember { NavbarManager() }
+    val chapterWidthDp: Dp = 250.dp
+    val density = LocalDensity.current
+
+    val animatedChapterSidebarWidth by animateDpAsState(
+        targetValue = if (navbarManager.isWorkbookVisible) 200.dp else 0.dp,
+        label = "chapterSidebarWidthAnimation"
+    )
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // PDF Viewer
+        PDFViewer(modifier = Modifier.fillMaxSize(), navbarManager = navbarManager)
+
+        //Transparent clickable overlay.
+        if (navbarManager.isChapterVisible) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .pointerInput(navbarManager.isChapterVisible) {
+                        detectTapGestures { offset ->
+                            if (navbarManager.isChapterVisible) {
+                                val sidebarWidthPx = with(density) { animatedChapterSidebarWidth.toPx() }
+                                // Check if tap is outside the sidebar
+                                if (offset.x > sidebarWidthPx) {
+                                    navbarManager.closeSidebar()
+                                }
+                            }
+                        }
+                    })
+        }
+
+        // Top Bar
+        TopAppBar(
+            title = { Text("") },
+            navigationIcon = {
+                IconButton(onClick = { navbarManager.toggleChapterSidebar() }) {
+                    Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                }
+            }
+        )
+
+        // Chapter Sidebar
+        AnimatedVisibility(
+            visible = navbarManager.isChapterVisible,
+            enter = slideInHorizontally(initialOffsetX = { -it }),
+            exit = slideOutHorizontally(targetOffsetX = { -it }),
+            modifier = Modifier.align(Alignment.CenterStart).padding(start = animatedChapterSidebarWidth)
+        ) {
+            ChapterSidebar(
+                onClose = { navbarManager.closeSidebar() },
+                onButtonClick = { navbarManager.toggleWorkbookSidebar() },
+                navbarManager = navbarManager
+            )
+        }
+
+        // Workbook Sidebar
+        AnimatedVisibility(
+            visible = navbarManager.isWorkbookVisible,
+            enter = slideInHorizontally(initialOffsetX = { -it }), // Slide from left
+            exit = slideOutHorizontally(targetOffsetX = { -it }), // Slide to left
+            modifier = Modifier.align(Alignment.CenterStart)
+        ) {
+            WorkbookSidebar(onClose = { navbarManager.closeSidebar() },
+                navbarManager = navbarManager)
+        }
+    }
+}
+
+@Composable
+fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager: NavbarManager) {
+    val collectionVM = navbarManager.collectionVM
+    val collection = collectionVM!!.collectionState.collectAsState()
+    val chapters: List<Chapter> = collectionVM.chapters
+    Column(
+        modifier = Modifier
+            .width(250.dp)
+            .background(Color.White)
+            .fillMaxHeight()
+            .padding(48.dp)
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }) { /* Prevent clicks from propagating */ },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        WorkbookButton(onClick = onButtonClick)
+        for (chapter in chapters){
+            Text("Chapter ${chapter.chapNum}: ${chapter.title}", modifier = Modifier.clickable {
+                collectionVM.setWorkbook(collectionVM.currentWorkbook)
+                navbarManager.setPage(chapter.startPage - 1)
+                onClose()
+            })
+        }
+    }
+}
+
+@Composable
+fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
+    val collectionVM = navbarManager.collectionVM
+    val collection = collectionVM!!.collectionState.collectAsState()
+    val workbooks: List<WorkbookPreview> = collection.value!!.workbooks
+    Column(
+        modifier = Modifier
+            .width(200.dp)
+            .background(Color.White)
+            .fillMaxHeight()
+            .padding(48.dp)
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }) { /* Prevent clicks from propagating */ },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        for (workbook in workbooks) {
+            Text("Workbook ${workbook.number}", modifier = Modifier.clickable {
+                collectionVM.setWorkbook(workbook)
+                navbarManager.setPage(0)
+                onClose()
+            })
+        }
+    }
+}
+
+@Composable
+fun WorkbookButton(onClick: () -> Unit) {
+    Button(onClick = { onClick() }) {
+        Text("Workbooks")
+    }
+}
