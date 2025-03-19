@@ -102,8 +102,6 @@ struct TimerControlsView: View {
 
 struct TimerProgressView: View {
     @ObservedObject var timerManager: TimerManager
-    @Binding var showingFeedback: Bool
-
     var body: some View {
         HStack(spacing: 0) {
             if timerManager.isTimerRunning {
@@ -169,18 +167,6 @@ struct TimerProgressView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: 4)
-
-            Button {
-                showingFeedback = true
-            } label: {
-                Image(systemName: "message.fill")
-                    .font(.system(size: 16))
-                    .foregroundColor(.white)
-                    .padding(8)
-                    .background(Color.blue)
-                    .clipShape(Circle())
-                    .shadow(radius: 2)
-            }
         }
         .padding(.leading, 25)
     }

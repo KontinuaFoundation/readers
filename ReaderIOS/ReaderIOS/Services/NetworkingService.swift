@@ -8,8 +8,6 @@
 import Foundation
 import PDFKit.PDFDocument
 
-let APIURL = "http://18.189.208.93/api/"
-
 enum NetworkError: Error {
     case invalidURL
     case noData
@@ -55,7 +53,9 @@ final class NetworkingService: ObservableObject {
     // MARK: - Network Methods
 
     func fetchLatestCollection(completion: @escaping (Result<Collection, Error>) -> Void) {
-        guard let url = URL(string: APIURL + "collections/?localization=en-US") else {
+        guard let url = URL(string: ApplicationConstants.API.baseURLString + ApplicationConstants.APIEndpoints
+            .collections + "?localization=en-US")
+        else {
             completion(.failure(NetworkError.invalidURL))
             return
         }
@@ -92,7 +92,9 @@ final class NetworkingService: ObservableObject {
     }
 
     func fetchWorkbooks(collection: Collection, completion: @escaping (Result<[WorkbookPreview], Error>) -> Void) {
-        guard let url = URL(string: APIURL + "collections/\(collection.id)/") else {
+        guard let url = URL(string: ApplicationConstants.API.baseURLString + ApplicationConstants.APIEndpoints
+            .collections + "\(collection.id)/")
+        else {
             completion(.failure(NetworkError.invalidURL))
             return
         }
@@ -123,7 +125,9 @@ final class NetworkingService: ObservableObject {
     }
 
     func fetchWorkbook(id: Int, completion: @escaping (Result<Workbook, Error>) -> Void) {
-        guard let url = URL(string: APIURL + "workbooks/\(id)/") else {
+        guard let url = URL(string: ApplicationConstants.API.baseURLString + ApplicationConstants.APIEndpoints
+            .workbooks + "\(id)/")
+        else {
             completion(.failure(NetworkError.invalidURL))
             return
         }

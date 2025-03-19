@@ -8,6 +8,7 @@ struct PDFView: View {
     @Binding var currentPage: Int
     @Binding var covers: [Cover]?
     @Binding var pdfDocument: PDFDocument?
+    @Binding var collection: Collection?
 
     // MARK: - Observed Objects
 
@@ -35,6 +36,7 @@ struct PDFView: View {
 
     // MARK: - StateObjects and Observed
 
+    @StateObject private var feedbackManager = FeedbackManager()
     @StateObject private var timerManager = TimerManager()
     @ObservedObject private var zoomManager = ZoomManager()
     @ObservedObject private var textManager = TextManager()
@@ -162,9 +164,22 @@ struct PDFView: View {
                                         }
                                     }
                                 }
+                                ToolbarItemGroup(placement: .bottomBar) {
+                                    // Create a horizontal stack for the entire bottom toolbar
+                                    HStack(spacing: 0) {
+                                        // Timer controls and progress bar should fill available space
+                                        TimerProgressView(timerManager: timerManager)
+                                            .frame(maxWidth: .infinity)
 
-                                ToolbarItem(placement: .bottomBar) {
-                                    TimerProgressView(timerManager: timerManager, showingFeedback: $showingFeedback)
+                                        // Feedback button with minimal spacing
+                                        FeedbackView.button(
+                                            feedbackManager: feedbackManager,
+                                            workbook: currentWorkbook,
+                                            currentPage: currentPage,
+                                            collection: collection
+                                        )
+                                        .padding(.leading, 4) // Minimal padding between progress bar and button
+                                    }
                                 }
                             }
                         } else {
@@ -190,8 +205,8 @@ struct PDFView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             }
-            .sheet(isPresented: $showingFeedback) {
-                FeedbackView()
+            .sheet(isPresented: $feedbackManager.isShowingFeedback) {
+                FeedbackView(feedbackManager: feedbackManager)
             }
             .onChange(of: currentWorkbook) { _, _ in
                 loadPDFDocument()
