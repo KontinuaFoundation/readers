@@ -1,4 +1,4 @@
-package com.kontinua.readersandroidjetpack.views
+package com.kontinua.readersandroidjetpack.views.bottombar
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 import com.kontinua.readersandroidjetpack.ui.theme.buttons.FeedbackButton
+import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
+import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerControls
 
 
 /**
  * Extensible bottom app bar component that can house various action buttons.
- * Currently includes a feedback button, but can be extended with additional functionality.
+ * Currently includes a feedback button and timer, but can be extended with additional functionality.
  *
  * To add new functionality:
  * 1. Uncomment placeholder buttons or add new ones
@@ -25,15 +27,36 @@ import com.kontinua.readersandroidjetpack.ui.theme.buttons.FeedbackButton
 @Composable
 fun BottomBarComponent(
     feedbackViewModel: FeedbackViewModel,
+    timerViewModel: TimerViewModel,
     modifier: Modifier = Modifier
 ) {
+    val isTimerRunning = timerViewModel.isTimerRunning
+    val timeLeftMillis = timerViewModel.timeLeftMillis
+
     BottomAppBar(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-           // Left-aligned items
-            // Uncomment to add Timer
+            if (timeLeftMillis > 0) {
+                TimerControls(
+                    isRunning = isTimerRunning,
+                    onPauseResume = {
+                        if (isTimerRunning) {
+                            timerViewModel.pauseTimer()
+                        } else {
+                            timerViewModel.resumeTimer()
+                        }
+                    },
+                    onRestart = {
+                        timerViewModel.resetTimer()
+                        timerViewModel.startTimer()
+                    },
+                    onCancel = {
+                        timerViewModel.cancelTimer()
+                    }
+                )
+            }
 
             // Middle space for potential future items
             Spacer(modifier = Modifier.weight(1f))

@@ -1,4 +1,4 @@
-package com.kontinua.readersandroidjetpack.views
+package com.kontinua.readersandroidjetpack.views.bottombar.feedback
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column

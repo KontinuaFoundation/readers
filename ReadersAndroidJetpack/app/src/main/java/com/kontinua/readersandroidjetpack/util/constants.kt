@@ -1,4 +1,4 @@
-package com.kontinua.readersandroidjetpack
+package com.kontinua.readersandroidjetpack.util
 
 //FIXME: We should make this an environment variable at some point.
 object Constants {

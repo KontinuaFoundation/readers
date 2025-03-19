@@ -1,7 +1,11 @@
-package com.kontinua.readersandroidjetpack.views
+package com.kontinua.readersandroidjetpack.views.topbar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -13,10 +17,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
+import com.kontinua.readersandroidjetpack.util.NavbarManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Toolbar(timerViewModel: TimerViewModel) {
+fun Toolbar(
+    timerViewModel: TimerViewModel,
+    navbarManager: NavbarManager
+) {
     var showMarkupMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
@@ -27,6 +35,11 @@ fun Toolbar(timerViewModel: TimerViewModel) {
         colors = TopAppBarDefaults.topAppBarColors(
             actionIconContentColor = MaterialTheme.colorScheme.onPrimary
         ),
+        navigationIcon = {
+            IconButton(onClick = { navbarManager.toggleChapterSidebar() }) {
+                Icon(Icons.Filled.Menu, contentDescription = "Menu")
+            }
+        },
         actions = {
             TextButton(onClick = { showTimerMenu = true }) {
                 Text("Timer")

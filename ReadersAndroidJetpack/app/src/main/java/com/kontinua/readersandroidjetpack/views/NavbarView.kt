@@ -18,14 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,8 +41,7 @@ import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SidebarWithPDFViewer() {
-    var navbarManager: NavbarManager = remember { NavbarManager() }
+fun SidebarWithPDFViewer(navbarManager: NavbarManager) {
     val chapterWidthDp: Dp = 250.dp
     val density = LocalDensity.current
 
@@ -77,16 +71,6 @@ fun SidebarWithPDFViewer() {
                         }
                     })
         }
-
-        // Top Bar
-        TopAppBar(
-            title = { Text("") },
-            navigationIcon = {
-                IconButton(onClick = { navbarManager.toggleChapterSidebar() }) {
-                    Icon(Icons.Filled.Menu, contentDescription = "Menu")
-                }
-            }
-        )
 
         // Chapter Sidebar
         AnimatedVisibility(
