@@ -62,18 +62,23 @@ class ZoomManager: ObservableObject {
     }
 
     func panZoomCenter(by translation: CGSize, in viewSize: CGSize) {
-        // Normalize the translation relative to the view size.
-        let deltaX = translation.width / viewSize.width
-        let deltaY = translation.height / viewSize.height
-
-        // Update the zoom point.
+        // Calculate a speed multiplier based on current zoom level
+        // The higher the zoom, the faster the panning
+        let zoomLevel = newZoomLevel()
+        let speedMultiplier = max(zoomLevel / 2.0, 1.0)
+        
+        // Normalize the translation relative to the view size with speed boost
+        let deltaX = (translation.width / viewSize.width) * speedMultiplier
+        let deltaY = (translation.height / viewSize.height) * speedMultiplier
+        
+        // Update the zoom point
         var newX = zoomPoint.x - deltaX
         var newY = zoomPoint.y - deltaY
-
-        // Clamp the new values to [0, 1] so the anchor stays within bounds.
+        
+        // Clamp the new values to [0, 1]
         newX = min(max(newX, 0), 1)
         newY = min(max(newY, 0), 1)
-
+        
         zoomPoint = UnitPoint(x: newX, y: newY)
     }
 }

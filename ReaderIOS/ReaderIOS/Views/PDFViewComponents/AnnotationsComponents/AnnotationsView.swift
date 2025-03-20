@@ -84,11 +84,12 @@ struct AnnotationsView: View {
                         }
                     }
                     .onEnded { value in
+                        
                         // Reset the incremental drag offset
                         lastDragValue = .zero
 
                         // Only execute the finishing logic if not zoomed in.
-                        if !zoomManager.getZoomedIn() {
+                        if !zoomManager.getZoomedIn() || !selectedScribbleTool.isEmpty {
                             if selectedScribbleTool == "Pen" {
                                 finalizeCurrentPath(for: &pagePaths, using: liveDrawingColor)
                             } else if selectedScribbleTool == "Highlight" {
@@ -105,6 +106,7 @@ struct AnnotationsView: View {
                             annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
                             textManager.saveTextBoxes(textBoxes: textBoxes)
                         }
+                        
                     }
             )
             .simultaneousGesture(zoomManager.zoomin())
