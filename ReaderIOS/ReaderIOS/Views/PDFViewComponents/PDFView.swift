@@ -4,10 +4,11 @@ import SwiftUI
 struct PDFView: View {
     // MARK: - Bindings
 
-    @Binding var fileName: String?
+    @Binding var currentWorkbook: Workbook?
     @Binding var currentPage: Int
     @Binding var covers: [Cover]?
     @Binding var pdfDocument: PDFDocument?
+    @Binding var collection: Collection?
 
     // MARK: - Observed Objects
 
@@ -35,6 +36,7 @@ struct PDFView: View {
 
     // MARK: - StateObjects and Observed
 
+    @StateObject private var feedbackManager = FeedbackManager()
     @StateObject private var timerManager = TimerManager()
     @ObservedObject private var zoomManager = ZoomManager()
     @ObservedObject private var textManager = TextManager()
@@ -147,10 +149,10 @@ struct PDFView: View {
                                     })
 
                                     Button {
-                                        bookmarkManager.toggleBookmark(for: fileName, currentPage: currentPage)
+                                        bookmarkManager.toggleBookmark(for: currentWorkbook, currentPage: currentPage)
                                     } label: {
                                         Image(systemName: bookmarkManager.isBookmarked(
-                                            fileName: fileName,
+                                            workbook: currentWorkbook,
                                             currentPage: currentPage
                                         ) ? "bookmark.fill" : "bookmark")
                                             .foregroundColor(.yellow)
@@ -162,9 +164,22 @@ struct PDFView: View {
                                         }
                                     }
                                 }
+                                ToolbarItemGroup(placement: .bottomBar) {
+                                    // Create a horizontal stack for the entire bottom toolbar
+                                    HStack(spacing: 0) {
+                                        // Timer controls and progress bar should fill available space
+                                        TimerProgressView(timerManager: timerManager)
+                                            .frame(maxWidth: .infinity)
 
-                                ToolbarItem(placement: .bottomBar) {
-                                    TimerProgressView(timerManager: timerManager, showingFeedback: $showingFeedback)
+                                        // Feedback button with minimal spacing
+                                        FeedbackView.button(
+                                            feedbackManager: feedbackManager,
+                                            workbook: currentWorkbook,
+                                            currentPage: currentPage,
+                                            collection: collection
+                                        )
+                                        .padding(.leading, 4) // Minimal padding between progress bar and button
+                                    }
                                 }
                             }
                         } else {
@@ -190,10 +205,10 @@ struct PDFView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             }
-            .sheet(isPresented: $showingFeedback) {
-                FeedbackView()
+            .sheet(isPresented: $feedbackManager.isShowingFeedback) {
+                FeedbackView(feedbackManager: feedbackManager)
             }
-            .onChange(of: fileName) { _, _ in
+            .onChange(of: currentWorkbook) { _, _ in
                 loadPDFDocument()
             }
         }
@@ -202,8 +217,9 @@ struct PDFView: View {
     // MARK: - Helper Methods
 
     private func loadPDFDocument() {
-        guard let fileName = fileName else { return }
-        NetworkingService.shared.fetchPDF(fileName: fileName) { result in
+        guard let currentWorkbook = currentWorkbook else { return }
+
+        NetworkingService.shared.fetchPDF(workbook: currentWorkbook) { result in
             switch result {
             case let .success(document):
                 pdfDocument = document
@@ -220,8 +236,8 @@ struct PDFView: View {
     }
 
     private func uniqueKey(for pageIndex: Int) -> String {
-        guard let fileName = fileName else { return "\(pageIndex)" }
-        return "\(fileName)-\(pageIndex)"
+        guard let workbook = currentWorkbook else { return "\(pageIndex)" }
+        return "\(workbook.id)-\(pageIndex)"
     }
 
     private func clearMarkup() {

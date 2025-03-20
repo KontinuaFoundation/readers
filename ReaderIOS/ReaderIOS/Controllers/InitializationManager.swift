@@ -17,20 +17,43 @@ enum FetchConstants {
 final class InitializationManager: ObservableObject {
     @Published var isInitialized = false
     @Published var loadFailed = false
-    @Published var workbooks: [Workbook] = []
+    @Published var workbooks: [WorkbookPreview] = []
     @Published var pdfDocument: PDFDocument?
-    @Published var workbookID: String?
+    @Published var workbookID: Int?
+    @Published var latestCollection: Collection?
+    @Published var workbook: Workbook?
     @Published var attempts: Int = 0
+    @Published var delay: Int = 0
 
     init() {
         loadInitialData()
     }
 
     func loadInitialData(delay: Int = 0) {
-        let start = DispatchTime.now()
+        self.delay = delay
         attempts += 1
+        fetchLatestCollection()
+    }
 
-        NetworkingService.shared.fetchWorkbooks { [weak self] result in
+    private func fetchLatestCollection() {
+        NetworkingService.shared.fetchLatestCollection { [weak self] result in
+            switch result {
+            case let .success(collection):
+                DispatchQueue.main.async {
+                    self?.latestCollection = collection
+                    self?.fetchWorkbookList(collection: collection)
+                }
+            case let .failure(error):
+                print("Failed to fetch latest collection: \(error)")
+                print("Network error details: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func fetchWorkbookList(collection: Collection) {
+        let start = DispatchTime.now()
+
+        NetworkingService.shared.fetchWorkbooks(collection: collection) { [weak self] result in
             switch result {
             case let .success(workbooks):
                 DispatchQueue.main.async {
@@ -38,35 +61,53 @@ final class InitializationManager: ObservableObject {
                     if let savedState = StateRestoreManager.shared.loadState() {
                         if let open = workbooks.first(where: { $0.id == savedState.workbookID }) {
                             self?.workbookID = savedState.workbookID
-                            self?.fetchPDF(for: open.pdfName)
+                            self?.fetchWorkbook(for: open.id)
                         }
                     } else {
                         self?.workbookID = workbooks.first?.id
-                        self?.isInitialized = true
+                        if let workbookID = self?.workbookID {
+                            self?.fetchWorkbook(for: workbookID)
+                            self?.isInitialized = true
+                        } else {
+                            print("workbook list returned empty list, this should never happen.")
+                            self?.loadFailed = true
+                        }
                     }
                 }
             case let .failure(error):
                 print("Error fetching workbooks: \(error)")
 
                 // if delay is set, does not show failure until after delay is elapsed
-                DispatchQueue.main.asyncAfter(deadline: start + .milliseconds(delay)) {
+                DispatchQueue.main.asyncAfter(deadline: start + .milliseconds(self?.delay ?? 0)) {
                     self?.loadFailed = true
                 }
             }
         }
     }
 
-    private func fetchPDF(for fileName: String) {
-        NetworkingService.shared.fetchPDF(fileName: fileName) { [weak self] result in
+    private func fetchWorkbook(for id: Int) {
+        NetworkingService.shared.fetchWorkbook(id: id) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
-                case let .success(pdf):
-                    self?.pdfDocument = pdf
+                case let .success(workbook):
+                    self?.workbook = workbook
+                    self?.fetchPDF(for: workbook)
                 case let .failure(error):
                     print("Error fetching PDF: \(error)")
                 }
                 // Mark initialization complete regardless; you could also have error states.
                 self?.isInitialized = true
+            }
+        }
+    }
+
+    private func fetchPDF(for workbook: Workbook) {
+        NetworkingService.shared.fetchPDF(workbook: workbook) { [weak self] result in
+            switch result {
+            case let .success(pdf):
+                self?.pdfDocument = pdf
+            case let .failure(error):
+                print("Error fetching PDF: \(error)")
             }
         }
     }
