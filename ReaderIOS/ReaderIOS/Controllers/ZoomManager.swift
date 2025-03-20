@@ -6,20 +6,22 @@ class ZoomManager: ObservableObject {
     @Published private var totalZoom: CGFloat = 1.2
     @Published private var zoomPoint: UnitPoint = .center
 
+
     func zoomin() -> some Gesture {
         var magnification: some Gesture {
             MagnifyGesture()
                 .onChanged { value in
                     self.currentZoom = value.magnification - 1
-                    self.zoomedIn = true
                 }
                 .onEnded { _ in
+                    
                     self.totalZoom += self.currentZoom
                     self.currentZoom = 0
                     if self.totalZoom <= 1.2 {
                         self.zoomedIn = false
                     } else {
                         self.zoomedIn = true
+                        print(self.totalZoom)
                     }
                 }
         }
@@ -65,7 +67,7 @@ class ZoomManager: ObservableObject {
         // Calculate a speed multiplier based on current zoom level
         // The higher the zoom, the faster the panning
         let zoomLevel = newZoomLevel()
-        let speedMultiplier = max(zoomLevel / 2.0, 1.0)
+        let speedMultiplier = max(zoomLevel / 1.35, 0.75)
         
         // Normalize the translation relative to the view size with speed boost
         let deltaX = (translation.width / viewSize.width) * speedMultiplier
