@@ -84,11 +84,9 @@ struct AnnotationsView: View {
                         }
                     }
                     .onEnded { value in
-                        
                         // Reset the incremental drag offset
                         lastDragValue = .zero
 
-                        // Only execute the finishing logic if not zoomed in.
                         if !zoomManager.getZoomedIn() || !selectedScribbleTool.isEmpty {
                             if selectedScribbleTool == "Pen" {
                                 finalizeCurrentPath(for: &pagePaths, using: liveDrawingColor)
@@ -109,6 +107,7 @@ struct AnnotationsView: View {
                         
                     }
             )
+            // Use the updated zoomManager gestures
             .simultaneousGesture(zoomManager.zoomin())
             .simultaneousGesture(zoomManager.zoomout())
             .onTapGesture(count: 1, coordinateSpace: .local) { location in
@@ -128,6 +127,7 @@ struct AnnotationsView: View {
             }
         }
         .onAppear {
+            // Initialize color values
             liveDrawingColor = selectedColor
             liveHighlighterColor = selectedHighlighterColor
         }
@@ -137,6 +137,16 @@ struct AnnotationsView: View {
         .onChange(of: selectedHighlighterColor) { newColor, _ in
             liveHighlighterColor = newColor
         }
+        // Listen for geometry changes to update zoom manager
+        .background(GeometryReader { geometry in
+            Color.clear
+                .onAppear {
+                    zoomManager.updateViewSize(geometry.size)
+                }
+                .onChange(of: geometry.size) { _, newSize in
+                    zoomManager.updateViewSize(newSize)
+                }
+        })
     }
 
     // MARK: - Private Helpers
