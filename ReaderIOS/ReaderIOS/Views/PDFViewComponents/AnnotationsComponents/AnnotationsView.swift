@@ -104,7 +104,6 @@ struct AnnotationsView: View {
                             annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
                             textManager.saveTextBoxes(textBoxes: textBoxes)
                         }
-                        
                     }
             )
             // Use the updated zoomManager gestures
