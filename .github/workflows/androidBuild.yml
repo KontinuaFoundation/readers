@@ -48,12 +48,12 @@ jobs:
       - name: Grant execute permission for gradlew
         if: steps.cache-build.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
         run: chmod +x gradlew
-        working-directory: ./ReaderAndroid
+        working-directory: ./ReaderAndroidJetpackCompose
 
       #Step 6: Build the project
       - name: Build with Gradle
         if: steps.cache-build.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
-        working-directory: ./ReaderAndroid
+        working-directory: ./ReaderAndroidJetpackCompose
         run: |
           ./gradlew assembleDebug
           mkdir -p ../.cache/android-build

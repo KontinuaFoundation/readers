@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    alias(libs.plugins.spotless)
 }
 
 android {
@@ -38,6 +39,29 @@ android {
     buildFeatures {
         compose = true
     }
+    spotless {
+        kotlin {
+            target("**/*.kt")
+            targetExclude(
+                "build/**/*.kt",
+                "**/ExampleInstrumentedTest.kt",
+                "**/ExampleUnitTest.kt",
+            )
+
+            ktlint("1.5.0")
+                .setEditorConfigPath("$projectDir/.editorconfig")
+                .editorConfigOverride(
+                    mapOf(
+                        "ktlint_code_style" to "android_studio",
+                    ),
+                )
+        }
+
+        kotlinGradle {
+            target("*.gradle.kts")
+            ktlint("1.5.0")
+    }
+}
 }
 
 dependencies {
@@ -57,6 +81,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose.v270alpha02)
     ksp(libs.moshi.kotlin.codegen)
     implementation(libs.androidx.material.icons.extended)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
