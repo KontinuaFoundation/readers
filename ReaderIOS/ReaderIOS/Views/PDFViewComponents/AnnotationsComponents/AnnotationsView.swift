@@ -34,6 +34,8 @@ struct AnnotationsView: View {
     @State private var liveDrawingColor: Color = .black
     @State private var liveHighlighterColor: Color = .yellow
 
+    @State private var lastDragValue: CGSize = .zero
+
     // MARK: - Body
 
     var body: some View {
@@ -64,29 +66,47 @@ struct AnnotationsView: View {
             .gesture(
                 DragGesture(minimumDistance: 0.0001)
                     .onChanged { value in
-                        if selectedScribbleTool == "Erase" {
-                            erasePath(at: value.location)
-                        } else if selectedScribbleTool == "Pen" || selectedScribbleTool == "Highlight" {
-                            updateLivePath(with: value.location)
+                        if zoomManager.getZoomedIn(), selectedScribbleTool.isEmpty {
+                            // Calculate the incremental translation since the last update.
+                            let delta = CGSize(
+                                width: value.translation.width - lastDragValue.width,
+                                height: value.translation.height - lastDragValue.height
+                            )
+                            zoomManager.panZoomCenter(by: delta, in: geometry.size)
+                            lastDragValue = value.translation
+                        } else {
+                            // Existing logic for drawing/erasing
+                            if selectedScribbleTool == "Erase" {
+                                erasePath(at: value.location)
+                            } else if selectedScribbleTool == "Pen" || selectedScribbleTool == "Highlight" {
+                                updateLivePath(with: value.location)
+                            }
                         }
                     }
                     .onEnded { value in
-                        if selectedScribbleTool == "Pen" {
-                            finalizeCurrentPath(for: &pagePaths, using: liveDrawingColor)
-                        } else if selectedScribbleTool == "Highlight" {
-                            finalizeCurrentPath(for: &highlightPaths, using: liveHighlighterColor)
-                        } else if selectedScribbleTool.isEmpty || selectedScribbleTool == "Text", !zoomedIn {
-                            if value.translation.width < 0 {
-                                nextPage?()
-                            } else if value.translation.width > 0 {
-                                previousPage?()
+                        // Reset the incremental drag offset
+                        lastDragValue = .zero
+
+                        if !zoomManager.getZoomedIn() || !selectedScribbleTool.isEmpty {
+                            if selectedScribbleTool == "Pen" {
+                                finalizeCurrentPath(for: &pagePaths, using: liveDrawingColor)
+                            } else if selectedScribbleTool == "Highlight" {
+                                finalizeCurrentPath(for: &highlightPaths, using: liveHighlighterColor)
+                            } else if selectedScribbleTool.isEmpty || selectedScribbleTool == "Text" {
+                                // Page change logic (swipe left/right) only when not zoomed in.
+                                if value.translation.width < 0 {
+                                    nextPage?()
+                                } else if value.translation.width > 0 {
+                                    previousPage?()
+                                }
+                                textOpened = false
                             }
-                            textOpened = false
+                            annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
+                            textManager.saveTextBoxes(textBoxes: textBoxes)
                         }
-                        annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
-                        textManager.saveTextBoxes(textBoxes: textBoxes)
                     }
             )
+            // Use the updated zoomManager gestures
             .simultaneousGesture(zoomManager.zoomin())
             .simultaneousGesture(zoomManager.zoomout())
             .onTapGesture(count: 1, coordinateSpace: .local) { location in
@@ -106,6 +126,7 @@ struct AnnotationsView: View {
             }
         }
         .onAppear {
+            // Initialize color values
             liveDrawingColor = selectedColor
             liveHighlighterColor = selectedHighlighterColor
         }
@@ -115,6 +136,16 @@ struct AnnotationsView: View {
         .onChange(of: selectedHighlighterColor) { newColor, _ in
             liveHighlighterColor = newColor
         }
+        // Listen for geometry changes to update zoom manager
+        .background(GeometryReader { geometry in
+            Color.clear
+                .onAppear {
+                    zoomManager.updateViewSize(geometry.size)
+                }
+                .onChange(of: geometry.size) { _, newSize in
+                    zoomManager.updateViewSize(newSize)
+                }
+        })
     }
 
     // MARK: - Private Helpers
