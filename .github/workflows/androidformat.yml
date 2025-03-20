@@ -47,12 +47,12 @@ jobs:
       #Step 5: Grant permissions
       - name: Grant execute permission for gradlew
         if: steps.cache-format.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
-        run: chmod +x ./ReaderAndroidJetpack/gradlew
+        run: chmod +x ./ReadersAndroidJetpack/gradlew
 
       #Step 6: Run formatting check
       - name: Run format checks
         if: steps.cache-format.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
-        working-directory: ./ReaderAndroidJetpack
+        working-directory: ./ReadersAndroidJetpack
         run: |
           ./gradlew spotlessKotlinGradleCheck
           mkdir -p ../.cache/android-format
