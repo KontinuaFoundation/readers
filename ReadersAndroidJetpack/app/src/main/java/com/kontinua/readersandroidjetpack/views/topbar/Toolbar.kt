@@ -49,7 +49,7 @@ fun Toolbar(
                 onDismissRequest = { showTimerMenu = false }
             ) {
                 DropdownMenuItem(text = { Text("15 Minutes") }, onClick = {
-                    timerViewModel.setDurationAndReset(15 * 60 * 1000L)
+                    timerViewModel.setDurationAndReset(15 * 1000L)
                     showTimerMenu = false
                 })
                 DropdownMenuItem(text = { Text("20 Minutes") }, onClick = {
