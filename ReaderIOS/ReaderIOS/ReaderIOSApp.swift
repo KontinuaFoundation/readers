@@ -9,8 +9,6 @@ import SwiftUI
 
 @main
 struct ReaderIOSApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-
     @StateObject private var initManager = InitializationManager()
 
     var body: some Scene {
