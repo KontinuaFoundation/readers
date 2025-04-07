@@ -1,14 +1,12 @@
 services:
   db:
     image: postgres:15
-    env_file:
-      - .env.dev.postgres
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER} 
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=readers_backend
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     ports:
-      - ${DB_PORT}:5432
+      - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
