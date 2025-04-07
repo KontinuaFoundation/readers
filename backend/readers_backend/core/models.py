@@ -12,6 +12,9 @@ class Collection(models.Model):
         unique_together = ("major_version", "minor_version", "localization")
         ordering = ["-major_version", "-minor_version", "localization"]
 
+        # When using .latest() django will order in non increasing order by default....
+        get_latest_by = ["major_version", "minor_version", "localization"]
+
 
 # Create your models here.
 class Workbook(models.Model):

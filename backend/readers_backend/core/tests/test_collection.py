@@ -607,3 +607,50 @@ class CollectionTestCase(APITestCase):
             response.status_code, 404,
             msg=f"Expected status code 404 Not Found, but got {response.status_code}."
         )
+    
+    def test_retrieve_latest_collection(self):
+        self.client.credentials()
+
+        Collection.objects.create(major_version=1, minor_version=0, localization="en-US", is_released=True)
+
+        latest_collection = Collection.objects.create(major_version=1, minor_version=1, localization="en-US", is_released=True)
+
+        url = reverse('collection-latest')
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200, msg=f"Expected status code 200, but got {response.status_code}.")
+        self.assertEqual(response.data['id'], latest_collection.id, msg=f"Data: {response.data}")
+    
+    def test_retrieve_latest_collection_no_collections(self):
+        self.client.credentials()
+
+        url = reverse('collection-latest')
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data['message'], "No collections found.")
+    
+
+    def test_retrieve_latest_collection_with_localization_filter(self):
+        self.client.credentials()
+
+
+        latest_collection = Collection.objects.create(major_version=2, minor_version=0, localization="en-US", is_released=True)
+        Collection.objects.create(major_version=2, minor_version=0, localization="fr-FR", is_released=True)
+
+        url = reverse('collection-latest')
+        response = self.client.get(f"{url}?localization=en-US")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['id'], latest_collection.id)
+    
+    def test_retrieve_latest_collection_with_localization_filter_not_found(self):
+        self.client.credentials()
+
+        url = reverse('collection-latest')
+        response = self.client.get(f"{url}?localization=fr-FR")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data['message'], "No collections found.")
