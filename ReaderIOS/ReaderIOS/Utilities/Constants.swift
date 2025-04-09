@@ -7,6 +7,8 @@
 
 import Foundation
 
+// EC2 Address: http://18.189.208.93/api/
+
 enum ApplicationConstants {
     enum API {
         static let baseURLString = "http://18.189.208.93/api/"
