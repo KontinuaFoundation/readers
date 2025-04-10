@@ -111,9 +111,11 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         WorkbookButton(onClick = onButtonClick)
-        for (chapter in chapters){
+        for (i in chapters.indices){
+            val chapter = chapters[i]
+            val bgColor = if(i == navbarManager.currentChapterIndex) Color.LightGray else Color.Transparent
             Text("Chapter ${chapter.chapNum}: ${chapter.title}", modifier = Modifier
-                .background(Color.LightGray)
+                .background(bgColor)
                 .clickable {
                 collectionVM?.setWorkbook(collectionVM.currentWorkbook)
                 navbarManager.setPage(chapter.startPage - 1)
