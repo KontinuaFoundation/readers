@@ -4,8 +4,6 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
-import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 class NavbarManager {
@@ -47,26 +45,22 @@ class NavbarManager {
         this.collectionVM = collection
     }
 
-    private fun updateChapter() {
-        val startPages = collectionVM?.chapters?.map { it.startPage - 1} ?: emptyList()
-
-        if(pageNumber < startPages[0]){
-            currentChapterIndex = -1
-        }else if(pageNumber >= startPages[startPages.lastIndex]){
-            currentChapterIndex = startPages.lastIndex
-        } else{
-            for(i in 0..startPages.size - 2){
-                if(startPages[i] <= pageNumber && startPages[i + 1] > pageNumber){
-                    currentChapterIndex = i
-                    break;
-                }
-            }
-        }
-    }
-
     fun setPage(newPage: Int){
         pageNumber = newPage
-        Log.d("pages", "New page: $pageNumber")
         updateChapter()
+    }
+
+    private fun updateChapter() {
+        val startPages = collectionVM?.chapters?.map { it.startPage - 1} ?: emptyList()
+        val index = startPages.binarySearch(pageNumber)
+
+        currentChapterIndex = if (index >= 0) {
+            // pageNumber exactly matches a chapter start page.
+            index
+        } else {
+            // Compute the insertion point: (-index - 1), and then adjust by subtracting 1.
+            // This gives the index of the start page that is immediately less than pageNumber.
+            (-index - 2).coerceIn(-1, startPages.lastIndex)
+        }
     }
 }
