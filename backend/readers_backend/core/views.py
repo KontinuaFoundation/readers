@@ -107,6 +107,8 @@ class CollectionViewSet(
         )
     @action(detail=False, methods=["get"])
     def latest(self, request):
+        #TODO: Lets make this return the collection retrieve serializer at some point.
+        # More specifically, no reason to make the client two two requests to get the chapters for the latest collection.
         queryset = self.get_queryset()
 
         try:
