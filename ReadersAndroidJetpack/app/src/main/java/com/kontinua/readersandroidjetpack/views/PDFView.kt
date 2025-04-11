@@ -49,7 +49,7 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
                     .swipeHorizontal(true)
                     .enableDoubletap(true)
                     .defaultPage(navbarManager.pageNumber)
-                    .onPageChange{ page, pageCount ->
+                    .onPageChange{ page, _ ->
                         navbarManager.setPage(page)
                     }
                     .pageFling(true)

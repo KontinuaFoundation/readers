@@ -3,6 +3,7 @@ package com.kontinua.readersandroidjetpack.util
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 class NavbarManager {
@@ -47,6 +48,10 @@ class NavbarManager {
     fun setPage(newPage: Int){
         pageNumber = newPage
         updateChapter()
+    }
+
+    fun getCurrentChapter(): Chapter? {
+        return if(currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex) else null
     }
 
     private fun updateChapter() {
