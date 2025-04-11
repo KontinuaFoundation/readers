@@ -1,5 +1,7 @@
 package com.kontinua.readersandroidjetpack.views
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -13,12 +15,15 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
 import com.kontinua.readersandroidjetpack.util.APIManager
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
 @Composable
-fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
+fun PDFViewer(modifier: Modifier = Modifier,
+              navbarManager: NavbarManager,
+              annotationManager: AnnotationManager) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
 
@@ -37,25 +42,34 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
         }
     }
 
-    AndroidView(
-        modifier = modifier,
-        factory = { ctx ->
-            PDFView(ctx, null)
-        },
-        update = { pdfView ->
-            pdfFile?.let { file ->
-                pdfView.fromFile(file)
-                    .enableSwipe(true)
-                    .swipeHorizontal(true)
-                    .enableDoubletap(true)
-                    .defaultPage(navbarManager.pageNumber)
-                    .pageFling(true)
-                    .pageSnap(true)
-                    .load()
-                pdfView.jumpTo(navbarManager.pageNumber)
+    Box(modifier = Modifier.fillMaxSize()) {
+        // PDF Viewer
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { ctx -> PDFView(ctx, null) },
+            update = { pdfView ->
+                pdfFile?.let { file ->
+                    pdfView.fromFile(file)
+                        .enableSwipe(true)
+                        .swipeHorizontal(true)
+                        .enableDoubletap(true)
+                        .defaultPage(navbarManager.pageNumber)
+                        .pageFling(true)
+                        .pageSnap(true)
+                        .load()
+                    pdfView.jumpTo(navbarManager.pageNumber)
+                }
             }
+        )
+        if (annotationManager.scribbleEnabled) {
+            // Drawing Canvas\
+            DrawingCanvas(
+                workbookId = navbarManager.currentWorkbook,
+                        page = navbarManager.pageNumber,
+                        annotationManager = annotationManager)
         }
-    )
+    }
+
     pdfFile = null
 }
 

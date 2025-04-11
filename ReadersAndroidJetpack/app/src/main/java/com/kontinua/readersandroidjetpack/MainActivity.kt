@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kontinua.readersandroidjetpack.ui.theme.ReadersAndroidJetpackTheme
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.views.SidebarWithPDFViewer
@@ -41,12 +42,14 @@ fun MainScreen() {
     val timerViewModel: TimerViewModel = viewModel()
     val feedbackViewModel: FeedbackViewModel = viewModel()
     val navbarManager = remember { NavbarManager() }
+    val annotationManager = remember { AnnotationManager() }
 
     Scaffold(
         topBar = {
             Toolbar(
                 timerViewModel = timerViewModel,
-                navbarManager = navbarManager
+                navbarManager = navbarManager,
+                annotationManager = annotationManager
             )
         },
         bottomBar = {
@@ -64,7 +67,7 @@ fun MainScreen() {
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            SidebarWithPDFViewer(navbarManager = navbarManager)
+            SidebarWithPDFViewer(navbarManager = navbarManager, annotationManager = annotationManager)
         }
         FeedbackForm(viewModel = feedbackViewModel)
     }

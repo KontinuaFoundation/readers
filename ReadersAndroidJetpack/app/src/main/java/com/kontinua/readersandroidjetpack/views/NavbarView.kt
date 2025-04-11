@@ -32,11 +32,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SidebarWithPDFViewer(navbarManager: NavbarManager) {
+fun SidebarWithPDFViewer(navbarManager: NavbarManager, annotationManager: AnnotationManager) {
     val density = LocalDensity.current
 
     val animatedChapterSidebarWidth by animateDpAsState(
@@ -46,7 +47,9 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         // PDF Viewer
-        PDFViewer(modifier = Modifier.fillMaxSize(), navbarManager = navbarManager)
+        PDFViewer(modifier = Modifier.fillMaxSize(),
+                navbarManager = navbarManager,
+                annotationManager = annotationManager)
 
         //Transparent clickable overlay.
         if (navbarManager.isChapterVisible) {
@@ -107,12 +110,12 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
             .verticalScroll(state = scroll)
             .clickable(
                 indication = null,
-                interactionSource = remember { MutableInteractionSource() }) { /* Prevent clicks from propagating */ },
+                interactionSource = remember   { MutableInteractionSource() }) { /* Prevent clicks from propagating */ },
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         WorkbookButton(onClick = onButtonClick)
         for (chapter in chapters){
-            Text("Chapter ${chapter.chapNum}: ${chapter.title}", modifier = Modifier.clickable {
+            Text(chapter.title, modifier = Modifier.clickable {
                 collectionVM?.setWorkbook(collectionVM.currentWorkbook)
                 navbarManager.setPage(chapter.startPage - 1)
                 onClose()
@@ -143,6 +146,7 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
             Text("Workbook ${workbook.number}", modifier = Modifier.clickable {
                 collectionVM.setWorkbook(workbook)
                 navbarManager.setPage(0)
+                navbarManager.setWorkbook("Workbook ${workbook.number}")
                 onClose()
             })
         }

@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 
@@ -23,7 +24,8 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 @Composable
 fun Toolbar(
     timerViewModel: TimerViewModel,
-    navbarManager: NavbarManager
+    navbarManager: NavbarManager,
+    annotationManager: AnnotationManager
 ) {
     var showMarkupMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }
@@ -70,7 +72,8 @@ fun Toolbar(
                 expanded = showMarkupMenu,
                 onDismissRequest = { showMarkupMenu = false }
             ) {
-                DropdownMenuItem(text = { Text("Pen") }, onClick = { /* TODO */ })
+                DropdownMenuItem(text = { Text("Pen") }, onClick = {
+                    annotationManager.toggleScribble()})
                 DropdownMenuItem(text = { Text("Highlight") }, onClick = { /* TODO */ })
                 DropdownMenuItem(text = { Text("Eraser") }, onClick = { /* TODO */ })
             }
