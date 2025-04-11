@@ -48,7 +48,7 @@ class CollectionViewSet(
             return CollectionRetrieveSerializer
         #TODO: Consider just returning the entire collection rather than the list representation...
         elif self.action == "latest":
-            return CollectionRetrieveSerializer
+            return CollectionListSerializer
         return None
 
     def get_permissions(self):
