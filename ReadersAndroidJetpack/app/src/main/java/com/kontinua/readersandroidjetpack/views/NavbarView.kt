@@ -1,6 +1,5 @@
 package com.kontinua.readersandroidjetpack.views
 
-import java.text.NumberFormat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.slideInHorizontally
@@ -117,7 +116,7 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
         for (i in chapters.indices){
             val chapter = chapters[i]
             val bgColor = if(i == navbarManager.currentChapterIndex) Color.LightGray else Color.Transparent
-            Text(stringResource(id = R.string.chapter_info, NumberFormat.getInstance().format(chapter.chapNum), chapter.title), modifier = Modifier
+            Text(stringResource(id = R.string.chapter_info, chapter.chapNum, chapter.title), modifier = Modifier
                 .background(bgColor)
                 .clickable {
                 collectionVM?.setWorkbook(collectionVM.currentWorkbook)
