@@ -17,92 +17,113 @@ import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import com.kontinua.readersandroidjetpack.serialization.Workbook // Ensure Workbook is imported
 import java.io.File
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job // Import Job
+import kotlinx.coroutines.delay // Import delay
+import kotlinx.coroutines.launch // Import launch
 import kotlinx.coroutines.withContext
 
+// THIS IS THE VERSION TO USE WITH THE FIXED APIMANAGER
 @Composable
 fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
     val context = LocalContext.current
     val collectionViewModel: CollectionViewModel = viewModel()
-    // Observe the workbook object directly from the ViewModel's state flow
     val currentWorkbook by collectionViewModel.workbookState.collectAsState()
+    val scope = rememberCoroutineScope()
 
     // --- State within PDFViewer ---
     var pdfViewInstance by remember { mutableStateOf<PDFView?>(null) }
-    // Store the File object *requested* for loading
-    var requestedFile by remember { mutableStateOf<File?>(null) }
-    // Track the ID of the workbook *currently successfully loaded*
-    var loadedWorkbookId by rememberSaveable { mutableStateOf<Int?>(null) }
-    // Track if the PDFView is considered ready (load completed)
+    // Store the File object explicitly requested for loading by the Effect
+    var requestedFileToLoad by remember { mutableStateOf<File?>(null) }
+    // Track the path of the file *currently successfully displayed* in the PDFView
+    var pathActuallyLoaded by rememberSaveable { mutableStateOf<String?>(null) }
+    // Track if the view is considered ready (load completed for the correct file)
     var isViewReady by rememberSaveable { mutableStateOf(false) }
-    // Keep track of the target page requested by the manager
-    val targetPage = navbarManager.currentPage // Read the reactive state from NavbarManager
+    // Remember the target page requested by the manager
+    val targetPage = navbarManager.currentPage
+    // Flag to ignore spurious onPageChange events after programmatic jumps
+    var isInternalJumpInProgress by remember { mutableStateOf(false) }
+    var jumpDebounceJob by remember { mutableStateOf<Job?>(null) }
     // --- End State ---
 
-    // Ensure NavbarManager has the ViewModel reference if needed elsewhere
     LaunchedEffect(collectionViewModel) {
         navbarManager.setCollection(collectionViewModel)
     }
 
-
-    // --- Effect 1: Fetch PDF File when Workbook Changes ---
-    // This effect runs when 'currentWorkbook' (from ViewModel state) changes.
+    // --- Effect 1: Prepare for Workbook Change ---
     LaunchedEffect(currentWorkbook) {
-        val workbook = currentWorkbook // Capture stable reference
+        val workbook = currentWorkbook
+        val currentPathInView = pathActuallyLoaded // Path currently displayed
+
         if (workbook != null) {
-            // Only proceed if the workbook ID is different from the one already loaded.
-            if (loadedWorkbookId != workbook.id) {
-                Log.i("PDFViewer", "[Effect Workbook] Workbook changed to ID: ${workbook.id}. Current loaded ID: $loadedWorkbookId. Fetching PDF...")
-                isViewReady = false // Mark as not ready while fetching/loading new workbook
-                val file = withContext(Dispatchers.IO) {
-                    APIManager.getPDFFromWorkbook(context, workbook)
-                }
-                if (file != null) {
-                    Log.i("PDFViewer", "[Effect Workbook] Fetched PDF: ${file.absolutePath}. Requesting load.")
-                    // Reset NavbarManager page state because the content (workbook) is changing.
-                    navbarManager.resetPages() // <--- CRUCIAL FOR WORKBOOK CHANGE
-                    requestedFile = file       // Set the new file to be loaded by AndroidView's update block
+            Log.d("PDFViewer", "[Effect Workbook Prep] Workbook changed to ID: ${workbook.id}. Fetching file path...")
+            val newFile = withContext(Dispatchers.IO) {
+                APIManager.getPDFFromWorkbook(context, workbook) // Fetches or gets cached file with unique name now
+            }
+
+            if (newFile != null) {
+                // ***Compare paths*** - this will now be different for different workbooks
+                if (currentPathInView != newFile.absolutePath) {
+                    Log.i("PDFViewer", "[Effect Workbook Prep] New file path detected: ${newFile.absolutePath}. Requesting load.")
+                    navbarManager.resetPages()
+                    isViewReady = false
+                    pathActuallyLoaded = null // Clear the currently loaded path marker
+                    jumpDebounceJob?.cancel()
+                    isInternalJumpInProgress = false
+                    requestedFileToLoad = newFile // Trigger the update block
                 } else {
-                    Log.e("PDFViewer", "[Effect Workbook] Failed to get PDF for workbook ID: ${workbook.id}")
-                    requestedFile = null // Clear request on failure
-                    loadedWorkbookId = null // Clear loaded marker
-                    navbarManager.resetPages() // Also reset if fetch fails
+                    Log.d("PDFViewer", "[Effect Workbook Prep] Workbook ID (${workbook.id}) changed, but PDF path ${newFile.absolutePath} is same as loaded. No new load requested.")
+                    if (!isViewReady && pdfViewInstance?.pageCount ?: 0 > 0) { // Mark ready if loaded but flag was false
+                        isViewReady = true
+                    }
+                    requestedFileToLoad = newFile // Ensure file is set if view recreates
                 }
             } else {
-                Log.d("PDFViewer", "[Effect Workbook] Workbook state updated, but ID (${workbook.id}) is the same as loaded. No full reset/refetch.")
-                // Optional: If the file path could change even for the same ID, you might re-fetch here,
-                // but typically the ID change is the main signal.
-                // Ensure requestedFile is still set in case the view needs recreation.
-                if (requestedFile == null) {
-                    val file = withContext(Dispatchers.IO) { APIManager.getPDFFromWorkbook(context, workbook) }
-                    requestedFile = file
+                Log.e("PDFViewer", "[Effect Workbook Prep] Failed to get PDF file for workbook: ${workbook.id}")
+                if (pathActuallyLoaded != null) {
+                    navbarManager.resetPages()
+                    isViewReady = false
+                    pathActuallyLoaded = null
+                    requestedFileToLoad = null
                 }
             }
         } else {
-            // Workbook became null in the ViewModel state
-            Log.i("PDFViewer", "[Effect Workbook] Workbook is null. Clearing PDF request.")
-            requestedFile = null
-            isViewReady = false
-            loadedWorkbookId = null
-            navbarManager.resetPages() // Reset state when no workbook is selected
+            Log.i("PDFViewer", "[Effect Workbook Prep] Workbook is null. Clearing PDF state.")
+            if (pathActuallyLoaded != null) {
+                navbarManager.resetPages()
+                isViewReady = false
+                pathActuallyLoaded = null
+                requestedFileToLoad = null
+            }
         }
     }
 
     // --- Effect 2: React to Page Changes from NavbarManager ---
-    // This effect runs when 'targetPage' (read from navbarManager.currentPage) changes,
-    // or when the view becomes ready, or when the pdfViewInstance itself changes.
     LaunchedEffect(targetPage, isViewReady, pdfViewInstance) {
         val view = pdfViewInstance
         if (view != null && isViewReady && view.currentPage != targetPage) {
-            Log.i("PDFViewer", "[Effect Page] Jumping view from ${view.currentPage} to $targetPage (requested by manager: ${navbarManager.currentPage})")
-            // --- CHANGE HERE ---
-            view.jumpTo(targetPage, false) // Jump WITHOUT animation
-            // --- END CHANGE ---
+            if (!isInternalJumpInProgress) {
+                Log.i("PDFViewer", "[Effect Page] Jumping view from ${view.currentPage} to $targetPage. Setting jump flag.")
+                isInternalJumpInProgress = true
+                view.jumpTo(targetPage, false) // Use non-animated jump for stability
+
+                jumpDebounceJob?.cancel()
+                jumpDebounceJob = scope.launch {
+                    delay(150L) // Short delay for non-animated jump flag reset
+                    isInternalJumpInProgress = false
+                    Log.d("PDFViewer", "[Effect Page] Jump flag cleared after delay.")
+                }
+            } else {
+                Log.d("PDFViewer", "[Effect Page] Internal jump already in progress. Ignoring request to jump to $targetPage.")
+            }
         } else if (view != null && isViewReady && view.currentPage == targetPage) {
-            Log.d("PDFViewer", "[Effect Page] View is ready and already on target page $targetPage.")
-        } else if (view != null && !isViewReady) {
-            Log.d("PDFViewer", "[Effect Page] View exists but is not ready (isViewReady=$isViewReady). Cannot jump yet.")
+            if (isInternalJumpInProgress) {
+                jumpDebounceJob?.cancel()
+                isInternalJumpInProgress = false
+                Log.d("PDFViewer", "[Effect Page] View reached target page $targetPage during jump. Clearing flag.")
+            }
         }
     }
+
 
     // --- AndroidView ---
     AndroidView(
@@ -112,16 +133,14 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
             PDFView(ctx, null).also { pdfViewInstance = it }
         },
         update = { pdfView ->
-            val fileToLoad = requestedFile     // Capture stable reference for this update pass
-            val workbookIdToLoad = currentWorkbook?.id // Capture stable ID for this update pass
+            val fileToLoad = requestedFileToLoad // Capture stable ref
 
             // --- Condition to Load PDF ---
-            // Load if a file is requested AND it corresponds to a workbook different from the currently loaded one.
-            // This prevents reloading the same workbook repeatedly during recompositions.
-            if (fileToLoad != null && workbookIdToLoad != null && loadedWorkbookId != workbookIdToLoad) {
-                Log.i("PDFViewer", "[Update] Loading new workbook PDF. ID: $workbookIdToLoad, File: ${fileToLoad.name}. Target Page: $targetPage")
-                isViewReady = false // Mark loading state
-                pdfView.recycle()   // Clean previous state before loading new file
+            // Load ONLY if a specific file is requested AND its path is different from what's actually loaded.
+            if (fileToLoad != null && pathActuallyLoaded != fileToLoad.absolutePath) {
+                Log.i("PDFViewer", "[Update] Loading requested file: ${fileToLoad.name}. Currently loaded: $pathActuallyLoaded")
+                isViewReady = false
+                pdfView.recycle() // Clean previous state
 
                 pdfView.fromFile(fileToLoad)
                     .enableSwipe(true)
@@ -130,81 +149,72 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
                     .pageFling(true)
                     .enableDoubletap(true)
                     .pageFitPolicy(FitPolicy.WIDTH)
-                    // Use targetPage. When loading a new workbook, targetPage should be 0
-                    // because Effect 1 called navbarManager.resetPages().
-                    .defaultPage(targetPage)
+                    .defaultPage(0) // New workbook always starts at page 0
                     .onLoad(object : OnLoadCompleteListener {
                         override fun loadComplete(nbPages: Int) {
                             val actualInitialPage = pdfView.currentPage
-                            Log.i("PDFViewer", "[onLoad] Complete: Workbook ID $workbookIdToLoad. Pages: $nbPages. View Initial Page: $actualInitialPage. Target: $targetPage")
-                            // Check if the loaded workbook ID still matches the intended one, in case of race conditions
-                            if (workbookIdToLoad == currentWorkbook?.id) {
-                                loadedWorkbookId = workbookIdToLoad // Mark this workbook ID as loaded *only if still current*
-                                isViewReady = true                 // Mark view ready
-                                navbarManager.updatePageInfo(actualInitialPage, nbPages) // Update manager state
+                            // Check if this load corresponds to the *latest* requested file path
+                            if (fileToLoad.absolutePath == requestedFileToLoad?.absolutePath) {
+                                Log.i("PDFViewer", "[onLoad] Complete: ${fileToLoad.name}. Pages: $nbPages. Initial Page: $actualInitialPage.")
+                                pathActuallyLoaded = fileToLoad.absolutePath // Mark this path as loaded
+                                isViewReady = true
+                                navbarManager.updatePageInfo(actualInitialPage, nbPages)
 
-                                // Sync page if necessary (e.g., defaultPage didn't work perfectly)
-                                if (actualInitialPage != targetPage) {
-                                    Log.w("PDFViewer", "[onLoad] View page ($actualInitialPage) differs from target ($targetPage). Syncing.")
-                                    pdfView.jumpTo(targetPage, false) // Use non-animated jump for initial sync
-                                    // Update manager again if jump occurred and changed the page
-                                    if(pdfView.currentPage != actualInitialPage) {
-                                        navbarManager.updatePageInfo(pdfView.currentPage, nbPages)
-                                    }
+                                if (actualInitialPage != 0) {
+                                    Log.w("PDFViewer", "[onLoad] View initial page ($actualInitialPage) is not 0. Syncing.")
+                                    pdfView.jumpTo(0, false)
+                                    navbarManager.updatePageInfo(pdfView.currentPage, nbPages)
                                 }
                             } else {
-                                Log.w("PDFViewer", "[onLoad] Load completed for $workbookIdToLoad, but current workbook is now ${currentWorkbook?.id}. Ignoring load result.")
-                                // Don't set isViewReady or loadedWorkbookId if the workbook changed during load.
-                                // The LaunchedEffect(currentWorkbook) should trigger a new load.
+                                Log.w("PDFViewer", "[onLoad] Load completed for ${fileToLoad.name}, but newer file (${requestedFileToLoad?.name}) was requested. Ignoring.")
                             }
                         }
                     })
                     .onPageChange(object : OnPageChangeListener {
                         override fun onPageChanged(page: Int, pageCount: Int) {
-                            // Only update manager if the view is ready and for the currently loaded workbook
-                            if (isViewReady && loadedWorkbookId == currentWorkbook?.id) {
-                                Log.d("PDFViewer", "[onPageChange] Swipe detected. Page $page / $pageCount")
-                                navbarManager.updatePageInfo(page, pageCount) // Update manager on swipe
+                            val currentPath = pathActuallyLoaded
+                            if (!isInternalJumpInProgress && isViewReady && currentPath == requestedFileToLoad?.absolutePath) {
+                                Log.d("PDFViewer", "[onPageChange] Page $page / $pageCount. Updating manager.")
+                                navbarManager.updatePageInfo(page, pageCount)
+                            } else if (isInternalJumpInProgress) {
+                                Log.d("PDFViewer", "[onPageChange] Page $page / $pageCount. Ignoring update due to internal jump flag.")
+                            } else {
+                                Log.d("PDFViewer", "[onPageChange] Page $page / $pageCount. Ignoring update (view not ready or path mismatch).")
                             }
                         }
                     })
                     .onError { t ->
-                        Log.e("PDFViewer", "[onError] Failed loading workbook $workbookIdToLoad", t)
-                        // Reset state if the failed load was for the *currently intended* workbook
-                        if (workbookIdToLoad == currentWorkbook?.id) {
+                        Log.e("PDFViewer", "[onError] Failed loading ${fileToLoad.name}", t)
+                        // Reset state if the error was for the currently requested file
+                        if (pathActuallyLoaded != fileToLoad.absolutePath && requestedFileToLoad?.absolutePath == fileToLoad.absolutePath) {
+                            pathActuallyLoaded = null
                             isViewReady = false
-                            loadedWorkbookId = null // Clear loaded marker on error
+                            requestedFileToLoad = null
                             navbarManager.resetPages()
                         }
                     }
                     .load() // Execute the load
-
             }
             // --- Condition to Clear PDF ---
-            // Clear if requested file becomes null AND something was previously loaded (meaning workbook became null)
-            else if (fileToLoad == null && loadedWorkbookId != null) {
-                Log.i("PDFViewer", "[Update] Requested file is null. Recycling view.")
+            else if (fileToLoad == null && pathActuallyLoaded != null) {
+                Log.i("PDFViewer", "[Update] Requested file is null. Recycling view that loaded $pathActuallyLoaded.")
                 pdfView.recycle()
                 isViewReady = false
-                loadedWorkbookId = null
-                // navbarManager should have been reset by Effect 1
+                pathActuallyLoaded = null
             }
-            // --- Else: No Load/Recycle Action Needed This Pass ---
+            // --- Else: No Action Needed ---
             else {
-                // This branch means:
-                // 1. Initial state before anything is loaded (fileToLoad is null, loadedWorkbookId is null)
-                // 2. The requested file/workbook is the same as the one already loaded (fileToLoad!=null, loadedWorkbookId == workbookIdToLoad)
-                // In case 2, Effect 2 handles page jumps.
-                // Log.v("PDFViewer", "[Update] No load/recycle needed. ReqFile: ${fileToLoad?.name}, LoadedID: $loadedWorkbookId, TargetPage: $targetPage")
+                // Log.v("PDFViewer", "[Update] No load/recycle needed. ReqFile: ${fileToLoad?.name}, LoadedPath: $pathActuallyLoaded")
             }
         },
         onRelease = { pdfView ->
             Log.i("PDFViewer", "AndroidView onRelease: Recycling PDFView instance.")
             pdfView.recycle()
             pdfViewInstance = null
-            // Resetting state here ensures cleanup if the Composable leaves the tree entirely
             isViewReady = false
-            loadedWorkbookId = null
+            pathActuallyLoaded = null
+            jumpDebounceJob?.cancel()
+            isInternalJumpInProgress = false
         }
     )
 }
