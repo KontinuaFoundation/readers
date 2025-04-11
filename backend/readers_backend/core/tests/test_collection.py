@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from core.tests.constants import GOOD_CHAPTERS
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 from core.models import Collection, Workbook
@@ -614,6 +615,11 @@ class CollectionTestCase(APITestCase):
         Collection.objects.create(major_version=1, minor_version=0, localization="en-US", is_released=True)
 
         latest_collection = Collection.objects.create(major_version=1, minor_version=1, localization="en-US", is_released=True)
+        Workbook.objects.create(number=1, collection=latest_collection, chapters=GOOD_CHAPTERS, pdf=SimpleUploadedFile(
+            name='test.pdf',
+            content=b'%PDF-1.4 fake pdf content',
+            content_type='application/pdf'
+        ))
 
         url = reverse('collection-latest')
 
@@ -621,6 +627,7 @@ class CollectionTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200, msg=f"Expected status code 200, but got {response.status_code}.")
         self.assertEqual(response.data['id'], latest_collection.id, msg=f"Data: {response.data}")
+        self.assertEqual(response.data['workbooks'][0]['number'], 1, msg=f"Data: {response.data}")
     
     def test_retrieve_latest_collection_no_collections(self):
         self.client.credentials()
@@ -635,7 +642,6 @@ class CollectionTestCase(APITestCase):
 
     def test_retrieve_latest_collection_with_localization_filter(self):
         self.client.credentials()
-
 
         latest_collection = Collection.objects.create(major_version=2, minor_version=0, localization="en-US", is_released=True)
         Collection.objects.create(major_version=2, minor_version=0, localization="fr-FR", is_released=True)
