@@ -134,13 +134,10 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
         },
         update = { pdfView ->
             val fileToLoad = requestedFileToLoad // Capture stable ref
-
-            // --- Condition to Load PDF ---
-            // Load ONLY if a specific file is requested AND its path is different from what's actually loaded.
             if (fileToLoad != null && pathActuallyLoaded != fileToLoad.absolutePath) {
                 Log.i("PDFViewer", "[Update] Loading requested file: ${fileToLoad.name}. Currently loaded: $pathActuallyLoaded")
                 isViewReady = false
-                pdfView.recycle() // Clean previous state
+                pdfView.recycle()
 
                 pdfView.fromFile(fileToLoad)
                     .enableSwipe(true)
@@ -149,43 +146,54 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
                     .pageFling(true)
                     .enableDoubletap(true)
                     .pageFitPolicy(FitPolicy.WIDTH)
-                    .defaultPage(0) // New workbook always starts at page 0
-                    .onLoad(object : OnLoadCompleteListener {
-                        override fun loadComplete(nbPages: Int) {
-                            val actualInitialPage = pdfView.currentPage
-                            // Check if this load corresponds to the *latest* requested file path
-                            if (fileToLoad.absolutePath == requestedFileToLoad?.absolutePath) {
-                                Log.i("PDFViewer", "[onLoad] Complete: ${fileToLoad.name}. Pages: $nbPages. Initial Page: $actualInitialPage.")
-                                pathActuallyLoaded = fileToLoad.absolutePath // Mark this path as loaded
-                                isViewReady = true
-                                navbarManager.updatePageInfo(actualInitialPage, nbPages)
+                    .defaultPage(0)
+                    .onLoad { nbPages ->
+                        val actualInitialPage = pdfView.currentPage
+                        if (fileToLoad.absolutePath == requestedFileToLoad?.absolutePath) {
+                            Log.i(
+                                "PDFViewer",
+                                "[onLoad] Complete: ${fileToLoad.name}. Pages: $nbPages. Initial Page: $actualInitialPage."
+                            )
+                            pathActuallyLoaded = fileToLoad.absolutePath // Mark this path as loaded
+                            isViewReady = true
+                            navbarManager.updatePageInfo(actualInitialPage, nbPages)
 
-                                if (actualInitialPage != 0) {
-                                    Log.w("PDFViewer", "[onLoad] View initial page ($actualInitialPage) is not 0. Syncing.")
-                                    pdfView.jumpTo(0, false)
-                                    navbarManager.updatePageInfo(pdfView.currentPage, nbPages)
-                                }
-                            } else {
-                                Log.w("PDFViewer", "[onLoad] Load completed for ${fileToLoad.name}, but newer file (${requestedFileToLoad?.name}) was requested. Ignoring.")
+                            if (actualInitialPage != 0) {
+                                Log.w(
+                                    "PDFViewer",
+                                    "[onLoad] View initial page ($actualInitialPage) is not 0. Syncing."
+                                )
+                                pdfView.jumpTo(0, false)
+                                navbarManager.updatePageInfo(pdfView.currentPage, nbPages)
                             }
+                        } else {
+                            Log.w(
+                                "PDFViewer",
+                                "[onLoad] Load completed for ${fileToLoad.name}, but newer file (${requestedFileToLoad?.name}) was requested. Ignoring."
+                            )
                         }
-                    })
-                    .onPageChange(object : OnPageChangeListener {
-                        override fun onPageChanged(page: Int, pageCount: Int) {
-                            val currentPath = pathActuallyLoaded
-                            if (!isInternalJumpInProgress && isViewReady && currentPath == requestedFileToLoad?.absolutePath) {
-                                Log.d("PDFViewer", "[onPageChange] Page $page / $pageCount. Updating manager.")
-                                navbarManager.updatePageInfo(page, pageCount)
-                            } else if (isInternalJumpInProgress) {
-                                Log.d("PDFViewer", "[onPageChange] Page $page / $pageCount. Ignoring update due to internal jump flag.")
-                            } else {
-                                Log.d("PDFViewer", "[onPageChange] Page $page / $pageCount. Ignoring update (view not ready or path mismatch).")
-                            }
+                    }
+                    .onPageChange { page, pageCount ->
+                        val currentPath = pathActuallyLoaded
+                        if (!isInternalJumpInProgress && isViewReady && currentPath == requestedFileToLoad?.absolutePath) {
+                            Log.d(
+                                "PDFViewer",
+                                "[onPageChange] Page $page / $pageCount. Updating manager."
+                            )
+                            navbarManager.updatePageInfo(page, pageCount)
+                        } else if (isInternalJumpInProgress) {
+                            Log.d(
+                                "PDFViewer",
+                                "[onPageChange] Page $page / $pageCount. Ignoring update due to internal jump flag."
+                            )
+                        } else {
+                            Log.d(
+                                "PDFViewer",
+                                "[onPageChange] Page $page / $pageCount. Ignoring update (view not ready or path mismatch)."
+                            )
                         }
-                    })
+                    }
                     .onError { t ->
-                        Log.e("PDFViewer", "[onError] Failed loading ${fileToLoad.name}", t)
-                        // Reset state if the error was for the currently requested file
                         if (pathActuallyLoaded != fileToLoad.absolutePath && requestedFileToLoad?.absolutePath == fileToLoad.absolutePath) {
                             pathActuallyLoaded = null
                             isViewReady = false
@@ -193,22 +201,15 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
                             navbarManager.resetPages()
                         }
                     }
-                    .load() // Execute the load
+                    .load()
             }
-            // --- Condition to Clear PDF ---
             else if (fileToLoad == null && pathActuallyLoaded != null) {
-                Log.i("PDFViewer", "[Update] Requested file is null. Recycling view that loaded $pathActuallyLoaded.")
                 pdfView.recycle()
                 isViewReady = false
                 pathActuallyLoaded = null
             }
-            // --- Else: No Action Needed ---
-            else {
-                // Log.v("PDFViewer", "[Update] No load/recycle needed. ReqFile: ${fileToLoad?.name}, LoadedPath: $pathActuallyLoaded")
-            }
         },
         onRelease = { pdfView ->
-            Log.i("PDFViewer", "AndroidView onRelease: Recycling PDFView instance.")
             pdfView.recycle()
             pdfViewInstance = null
             isViewReady = false

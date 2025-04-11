@@ -15,6 +15,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 
 
 object APIManager {
@@ -107,8 +108,6 @@ object APIManager {
 
                 return@withContext response.body?.string()?.let { adapter.fromJson(it) }
             }
-
-
         }
     }
 
@@ -145,65 +144,50 @@ object APIManager {
 //            }
 //        }
 //    }
-suspend fun getPDFFromWorkbook(
-    context: android.content.Context,
-    workbook: Workbook,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO
-): File? {
-    /*
-    Given a workbook, downloads PDF and returns it as a file with a unique name.
-    */
-    return withContext(dispatcher) {
-        try {
-            // --- FIX: Generate unique filename ---
-            // Use workbook ID to create a unique name. You could also use workbook.pdf URL's last segment if preferred.
+
+    suspend fun getPDFFromWorkbook(
+        context: android.content.Context,
+        workbook: Workbook,
+        dispatcher: CoroutineDispatcher = Dispatchers.IO
+    ): File? {
+        return withContext(dispatcher) {
             val filename = "workbook-${workbook.id}.pdf"
             val file = File(context.cacheDir, filename)
-            // --- END FIX ---
-
-            Log.d("APIManager", "Downloading PDF from ${workbook.pdf} to ${file.absolutePath}")
-
-            // Optional: Check if file already exists and potentially skip download if caching is desired.
-            // For now, we'll overwrite if it exists.
-            // if (file.exists()) {
-            //     Log.d("APIManager", "PDF already cached: ${file.absolutePath}")
-            //     return@withContext file
-            // }
-
-            val request = Request.Builder().url(workbook.pdf).build()
-            val response = CLIENT.newCall(request).execute()
-
-            if (!response.isSuccessful) {
-                Log.e("APIManager", "Download PDF Failed for ${workbook.pdf}: ${response.code} ${response.message}")
-                // Clean up potentially partially created file on failure
-                if (file.exists()) {
-                    file.delete()
-                }
-                return@withContext null
-            }
-
-            response.body?.let { body ->
-                FileOutputStream(file).use { output ->
-                    // Efficiently copy the stream
-                    body.byteStream().copyTo(output)
-                }
-                Log.d("APIManager", "Successfully downloaded PDF to ${file.absolutePath}")
+            if (file.exists() && file.length() > 0) {
                 return@withContext file
-            } ?: run {
-                Log.e("APIManager", "Download PDF Failed: Response body was null for ${workbook.pdf}")
-                if (file.exists()) {
+            }
+            var success = false
+            try {
+                val request = Request.Builder().url(workbook.pdf).build()
+                CLIENT.newCall(request).execute()
+                    .use { response ->
+                        if (!response.isSuccessful) {
+                            Log.e(
+                                "APIManager",
+                                "Download PDF Failed for ${workbook.pdf}: ${response.code} ${response.message}"
+                            )
+                            return@withContext null
+                        }
+                        val body = response.body ?: return@withContext null
+                        FileOutputStream(file).use { output ->
+                            body.byteStream().use { input ->
+                                input.copyTo(output)
+                            }
+                        }
+                        success = true
+                        Log.d("APIManager", "Successfully downloaded PDF to ${file.absolutePath}")
+                        return@withContext file
+                    }
+
+            } catch (e: IOException) {
+                return@withContext null
+            } catch (e: Exception) {
+                return@withContext null
+            } finally {
+                if (!success && file.exists()) {
                     file.delete()
                 }
-                return@withContext null
             }
-        } catch (e: Exception) {
-            Log.e("APIManager", "Error downloading PDF from ${workbook.pdf}: ${e.message}", e)
-            // Consider deleting partial file on exception too
-            // val file = File(context.cacheDir, "workbook-${workbook.id}.pdf") // Reconstruct path if needed
-            // if (file.exists()) file.delete()
-            null
         }
     }
-}
-
 }
