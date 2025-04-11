@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ReadersAndroidJetpack</string>
+    <string name="chapter_info">Chapter %1$s: %2$s</string>
 </resources>
