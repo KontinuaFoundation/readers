@@ -113,7 +113,7 @@ fun Toolbar(
                                     val pageNum = pageInputText.toIntOrNull()
                                     if (pageNum != null) {
                                         // Convert 1-based input to 0-based index
-                                        navbarManager.goToPage(pageNum - 1)
+                                        navbarManager.setPage(pageNum - 1)
                                     }
                                     // Clear focus and hide keyboard
                                     focusManager.clearFocus()
