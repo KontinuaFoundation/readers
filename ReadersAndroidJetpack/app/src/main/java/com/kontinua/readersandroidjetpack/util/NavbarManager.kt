@@ -3,6 +3,7 @@ package com.kontinua.readersandroidjetpack.util
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 //molly changes
@@ -25,12 +26,15 @@ class NavbarManager {
 //    var pageNumber: Int = 0
 //        private set
 
+
     var currentPage by mutableIntStateOf(0)
         private set
 
     // Total pages in the current document - Make it observable
     var totalPages by mutableIntStateOf(0) // Start with 0, update when PDF loads
+    var currentChapterIndex: Int = 0
         private set
+
 
     init {
         isChapterVisible = false
@@ -126,11 +130,30 @@ class NavbarManager {
     // DEPRECATED - Use goToPage
     fun setPage(newPage: Int){
         goToPage(newPage)
+        pageNumber = newPage
+        updateChapter()
+    }
+
+    fun getCurrentChapter(): Chapter? {
+        return if(currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex) else null
+    }
+
+    private fun updateChapter() {
+        val startPages = collectionVM?.chapters?.map { it.startPage - 1} ?: emptyList()
+        val index = startPages.binarySearch(pageNumber)
+
+        currentChapterIndex = if (index >= 0) {
+            // pageNumber exactly matches a chapter start page.
+            index
+        } else {
+            // Compute the insertion point: (-index - 1), and then adjust by subtracting 1.
+            // This gives the index of the start page that is immediately less than pageNumber.
+            (-index - 2).coerceIn(-1, startPages.lastIndex)
+        }
     }
 
     // Getter for the old pageNumber property if anything still uses it
     // DEPRECATED - Use currentPage
-    val pageNumber: Int
+    var pageNumber: Int = 0
         get() = currentPage
-
 }
