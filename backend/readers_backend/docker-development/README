@@ -1,0 +1,17 @@
+To run a postgres DB in development we use Docker / Docker Compose!
+
+An installation of Docker Desktop should provide everything you will need!
+
+Install docker desktop @ https://docs.docker.com/get-started/introduction/get-docker-desktop/
+
+Additionally you will need to setup a .env in the backend root (backend/) with the following:
+
+DB_NAME=readers_backend
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=localhost
+DB_PORT=5432
+
+Then open a terminal and run: docker compose up -d
+
+You can terminate it later with: docker compose down

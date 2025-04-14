@@ -30,6 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
@@ -114,8 +116,12 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         WorkbookButton(onClick = onButtonClick)
-        for (chapter in chapters){
-            Text(chapter.title, modifier = Modifier.clickable {
+        for (i in chapters.indices){
+            val chapter = chapters[i]
+            val bgColor = if(i == navbarManager.currentChapterIndex) Color.LightGray else Color.Transparent
+            Text(stringResource(id = R.string.chapter_info, chapter.chapNum, chapter.title), modifier = Modifier
+                .background(bgColor)
+                .clickable {
                 collectionVM?.setWorkbook(collectionVM.currentWorkbook)
                 navbarManager.setPage(chapter.startPage - 1)
                 onClose()
