@@ -1,0 +1,9 @@
+.venv
+__pycache__
+development_data/
+docker-development/
+files/
+venv/
+
+.gitignore
+.git/

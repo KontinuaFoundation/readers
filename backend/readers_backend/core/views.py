@@ -20,7 +20,6 @@ from core.serializers import (
     FeedbackSerializer,
 )
 
-
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
 

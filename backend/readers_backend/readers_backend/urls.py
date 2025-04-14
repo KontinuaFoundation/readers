@@ -21,7 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path("api/", include("core.urls"), name="core")
+    path("api/", include("core.urls"), name="core"),
 ]
 
 if settings.DEBUG:

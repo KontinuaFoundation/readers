@@ -17,7 +17,6 @@ Including another URLconf
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
-
 from core.views import FeedbackView, DestroyAuthTokenView, CollectionViewSet, WorkbookViewSet
 
 router = DefaultRouter()
