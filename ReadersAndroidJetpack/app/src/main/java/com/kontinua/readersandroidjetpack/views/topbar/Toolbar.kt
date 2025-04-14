@@ -73,7 +73,8 @@ fun Toolbar(
                 onDismissRequest = { showMarkupMenu = false }
             ) {
                 DropdownMenuItem(text = { Text("Pen") }, onClick = {
-                    annotationManager.toggleScribble()})
+                    annotationManager.toggleScribble()
+                    showMarkupMenu = false})
                 DropdownMenuItem(text = { Text("Highlight") }, onClick = { /* TODO */ })
                 DropdownMenuItem(text = { Text("Eraser") }, onClick = { /* TODO */ })
             }
