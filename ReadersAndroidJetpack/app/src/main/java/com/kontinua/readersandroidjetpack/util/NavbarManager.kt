@@ -1,5 +1,6 @@
 package com.kontinua.readersandroidjetpack.util
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,6 +21,9 @@ class NavbarManager {
         private set
 
     var pageNumber: Int = 0
+        private set
+
+    var pageCount: Int = -1
         private set
 
     init {
@@ -45,9 +49,26 @@ class NavbarManager {
         this.collectionVM = collection
     }
 
+    fun setPageCount(newPageCount: Int){
+        pageCount = newPageCount
+        Log.d("pages", "New page count: $pageCount")
+    }
+
     fun setPage(newPage: Int){
         pageNumber = newPage
         updateChapter()
+    }
+
+    fun goToNextPage() {
+        if (pageNumber < pageCount - 1) {
+            setPage(pageNumber + 1)
+        }
+    }
+
+    fun goToPreviousPage() {
+        if (pageNumber > 0) {
+            setPage(pageNumber - 1)
+        }
     }
 
     fun getCurrentChapter(): Chapter? {
