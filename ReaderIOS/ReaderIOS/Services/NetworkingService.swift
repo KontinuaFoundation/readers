@@ -91,6 +91,7 @@ final class NetworkingService: ObservableObject {
                 DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
+        
         task.resume()
     }
 

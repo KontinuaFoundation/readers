@@ -640,7 +640,7 @@ class CollectionTestCase(APITestCase):
 
 
         latest_collection = Collection.objects.create(major_version=2, minor_version=0, localization="en-US", is_released=True)
-        Collection.objects.create(major_version=2, minor_version=0, localization="fr-FR", is_released=True)
+        Collection.objects.create(major_version=2, minor_version=1, localization="fr-FR", is_released=True)
 
         url = reverse('collection-latest')
         response = self.client.get(f"{url}?localization=en-US")
@@ -650,6 +650,8 @@ class CollectionTestCase(APITestCase):
     
     def test_retrieve_latest_collection_with_localization_filter_not_found(self):
         self.client.credentials()
+
+        Collection.objects.create(major_version=2, minor_version=0, localization="en-US", is_released=True)
 
         url = reverse('collection-latest')
         response = self.client.get(f"{url}?localization=fr-FR")

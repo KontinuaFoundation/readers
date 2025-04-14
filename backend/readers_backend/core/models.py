@@ -13,6 +13,7 @@ class Collection(models.Model):
         ordering = ["-major_version", "-minor_version", "localization"]
 
         # When using .latest() django will order in non increasing order by default....
+        # That is, no negative sign (-) is required....
         get_latest_by = ["major_version", "minor_version", "localization"]
 
 
