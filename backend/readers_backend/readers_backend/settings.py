@@ -41,8 +41,7 @@ SECRET_KEY = "django-insecure-3r+kj$$&^pg-av4%scddw6bjiiufkrrpkh7%0+osn#vi!$6f83
 # That is we will integrate with some AWS services and we will expect some environment variables.
 DEBUG = get_required_env_var("DJANGO_DEBUG") == "True"
 
-
-ALLOWED_HOSTS = ["*.awsapprunner.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = [".awsapprunner.com", "localhost", "127.0.0.1"]
 
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
