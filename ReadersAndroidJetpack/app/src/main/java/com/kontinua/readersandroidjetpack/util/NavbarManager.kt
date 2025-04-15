@@ -1,16 +1,16 @@
 package com.kontinua.readersandroidjetpack.util
 
+import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import com.kontinua.readersandroidjetpack.serialization.Workbook
-import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
+import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 
 class NavbarManager {
     var isChapterVisible by mutableStateOf(false)
@@ -33,6 +33,9 @@ class NavbarManager {
         private set
 
     var totalPages by mutableIntStateOf(0)
+
+    lateinit var currentPDF : File
+    lateinit var context : Context
 
     init {
         isChapterVisible = false

@@ -1,52 +1,54 @@
 package com.kontinua.readersandroidjetpack.views.topbar
 
-import androidx.compose.foundation.layout.Arrangement
 //import androidx.compose.foundation.layout.ColumnScopeInstance.weight
+
+//molly changes
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.kontinua.readersandroidjetpack.util.AnnotationManager
-import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
-import com.kontinua.readersandroidjetpack.util.NavbarManager
-
-//molly changes
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.ArrowForwardIos
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material.icons.Icons
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
+import com.kontinua.readersandroidjetpack.util.AnnotationManager.PDFAnnotationEmbed
+import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel
+import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 
@@ -198,10 +200,35 @@ fun Toolbar(
                 onDismissRequest = { showMarkupMenu = false }
             ) {
                 DropdownMenuItem(text = { Text("Pen") }, onClick = {
-                    annotationManager.toggleScribble()
+                    annotationManager.toggleScribble(true)
                     showMarkupMenu = false})
                 DropdownMenuItem(text = { Text("Highlight") }, onClick = { /* TODO */ })
                 DropdownMenuItem(text = { Text("Eraser") }, onClick = { /* TODO */ })
+                DropdownMenuItem(text = { Text("Exit") }, onClick = {
+                    annotationManager.toggleScribble(false)
+                    showMarkupMenu = false
+                    val context = navbarManager.context
+                    val workbookId = navbarManager.currentWorkbook
+                    val workbook = navbarManager.collectionVM?.currentWorkbook
+                    val originalPdf = navbarManager.currentPDF
+                    if (originalPdf != null) {
+                        val outputFile = File(context.filesDir, "annotated-${workbookId}.pdf")
+                        val drawings =
+                            AnnotationViewModel.DrawingStore.drawings[workbookId] ?: emptyMap()
+                        val success = PDFAnnotationEmbed.embedAnnotationsIntoPDF(
+                            originalPdfFile = originalPdf,
+                            drawings = drawings,
+                            viewWidth = annotationManager.pageWidth,
+                            viewHeight = annotationManager.pageHeight,
+                            outputFile = outputFile
+                        )
+                        if (success) {
+                            println("Annotated PDF saved")
+                        } else {
+                            println("Failed to embed annotations.")
+                        }
+                    }
+                })
             }
 
             // Resources Button (Text Button)

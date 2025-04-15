@@ -1,19 +1,12 @@
 package com.kontinua.readersandroidjetpack.util
 
-import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import android.graphics.Paint
-import androidx.compose.ui.graphics.toArgb
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPath
-import android.graphics.Canvas
-import androidx.core.graphics.createBitmap
-import org.apache.pdfbox.pdmodel.PDDocument
-import org.apache.pdfbox.pdmodel.PDPageContentStream
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
-import java.io.ByteArrayOutputStream
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle
 import java.io.File
 
 class AnnotationManager {
@@ -32,71 +25,83 @@ class AnnotationManager {
         pageHeight = 1920
     }
 
-    fun setWidth(width: Int){
-        pageWidth = width
+    fun setWidth(int: Int){
+        pageWidth = int
     }
 
-    fun setHeight(height: Int){
-        pageHeight = height
+    fun setHeight(int: Int){
+        pageWidth = int
     }
 
-    fun toggleScribble(){
-        scribbleEnabled = !scribbleEnabled
+    fun toggleScribble(boolean: Boolean){
+        scribbleEnabled = boolean
     }
 
-    fun createBitmapFromPaths(
-        paths: List<DrawingPath>,
-        strokeColor: Int = Color.Black.toArgb(),
-        strokeWidth: Float = 5f
-    ): Bitmap {
-        val bitmap = createBitmap(pageWidth, pageHeight)
-        val canvas = Canvas(bitmap)
-        val paint = Paint().apply {
-            color = strokeColor
-            style = Paint.Style.STROKE
-            isAntiAlias = true
-            this.strokeWidth = strokeWidth
-            strokeCap = Paint.Cap.ROUND
-            strokeJoin = Paint.Join.ROUND
-        }
+    object PDFAnnotationEmbed {
+        fun embedAnnotationsIntoPDF(
+            originalPdfFile: File,
+            drawings: Map<Int, List<DrawingPath>>,
+            viewWidth: Int,
+            viewHeight: Int,
+            outputFile: File
+        ): Boolean {
+            try {
+                val document = PDDocument.load(originalPdfFile)
 
-        for (drawing in paths) {
-            val path = android.graphics.Path()
-            drawing.points.firstOrNull()?.let {
-                path.moveTo(it.x, it.y)
-                for (point in drawing.points.drop(1)) {
-                    path.lineTo(point.x, point.y)
+                drawings.forEach { (pageIndex, paths) ->
+                    if (pageIndex >= document.numberOfPages) return@forEach
+                    val page = document.getPage(pageIndex)
+                    val mediaBox: PDRectangle = page.mediaBox
+                    println("Paths: $drawings")
+
+                    val contentStream = PDPageContentStream(
+                        document, page,
+                        PDPageContentStream.AppendMode.APPEND, true, true
+                    )
+
+                    contentStream.setStrokingColor(0f, 0f, 0f) // Black lines
+                    contentStream.setLineWidth(2f)
+
+                    paths.forEach { path ->
+                        if (path.points.isEmpty()) return@forEach
+                        val (startX, startY) = convertToPDFCoordinates(
+                            path.points.first(), viewWidth, viewHeight, mediaBox.width, mediaBox.height
+                        )
+                        contentStream.moveTo(startX, startY)
+
+                        for (point in path.points.drop(1)) {
+                            val (x, y) = convertToPDFCoordinates(
+                                point, viewWidth, viewHeight, mediaBox.width, mediaBox.height
+                            )
+                            contentStream.lineTo(x, y)
+                        }
+
+                        contentStream.stroke()
+                    }
+
+                    contentStream.close()
                 }
+
+                document.save(outputFile)
+                document.close()
+                return true
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return false
             }
-            canvas.drawPath(path, paint)
         }
 
-
-        return bitmap
-    }
-
-    fun embedDrawingInPdf(
-        originalPdf: File,
-        pageNumber: Int, // zero-based
-        bitmap: Bitmap,
-        outputPdf: File
-    ) {
-        val document = PDDocument.load(originalPdf)
-        val page = document.getPage(pageNumber)
-
-        val stream = PDImageXObject.createFromByteArray(
-            document,
-            ByteArrayOutputStream().apply {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, this)
-            }.toByteArray(),
-            "drawing"
-        )
-
-        val contentStream = PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true)
-        contentStream.drawImage(stream, 0f, 0f, page.mediaBox.width, page.mediaBox.height)
-        contentStream.close()
-
-        document.save(outputPdf)
-        document.close()
+        private fun convertToPDFCoordinates(
+            point: androidx.compose.ui.geometry.Offset,
+            viewWidth: Int,
+            viewHeight: Int,
+            pdfWidth: Float,
+            pdfHeight: Float
+        ): Pair<Float, Float> {
+            val scaleX = pdfWidth / viewWidth
+            val scaleY = pdfHeight / viewHeight
+            return Pair(point.x * scaleX, pdfHeight - (point.y * scaleY)) // Invert Y
+        }
     }
 }

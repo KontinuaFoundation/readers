@@ -8,10 +8,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import android.util.Log
-import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -22,12 +21,12 @@ import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
-import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 @Composable
 fun PDFViewer(modifier: Modifier = Modifier,
@@ -55,9 +54,11 @@ fun PDFViewer(modifier: Modifier = Modifier,
         val currentPathInView = pathActuallyLoaded
 
         if (workbook != null) {
-            val newFile = withContext(Dispatchers.IO) {
+            var newFile = withContext(Dispatchers.IO) {
                 APIManager.getPDFFromWorkbook(context, workbook)
             }
+
+            //newFile = File(context.cacheDir, "annotated-1.pdf")
 
             if (newFile != null) {
                 if (currentPathInView != newFile.absolutePath) {
@@ -73,6 +74,8 @@ fun PDFViewer(modifier: Modifier = Modifier,
                     }
                     requestedFileToLoad = newFile
                 }
+                navbarManager.currentPDF = newFile
+                navbarManager.context = context
             } else {
                 if (pathActuallyLoaded != null) {
                     navbarManager.resetPages()

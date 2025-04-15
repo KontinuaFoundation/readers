@@ -57,11 +57,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose.v270alpha02)
     ksp(libs.moshi.kotlin.codegen)
     implementation(libs.androidx.material.icons.extended)
-    dependencies {
-        implementation("org.apache.pdfbox:pdfbox:2.0.29") {
-            exclude(group = "org.apache.pdfbox", module = "fontbox")
-        }
-    }
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -70,6 +66,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-
 }
