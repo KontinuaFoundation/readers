@@ -16,13 +16,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kontinua.readersandroidjetpack.ui.theme.ReadersAndroidJetpackTheme
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.views.SidebarWithPDFViewer
 import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
+import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
-import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
-import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

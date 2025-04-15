@@ -8,6 +8,7 @@
 import Foundation
 
 enum ApplicationConstants {
+    
     enum API {
         static let baseURLString = "http://18.189.208.93/api/"
     }
