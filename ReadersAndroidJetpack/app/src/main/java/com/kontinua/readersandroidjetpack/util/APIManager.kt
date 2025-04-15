@@ -72,26 +72,42 @@ object APIManager {
         }
     }
 
+    private suspend fun getLatestCollectionPreview(
+        localization: String = "en-US",
+        dispatcher: CoroutineDispatcher = Dispatchers.IO
+    ): CollectionPreview? {
+
+        /*
+        Given a preview, fetches the collection which will include which workbooks it offers.
+         */
+        val adapter = MOSHI.adapter(CollectionPreview::class.java)
+
+        val request = Request.Builder().url("$API_URL/collections/latest?localization=$localization").build()
+
+        return withContext(dispatcher) {
+            CLIENT.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw Exception("Request failed: ${response.code}")
+                return@withContext response.body?.string()?.let { adapter.fromJson(it) }
+            }
+
+
+        }
+
+    }
+
     suspend fun getLatestCollection(
         localization: String = "en-US",
         dispatcher: CoroutineDispatcher = Dispatchers.IO
     ): Collection? {
-        val collections = getCollections(localization, dispatcher)
 
-        if (collections == null) {
-            return null
-        }
-
-        val latestCollectionPreview = collections.first()
+        val latestCollectionPreview = getLatestCollectionPreview(localization) ?: return null
 
         return getCollection(latestCollectionPreview, dispatcher)
     }
 
     suspend fun getWorkbook(
         preview: WorkbookPreview,
-
         dispatcher: CoroutineDispatcher = Dispatchers.IO
-
 
     ): Workbook? {
 

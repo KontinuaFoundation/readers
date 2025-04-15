@@ -20,7 +20,6 @@ from core.serializers import (
     FeedbackSerializer,
 )
 
-
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -46,10 +45,13 @@ class CollectionViewSet(
             return CollectionListSerializer
         elif self.action == "retrieve":
             return CollectionRetrieveSerializer
+        #TODO: Consider just returning the entire collection rather than the list representation...
+        elif self.action == "latest":
+            return CollectionListSerializer
         return None
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "latest"]:
             return []
         return [IsAuthenticated()]
 
@@ -60,8 +62,8 @@ class CollectionViewSet(
         if not self.request.user.is_authenticated:
             queryset = queryset.filter(is_released=True)
 
-        # Query param filtering only applies for listing collections.
-        if self.action != "list":
+        # Query param filtering only applies for listing collections or retrieving the latest collection.
+        if not self.action in ["list", "latest"]:
             return queryset
 
         params = self.request.query_params
@@ -102,6 +104,21 @@ class CollectionViewSet(
         return Response(
             {"message": "Collection un-released."}, status=status.HTTP_200_OK
         )
+    @action(detail=False, methods=["get"])
+    def latest(self, request):
+        #TODO: Lets make this return the collection retrieve serializer at some point.
+        # More specifically, is there a reason to make the client two two requests to get the chapters for the latest collection?
+        queryset = self.get_queryset()
+
+        try:
+            latest = queryset.latest()
+        except Collection.DoesNotExist:
+            return Response(
+                {"message": "No collections found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = self.get_serializer(latest)
+        return Response(serializer.data)
 
 
 class WorkbookViewSet(

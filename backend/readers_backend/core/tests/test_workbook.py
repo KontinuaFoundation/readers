@@ -628,5 +628,3 @@ class WorkbookTestCase(APITestCase):
                          f"Expected 400 Bad Request, got {response.status_code}.")
         self.assertTrue("chapters" in response.json(),
                         f"Expected 'chapters' field in response error but got {response.json()}")
-
-    # TODO: if covers has video or references verify the fields are there.
