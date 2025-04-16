@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kontinua.readersandroidjetpack.ui.theme.ReadersAndroidJetpackTheme
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
+import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModelFactory
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.views.SidebarWithPDFViewer
 import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
@@ -39,8 +40,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val timerViewModel: TimerViewModel = viewModel()
-    val feedbackViewModel: FeedbackViewModel = viewModel()
     val navbarManager = remember { NavbarManager() }
+    val feedbackViewModel: FeedbackViewModel = viewModel(
+        factory = FeedbackViewModelFactory(navbarManager)
+    )
 
     Scaffold(
         topBar = {

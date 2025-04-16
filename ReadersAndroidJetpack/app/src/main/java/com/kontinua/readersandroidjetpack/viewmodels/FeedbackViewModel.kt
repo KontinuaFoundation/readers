@@ -3,6 +3,8 @@ package com.kontinua.readersandroidjetpack.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kontinua.readersandroidjetpack.util.APIManager
+import com.kontinua.readersandroidjetpack.util.NavbarManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +18,9 @@ import kotlinx.coroutines.launch
  * - Feedback text input
  * - Feedback submission logic
  */
-class FeedbackViewModel : ViewModel() {
+class FeedbackViewModel(
+    private val navbarManager: NavbarManager
+) : ViewModel() {
 
     companion object {
         private const val TAG = "FeedbackViewModel"
@@ -33,6 +37,14 @@ class FeedbackViewModel : ViewModel() {
     // State to track user email
     private val _userEmail = MutableStateFlow("")
     val userEmail: StateFlow<String> = _userEmail.asStateFlow()
+
+    // State to track submission state
+    private val _isSubmitting = MutableStateFlow(false)
+    val isSubmitting: StateFlow<Boolean> = _isSubmitting.asStateFlow()
+
+    // State to track submission errors
+    private val _submissionError = MutableStateFlow<String?>(null)
+    val submissionError: StateFlow<String?> = _submissionError.asStateFlow()
 
     /**
      * Shows the feedback dialog
@@ -77,18 +89,53 @@ class FeedbackViewModel : ViewModel() {
         val email = _userEmail.value
         val feedback = _feedbackText.value
         if (feedback.isBlank() || email.isBlank()) return
-        viewModelScope.launch {
-            try {
-                // Example: apiService.submitFeedback(feedback)
-                Log.d(TAG, "Feedback submitted from: $email with text: $feedback")
 
-                // Reset state after successful submission
-                _userEmail.value = ""
-                _feedbackText.value = ""
-                _isShowingFeedbackForm.value = false
+        // Get the current workbook information
+        val workbookId = navbarManager.collectionVM?.currentWorkbook?.id ?: return
+        val pageNumber = navbarManager.pageNumber + 1  // Convert from 0-indexed to 1-indexed
+
+        // Get the current chapter
+        val chapter = navbarManager.getCurrentChapter() ?: return
+        val chapterNumber = chapter.chapNum
+
+        // Get version information from the collection
+        val collection = navbarManager.collectionVM?.collectionState?.value ?: return
+        val majorVersion = collection.majorVersion
+        val minorVersion = collection.minorVersion
+        val localization = collection.localization
+
+        viewModelScope.launch {
+            _isSubmitting.value = true
+            _submissionError.value = null
+
+            try {
+                val success = APIManager.submitFeedback(
+                    workbookId = workbookId,
+                    chapterNumber = chapterNumber,
+                    pageNumber = pageNumber,
+                    userEmail = email,
+                    description = feedback,
+                    majorVersion = majorVersion,
+                    minorVersion = minorVersion,
+                    localization = localization
+                )
+
+                if (success) {
+                    // Reset state after successful submission
+                    _userEmail.value = ""
+                    _feedbackText.value = ""
+                    _isShowingFeedbackForm.value = false
+                    Log.d(TAG, "Feedback submitted successfully")
+                } else {
+                    // Handle submission failure
+                    _submissionError.value = "Failed to submit feedback. Please try again."
+                }
             } catch (e: Exception) {
-                // Handle error (in a real app, you might want to show an error message)
+                // Handle error
                 Log.e(TAG, "Error submitting feedback", e)
+                _submissionError.value = "Error: ${e.message}"
+            } finally {
+                _isSubmitting.value = false
             }
         }
     }

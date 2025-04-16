@@ -5,20 +5,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 
 /**
@@ -41,9 +41,8 @@ fun FeedbackForm(
     val feedbackText by viewModel.feedbackText.collectAsState(initial = "")
     val userEmail by viewModel.userEmail.collectAsState(initial = "")
     val context = LocalContext.current
-
-    // Local state for tracking form submission
-    var isSubmitting by remember { mutableStateOf(false) }
+    val submissionError by viewModel.submissionError.collectAsState(initial = null)
+    val isSubmitting by viewModel.isSubmitting.collectAsState(initial = false)
 
     // Check if both fields have content - using null-safe and safe string operations
     val isEnabled = !isSubmitting &&
@@ -68,7 +67,8 @@ fun FeedbackForm(
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("Enter your email here") },
                     singleLine = true,
-                    label = { Text("Email") }
+                    label = { Text("Email") },
+                    enabled = !isSubmitting
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -80,17 +80,36 @@ fun FeedbackForm(
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("Enter your feedback here") },
                     minLines = 3,
-                    label = { Text("Feedback") }
+                    label = { Text("Feedback") },
+                    enabled = !isSubmitting
                 )
+
+                // Show error if there is one
+                submissionError?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = it,
+                        color = androidx.compose.ui.graphics.Color.Red,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
+
+                // Show loading indicator when submitting
+                if (isSubmitting) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    isSubmitting = true
                     viewModel.submitFeedback()
                     Toast.makeText(context, "Thanks for your feedback!", Toast.LENGTH_SHORT).show()
-                    isSubmitting = false
                 },
                 enabled = isEnabled
             ) {

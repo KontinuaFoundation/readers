@@ -3,6 +3,7 @@ package com.kontinua.readersandroidjetpack.util
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 class NavbarManager {
@@ -43,5 +44,12 @@ class NavbarManager {
 
     fun setPage(newPage: Int){
         pageNumber = newPage
+    }
+
+    fun getCurrentChapter(): Chapter? {
+        val chapters = collectionVM?.chapters ?: return null
+
+        // Find the chapter that contains the current page
+        return chapters.findLast { it.startPage <= pageNumber + 1 }
     }
 }

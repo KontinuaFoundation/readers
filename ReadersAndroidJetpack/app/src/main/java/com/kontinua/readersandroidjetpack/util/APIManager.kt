@@ -11,8 +11,11 @@ import com.squareup.moshi.Types
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 
@@ -125,6 +128,53 @@ object APIManager {
             }
 
 
+        }
+    }
+
+    suspend fun submitFeedback(
+        workbookId: Int,
+        chapterNumber: Int,
+        pageNumber: Int,
+        userEmail: String,
+        description: String,
+        majorVersion: Int,
+        minorVersion: Int,
+        localization: String,
+        dispatcher: CoroutineDispatcher = Dispatchers.IO
+    ): Boolean {
+        val feedbackUrl = "$API_URL/feedback/"
+
+        val json = JSONObject().apply {
+            put("workbook_id", workbookId)
+            put("chapter_number", chapterNumber)
+            put("page_number", pageNumber)
+            put("user_email", userEmail)
+            put("description", description)
+            put("major_version", majorVersion)
+            put("minor_version", minorVersion)
+            put("localization", localization)
+        }
+
+        val requestBody = json.toString().toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url(feedbackUrl)
+            .post(requestBody)
+            .build()
+
+        return withContext(dispatcher) {
+            try {
+                val response = CLIENT.newCall(request).execute()
+                val isSuccessful = response.isSuccessful
+                if (!isSuccessful) {
+                    Log.e("Feedback", "Failed to submit feedback: ${response.code}")
+                }
+                isSuccessful
+            } catch (e: Exception) {
+                Log.e("Feedback", "Error submitting feedback: ${e.message}")
+                e.printStackTrace()
+                false
+            }
         }
     }
 
