@@ -1,4 +1,7 @@
 package com.kontinua.readersandroidjetpack.views.topbar
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DropdownMenu
@@ -16,8 +19,34 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.util.NavbarManager
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,9 +58,11 @@ fun Toolbar(
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
 
-
     TopAppBar(
-        title = { Text("") },
+        title = {
+            // Add Page Navigation Controls in the Title Area (or Actions)
+            PageSelector(navbarManager)
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             actionIconContentColor = MaterialTheme.colorScheme.onPrimary
         ),

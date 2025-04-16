@@ -51,7 +51,7 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
                     .defaultPage(navbarManager.pageNumber)
                     .onPageChange{ page, pageCount ->
                         navbarManager.setPage(page)
-                        navbarManager.setPageCount(pageCount)
+                        navbarManager.setPageCountValue(pageCount)
                     }
                     .pageFling(true)
                     .pageSnap(true)
