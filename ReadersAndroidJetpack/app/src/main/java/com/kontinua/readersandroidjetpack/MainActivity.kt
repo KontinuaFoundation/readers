@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,11 +24,21 @@ import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
 
+//molly changes
+import com.kontinua.readersandroidjetpack.serialization.Reference
+import com.kontinua.readersandroidjetpack.serialization.Video
+import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import android.util.Log
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         setContent {
             ReadersAndroidJetpackTheme {
                 MainScreen() // Use a composable to organize the UI
@@ -41,12 +52,61 @@ fun MainScreen() {
     val timerViewModel: TimerViewModel = viewModel()
     val feedbackViewModel: FeedbackViewModel = viewModel()
     val navbarManager = remember { NavbarManager() }
+    val collectionViewModel: CollectionViewModel = viewModel()
+
+    LaunchedEffect(collectionViewModel) {
+        navbarManager.setCollection(collectionViewModel)
+    }
+    val currentPageNumber = navbarManager.pageNumber
+    val currentChapterResources = remember(currentPageNumber, collectionViewModel.chapters) {
+
+        val currentChapter = navbarManager.getCurrentChapter() // Uses internal index updated by setPage
+        Log.d("MainScreen", "this is the chapter: $currentChapter")
+
+        if (currentChapter != null) {
+            Log.d("MainScreen", "incurchapter!=null")
+
+            val videos = currentChapter.covers.flatMap { it.videos ?: emptyList() }
+            val references = currentChapter.covers.flatMap { it.references ?: emptyList() }
+            Pair(videos, references) // Return pair of lists
+        } else {
+            Pair(emptyList<Video>(), emptyList<Reference>()) // Return empty lists if no chapter
+        }
+    }
+    val currentChapterVideos = currentChapterResources.first
+    val currentChapterReferences = currentChapterResources.second
+
+    val context = LocalContext.current
+    val onReferenceClick = remember<(Reference) -> Unit> { // Remember the lambda
+        { reference ->
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(reference.link))
+            try {
+                context.startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(context, "Cannot open link: ${reference.link}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    val onVideoClick = remember<(Video) -> Unit> { // Remember the lambda
+        { video ->
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(video.link))
+            try {
+                context.startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(context, "Cannot open video: ${video.link}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             Toolbar(
                 timerViewModel = timerViewModel,
-                navbarManager = navbarManager
+                navbarManager = navbarManager,
+                currentChapterReferences = currentChapterReferences,
+                currentChapterVideos = currentChapterVideos,
+                onReferenceClick = onReferenceClick,
+                onVideoClick = onVideoClick
             )
         },
         bottomBar = {
@@ -64,7 +124,7 @@ fun MainScreen() {
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            SidebarWithPDFViewer(navbarManager = navbarManager)
+            SidebarWithPDFViewer(navbarManager = navbarManager, collectionViewModel = collectionViewModel)
         }
         FeedbackForm(viewModel = feedbackViewModel)
     }

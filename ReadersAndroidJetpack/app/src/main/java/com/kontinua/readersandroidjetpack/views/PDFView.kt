@@ -18,17 +18,17 @@ import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
 @Composable
-fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
+fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
 
     // Anything that needs to access workbooks should receive it from this component!
     // i.e. Do NOT instantiate CollectionViewModel anywhere else, pass it down.
-    val collectionViewModel: CollectionViewModel = viewModel()
-    val collection by collectionViewModel.collectionState.collectAsState()
+//    val collectionViewModel: CollectionViewModel = viewModel()
+//    val collection by collectionViewModel.collectionState.collectAsState()
     val workbook by collectionViewModel.workbookState.collectAsState()
 
-    navbarManager.setCollection(collectionViewModel)
+//    navbarManager.setCollection(collectionViewModel)
 
     LaunchedEffect(workbook) {
         val file = workbook?.let { APIManager.getPDFFromWorkbook(context, it) }
