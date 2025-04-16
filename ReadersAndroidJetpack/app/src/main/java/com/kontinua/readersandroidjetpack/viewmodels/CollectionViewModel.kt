@@ -17,11 +17,16 @@ class CollectionViewModel : ViewModel() {
 
     private val _collectionState = MutableStateFlow<Collection?>(null)
     private val _workbookState = MutableStateFlow<Workbook?>(null)
+    private val _chaptersState = MutableStateFlow<List<Chapter>>(emptyList())
 
     val collectionState: StateFlow<Collection?> = _collectionState.asStateFlow()
     val workbookState: StateFlow<Workbook?> = _workbookState.asStateFlow()
-    lateinit var currentWorkbook: WorkbookPreview
-    var chapters: List<Chapter> = emptyList()
+    val chaptersState: StateFlow<List<Chapter>> = _chaptersState.asStateFlow()
+//    lateinit var currentWorkbook: WorkbookPreview
+    // Track the PREVIEW of the currently loaded workbook
+    var currentWorkbookPreview: WorkbookPreview? = null
+        private set // Keep track of what was requested
+//    var chapters: List<Chapter> = emptyList()
 
     init {
         viewModelScope.launch {
@@ -33,8 +38,11 @@ class CollectionViewModel : ViewModel() {
             }
 
             updateCollection(latestCollection)
-            // Default to the first workbook for now...
-            setWorkbook(latestCollection.workbooks.first())
+
+            latestCollection.workbooks.firstOrNull()?.let { firstPreview ->
+                Log.d("CollectionViewModel", "Init: Loading first workbook: ${firstPreview.id}")
+                setWorkbook(firstPreview) // Load the first workbook
+            } ?: Log.w("CollectionViewModel", "Init: Collection has no workbooks.")
         }
 
     }
@@ -48,27 +56,41 @@ class CollectionViewModel : ViewModel() {
         Sets the current workbook. Do not call directly, instead use setWorkbook
          */
         _workbookState.value = workbook
+        _chaptersState.value = workbook.chapters
     }
 
     fun setWorkbook(preview: WorkbookPreview) {
+        // --- FIX: Prevent redundant fetches (addresses slowness) ---
+        if (preview.id == currentWorkbookPreview?.id && _workbookState.value?.id == preview.id) {
+            Log.d("CollectionViewModel", "setWorkbook: Workbook ${preview.id} is already loaded. Skipping fetch.")
+            // Optionally re-emit state if needed, though usually not necessary if skipping
+            // _workbookState.value?.let { processLoadedWorkbook(it) }
+            return
+        }
+        // --- End FIX ---
 
-        /*
-        Sets the current workbook by fetching the workbook based on its preview.
-        Previews should come from collection.workbooks
-         */
+        Log.d("CollectionViewModel", "setWorkbook: Requesting workbook ${preview.id}")
+        // Update the requested preview immediately
+        currentWorkbookPreview = preview
+
+        // Clear previous state while loading? Optional, depends on desired UX
+        // _workbookState.value = null
+        // _chaptersState.value = emptyList()
 
         viewModelScope.launch {
             val workbook = APIManager.getWorkbook(preview)
 
             if (workbook == null) {
-                Log.e("Workbook", "Fetching workbook $preview.id returned null.")
+                Log.e("CollectionViewModel", "setWorkbook: Fetching workbook ${preview.id} returned null.")
+                // Optionally clear state on failure
+                // currentWorkbookPreview = null
+                // _workbookState.value = null
+                // _chaptersState.value = emptyList()
                 return@launch
             }
-
-            currentWorkbook = preview
-            chapters = workbook.chapters
+            Log.d("CollectionViewModel", "setWorkbook: Workbook ${workbook.id} fetched successfully.")
+            // Process the loaded data, updating states (_workbookState, _chaptersState)
             updateWorkbook(workbook)
-
         }
     }
 }

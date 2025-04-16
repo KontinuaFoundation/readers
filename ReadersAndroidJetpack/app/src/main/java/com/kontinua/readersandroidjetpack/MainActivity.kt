@@ -34,6 +34,8 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import android.util.Log
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,13 +60,13 @@ fun MainScreen() {
         navbarManager.setCollection(collectionViewModel)
     }
     val currentPageNumber = navbarManager.pageNumber
-    val currentChapterResources = remember(currentPageNumber, collectionViewModel.chapters) {
-
-        val currentChapter = navbarManager.getCurrentChapter() // Uses internal index updated by setPage
+    val chapters by collectionViewModel.chaptersState.collectAsState() // Collect the StateFlow
+    val currentChapterResources = remember(currentPageNumber, chapters) {
+        val currentChapter =
+            navbarManager.getCurrentChapter() // Gets the latest chapter based on updated index
         Log.d("MainScreen", "this is the chapter: $currentChapter")
 
         if (currentChapter != null) {
-            Log.d("MainScreen", "incurchapter!=null")
 
             val videos = currentChapter.covers.flatMap { it.videos ?: emptyList() }
             val references = currentChapter.covers.flatMap { it.references ?: emptyList() }

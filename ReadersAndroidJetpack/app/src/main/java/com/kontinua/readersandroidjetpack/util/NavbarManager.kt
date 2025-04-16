@@ -2,6 +2,7 @@ package com.kontinua.readersandroidjetpack.util
 
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.serialization.Chapter
@@ -17,16 +18,19 @@ class NavbarManager {
     var collectionVM: CollectionViewModel? by mutableStateOf(null)
         private set
 
-    var currentChapterIndex: Int = 0
+    var currentChapterIndex: Int = -1
         private set
 
-    var pageNumber: Int = 0
+//    var pageNumber: Int = 0
+//        private set
+// --- MAKE pageNumber State ---
+    var pageNumber by mutableIntStateOf(0)
         private set
 
-    var pageCount: Int = -1
-        private set
+    private var pageCount: Int = -1
 
     init {
+        pageNumber = 0
         isChapterVisible = false
         isWorkbookVisible = false
         collectionVM = null
@@ -47,6 +51,8 @@ class NavbarManager {
 
     fun setCollection(collection: CollectionViewModel?) {
         this.collectionVM = collection
+        //idk if this is necessary
+        updateChapter()
     }
 
     fun setPageCount(newPageCount: Int){
@@ -55,8 +61,11 @@ class NavbarManager {
     }
 
     fun setPage(newPage: Int){
-        pageNumber = newPage
-        updateChapter()
+        val clampedPage = if (pageCount > 0) newPage.coerceIn(0, pageCount - 1) else newPage.coerceAtLeast(0)
+        if (clampedPage != pageNumber) {
+            pageNumber = clampedPage // Update State -> Triggers recomposition
+            updateChapter() // Update index based on new page and CURRENT chapter list
+        }
     }
 
     fun goToNextPage() {
@@ -72,20 +81,40 @@ class NavbarManager {
     }
 
     fun getCurrentChapter(): Chapter? {
-        return if(currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex) else null
+        val chapters = collectionVM?.chaptersState?.value // Read StateFlow value
+        val chapter = chapters?.getOrNull(currentChapterIndex)
+        // Log.v("NavbarManager", "getCurrentChapter called: index=$currentChapterIndex, Chapter=${chapter?.chapNum}")
+        return chapter
     }
 
     private fun updateChapter() {
-        val startPages = collectionVM?.chapters?.map { it.startPage - 1} ?: emptyList()
-        val index = startPages.binarySearch(pageNumber)
+        val chapters = collectionVM?.chaptersState?.value ?: run { // Read StateFlow value
+            if (currentChapterIndex != -1) { currentChapterIndex = -1 }
+            return
+        }
+        if (chapters.isEmpty()) {
+            if (currentChapterIndex != -1) { currentChapterIndex = -1 }
+            return
+        }
 
-        currentChapterIndex = if (index >= 0) {
-            // pageNumber exactly matches a chapter start page.
-            index
-        } else {
-            // Compute the insertion point: (-index - 1), and then adjust by subtracting 1.
-            // This gives the index of the start page that is immediately less than pageNumber.
-            (-index - 2).coerceIn(-1, startPages.lastIndex)
+        val startPages = chapters.map { it.startPage - 1 } // 0-indexed
+        // Ensure startPages is sorted if using binarySearch, otherwise linear scan is safer
+        // Linear scan implementation:
+        var foundIndex = -1
+        for (i in chapters.indices.reversed()) {
+            if (pageNumber >= startPages[i]) {
+                foundIndex = i
+                break
+            }
+        }
+        // Binary search implementation (ONLY if startPages is sorted):
+        // val index = startPages.binarySearch(pageNumber)
+        // val foundIndex = if (index >= 0) index else (-index - 2).coerceIn(-1, chapters.lastIndex)
+
+
+        if (foundIndex != currentChapterIndex) {
+            Log.d("NavbarManager", "Updating chapter index from $currentChapterIndex to $foundIndex for page $pageNumber")
+            currentChapterIndex = foundIndex
         }
     }
 }
