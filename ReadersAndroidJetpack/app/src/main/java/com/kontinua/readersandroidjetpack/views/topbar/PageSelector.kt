@@ -27,10 +27,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 
 @Composable
@@ -56,7 +58,7 @@ fun PageSelector(navbarManager: NavbarManager) {
             // Use standard chevron icons instead
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = "Previous Page"
+                contentDescription = stringResource(id = R.string.prev_page)
             )
         }
 
@@ -122,7 +124,7 @@ fun PageSelector(navbarManager: NavbarManager) {
             // Use standard chevron icons instead
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Next Page"
+                contentDescription = stringResource(id = R.string.next_page)
             )
         }
     }

@@ -52,7 +52,6 @@ class NavbarManager {
 
     fun setPageCountValue(newPageCount: Int){
         pageCount = newPageCount
-        Log.d("pages", "New page count: $pageCount")
     }
 
     fun setPage(newPage: Int){
