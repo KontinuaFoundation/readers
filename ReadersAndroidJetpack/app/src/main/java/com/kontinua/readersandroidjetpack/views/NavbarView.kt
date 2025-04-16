@@ -99,7 +99,7 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager, annotationManager: Annota
 @Composable
 fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager: NavbarManager) {
     val collectionVM = navbarManager.collectionVM
-    val chapters: List<Chapter> = collectionVM?.chapters ?: emptyList()
+    val chapters: List<Chapter> = collectionVM!!.chapters ?: emptyList()
     val scroll = rememberScrollState()
     Column(
         modifier = Modifier
@@ -116,7 +116,6 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
         WorkbookButton(onClick = onButtonClick)
         for (chapter in chapters){
             Text(chapter.title, modifier = Modifier.clickable {
-                collectionVM?.setWorkbook(collectionVM.currentWorkbook)
                 navbarManager.setPage(chapter.startPage - 1)
                 onClose()
             })

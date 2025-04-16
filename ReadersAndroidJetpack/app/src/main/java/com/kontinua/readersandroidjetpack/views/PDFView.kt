@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,7 +44,6 @@ fun PDFViewer(modifier: Modifier = Modifier,
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // PDF Viewer
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx -> PDFView(ctx, null) },
@@ -61,15 +61,15 @@ fun PDFViewer(modifier: Modifier = Modifier,
                 }
             }
         )
-        if (annotationManager.scribbleEnabled) {
-            // Drawing Canvas\
+
+        key(navbarManager.currentWorkbook, navbarManager.pageNumber){
             DrawingCanvas(
                 workbookId = navbarManager.currentWorkbook,
-                        page = navbarManager.pageNumber,
-                        annotationManager = annotationManager)
+                page = navbarManager.pageNumber,
+                annotationManager = annotationManager
+            )
         }
     }
-
     pdfFile = null
 }
 

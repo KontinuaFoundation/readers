@@ -12,8 +12,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kontinua.readersandroidjetpack.ui.theme.ReadersAndroidJetpackTheme
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
@@ -69,12 +67,6 @@ fun MainScreen() {
             }
         },
         modifier = Modifier.fillMaxSize()
-                            .onGloballyPositioned
-                            { layoutCoordinates ->
-                                val size = layoutCoordinates.size.toSize()
-                                annotationManager.setWidth(size.width.toInt())
-                                annotationManager.setHeight(size.height.toInt())
-                            }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             SidebarWithPDFViewer(navbarManager = navbarManager, annotationManager = annotationManager)

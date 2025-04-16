@@ -75,8 +75,16 @@ fun Toolbar(
                 DropdownMenuItem(text = { Text("Pen") }, onClick = {
                     annotationManager.toggleScribble(true)
                     showMarkupMenu = false})
-                DropdownMenuItem(text = { Text("Highlight") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Eraser") }, onClick = { /* TODO */ })
+                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Eraser") }, onClick = {
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Exit") }, onClick = {
+                    annotationManager.toggleScribble(false)
+                    showMarkupMenu = false
+                })
             }
 
             // Resources Button (Text Button)

@@ -3,7 +3,13 @@ package com.kontinua.readersandroidjetpack.views
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -16,28 +22,42 @@ import androidx.compose.ui.input.pointer.pointerInput
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPath
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingStore
-import java.io.File
 
 @Composable
 fun DrawingCanvas(workbookId: String, page: Int, annotationManager: AnnotationManager) {
-    val savedPaths = remember { DrawingStore.getPaths(workbookId, page).toMutableStateList() }
-    var currentPath by remember { mutableStateOf<List<Offset>>(emptyList()) }
+    var savedPaths = remember(workbookId, page) {
+        DrawingStore.getPaths(workbookId, page).toMutableStateList()
+    }
+    var currentPath by remember(workbookId, page) {
+        mutableStateOf<List<Offset>>(emptyList())
+    }
+
+    LaunchedEffect(workbookId, page) {
+        val paths = DrawingStore.getPaths(workbookId, page)
+        savedPaths = paths.toMutableStateList()
+    }
+
+    val gestureModifier = if (annotationManager.scribbleEnabled) {
+        Modifier.pointerInput(workbookId, page) {
+            detectDragGestures(
+                onDragStart = { offset -> currentPath = listOf(offset) },
+                onDrag = { change, _ -> currentPath += change.position },
+                onDragEnd = {
+                    val newPath = DrawingPath(currentPath)
+                    savedPaths.add(newPath)
+                    DrawingStore.addPath(workbookId, page, newPath)
+                    currentPath = emptyList()
+                }
+            )
+        }
+    } else {
+        Modifier
+    }
 
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { offset -> currentPath = listOf(offset) },
-                    onDrag = { change, _ -> currentPath += change.position },
-                    onDragEnd = {
-                        val newPath = DrawingPath(currentPath)
-                        savedPaths.add(newPath)
-                        DrawingStore.addPath(workbookId, page, newPath)
-                        currentPath = emptyList()
-                    }
-                )
-            }
+            .then(gestureModifier)
     ) {
         savedPaths.forEach { drawPathLine(it.points) }
         drawPathLine(currentPath)
@@ -58,5 +78,3 @@ private fun DrawScope.drawPathLine(points: List<Offset>) {
         style = Stroke(width = 5f, cap = StrokeCap.Round, join = StrokeJoin.Round)
     )
 }
-
-
