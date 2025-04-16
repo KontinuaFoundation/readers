@@ -51,7 +51,8 @@ fun PageSelector(navbarManager: NavbarManager) {
     ) {
         // Previous Page Button
         IconButton(
-            onClick = { navbarManager.goToPreviousPage() }
+            onClick = { navbarManager.goToPreviousPage() },
+            enabled = navbarManager.pageNumber > 0
         ) {
             // Use standard chevron icons instead
             Icon(
@@ -116,7 +117,8 @@ fun PageSelector(navbarManager: NavbarManager) {
         )
 
         IconButton(
-            onClick = { navbarManager.goToNextPage() }
+            onClick = { navbarManager.goToNextPage() },
+            enabled = navbarManager.pageNumber < navbarManager.pageCount - 1
         ) {
             // Use standard chevron icons instead
             Icon(
