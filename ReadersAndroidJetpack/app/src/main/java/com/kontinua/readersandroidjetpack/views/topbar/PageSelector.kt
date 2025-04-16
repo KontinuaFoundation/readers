@@ -11,12 +11,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,12 +36,12 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 
 @Composable
 fun PageSelector(navbarManager: NavbarManager) {
-    var pageInputText by remember { mutableStateOf(navbarManager.pageNumber.toString()) }
+    var pageInputText by remember { mutableStateOf(navbarManager.getAdjustedPage()) }
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(navbarManager.pageNumber) {
-        pageInputText = navbarManager.pageNumber.toString()
+        pageInputText = navbarManager.getAdjustedPage()
     }
 
     Row(
@@ -142,12 +138,12 @@ private fun resolvePageNumber(
     val pageCount = navbarManager.pageCount
 
     try {
-        val newPage = input.toInt()
+        val newPage = input.toInt() - 1
 
         // Check if the new page is within the valid range (0 to pageCount-1)
         if (newPage in 0 until pageCount) {
             navbarManager.setPage(newPage)
-            onResult(newPage)
+            //onResult(newPage)
         } else {
             // Out of range, revert to the current page
             onResult(currentPage)

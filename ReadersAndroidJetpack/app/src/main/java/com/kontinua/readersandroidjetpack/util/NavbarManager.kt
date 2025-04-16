@@ -77,7 +77,7 @@ class NavbarManager {
     }
 
     fun getAdjustedPage(): String {
-        return (pageNumber + 2).toString()
+        return (pageNumber + 1).toString()
     }
 
     private fun updateChapter() {
