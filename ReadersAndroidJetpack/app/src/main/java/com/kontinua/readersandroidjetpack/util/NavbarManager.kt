@@ -18,25 +18,22 @@ class NavbarManager {
     var collectionVM: CollectionViewModel? by mutableStateOf(null)
         private set
 
-    var currentChapterIndex by mutableIntStateOf(-1)
+    var currentChapterIndex: Int = -1
         private set
 
-    var pageNumber: Int = 0
-        private set
-
-//    var pageNumber by mutableIntStateOf(0)
+    //    var pageNumber: Int = 0
 //        private set
+// --- MAKE pageNumber State ---
+    var pageNumber by mutableIntStateOf(0)
+        private set
 
     private var pageCount: Int = -1
 
     init {
         pageNumber = 0
-        pageCount = -1
-        // Initialize state vars
         isChapterVisible = false
         isWorkbookVisible = false
         collectionVM = null
-        currentChapterIndex = -1 // Explicitly init state
     }
 
     fun toggleChapterSidebar() {
@@ -53,25 +50,21 @@ class NavbarManager {
     }
 
     fun setCollection(collection: CollectionViewModel?) {
-        if (this.collectionVM != collection) {
-            this.collectionVM = collection
-        }
+        this.collectionVM = collection
+        //idk if this is necessary
         updateChapter()
     }
 
     fun setPageCount(newPageCount: Int){
         pageCount = newPageCount
-        updateChapter()
+        Log.d("pages", "New page count: $pageCount")
     }
 
-    fun setPage(newPage: Int) {
-        val potentialPage = if (pageCount > 0) newPage.coerceIn(0, pageCount - 1) else newPage.coerceAtLeast(0)
-        if (potentialPage != pageNumber) {
-            pageNumber = potentialPage // Update the internal variable
-            Log.d("NavbarManager", "setPage: Updated internal pageNumber to $pageNumber")
-            updateChapter()
-        } else {
-            updateChapter()
+    fun setPage(newPage: Int){
+        val clampedPage = if (pageCount > 0) newPage.coerceIn(0, pageCount - 1) else newPage.coerceAtLeast(0)
+        if (clampedPage != pageNumber) {
+            pageNumber = clampedPage // Update State -> Triggers recomposition
+            updateChapter() // Update index based on new page and CURRENT chapter list
         }
     }
 
@@ -88,50 +81,40 @@ class NavbarManager {
     }
 
     fun getCurrentChapter(): Chapter? {
-        if (currentChapterIndex < 0) {
-            return null
-        }
-        val chapters = collectionVM?.chaptersState?.value
+        val chapters = collectionVM?.chaptersState?.value // Read StateFlow value
         val chapter = chapters?.getOrNull(currentChapterIndex)
+        // Log.v("NavbarManager", "getCurrentChapter called: index=$currentChapterIndex, Chapter=${chapter?.chapNum}")
         return chapter
     }
 
     private fun updateChapter() {
-        val chapters = collectionVM?.chaptersState?.value
-        val currentPage = pageNumber // Use the internal variable for calculation
-
-        // Log inputs
-        // Log.v("NavbarManager", "updateChapter: Calculating for page $currentPage. Chapters: ${chapters?.size ?: "null"}. Current Index State: $currentChapterIndex")
-
-        if (chapters == null || chapters.isEmpty()) {
-            // Reset index state if no chapters
-            if (currentChapterIndex != -1) { // Only update state if it changes
-                Log.d("NavbarManager", "updateChapter: No chapters, resetting index state to -1")
-                currentChapterIndex = -1
-            }
+        val chapters = collectionVM?.chaptersState?.value ?: run { // Read StateFlow value
+            if (currentChapterIndex != -1) { currentChapterIndex = -1 }
+            return
+        }
+        if (chapters.isEmpty()) {
+            if (currentChapterIndex != -1) { currentChapterIndex = -1 }
             return
         }
 
-        // --- Use the reliable linear scan from end ---
         val startPages = chapters.map { it.startPage - 1 } // 0-indexed
-        var calculatedIndex = -1 // Default to -1
+        // Ensure startPages is sorted if using binarySearch, otherwise linear scan is safer
+        // Linear scan implementation:
+        var foundIndex = -1
         for (i in chapters.indices.reversed()) {
-            if (currentPage >= startPages[i]) {
-                calculatedIndex = i
-                break // Found the correct chapter index
+            if (pageNumber >= startPages[i]) {
+                foundIndex = i
+                break
             }
         }
-        // --- End Scan ---
+        // Binary search implementation (ONLY if startPages is sorted):
+        // val index = startPages.binarySearch(pageNumber)
+        // val foundIndex = if (index >= 0) index else (-index - 2).coerceIn(-1, chapters.lastIndex)
 
-        // Log calculation result
-        // Log.v("NavbarManager", "updateChapter: Calculated index $calculatedIndex for page $currentPage.")
 
-        // --- Update the State ONLY if the calculated index is different ---
-        // This comparison IS correct. If the index hasn't changed, we DON'T need to update the state.
-        // The recomposition should happen because the caller (e.g., MainScreen) is observing the state.
-        if (calculatedIndex != currentChapterIndex) {
-            Log.d("NavbarManager", "updateChapter: Index changed! Updating STATE from $currentChapterIndex to $calculatedIndex.")
-            currentChapterIndex = calculatedIndex // *** This assignment updates the State ***
+        if (foundIndex != currentChapterIndex) {
+            Log.d("NavbarManager", "Updating chapter index from $currentChapterIndex to $foundIndex for page $pageNumber")
+            currentChapterIndex = foundIndex
         }
     }
 }

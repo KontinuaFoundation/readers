@@ -36,7 +36,6 @@ import androidx.compose.ui.platform.LocalContext
 import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,13 +59,15 @@ fun MainScreen() {
     LaunchedEffect(collectionViewModel) {
         navbarManager.setCollection(collectionViewModel)
     }
+    val currentPageNumber = navbarManager.pageNumber
+    val chapters by collectionViewModel.chaptersState.collectAsState() // Collect the StateFlow
+    val currentChapterResources = remember(currentPageNumber, chapters) {
+        val currentChapter =
+            navbarManager.getCurrentChapter() // Gets the latest chapter based on updated index
+        Log.d("MainScreen", "this is the chapter: $currentChapter")
 
-    val currentChapterIndexState = navbarManager.currentChapterIndex // Read the State
-    val chapters by collectionViewModel.chaptersState.collectAsState()
-    val currentChapter = navbarManager.getCurrentChapter()
-
-    val currentChapterResources = remember(currentChapterIndexState, chapters) {
         if (currentChapter != null) {
+
             val videos = currentChapter.covers.flatMap { it.videos ?: emptyList() }
             val references = currentChapter.covers.flatMap { it.references ?: emptyList() }
             Pair(videos, references) // Return pair of lists
@@ -80,7 +81,7 @@ fun MainScreen() {
     val context = LocalContext.current
     val onReferenceClick = remember<(Reference) -> Unit> { // Remember the lambda
         { reference ->
-            val intent = Intent(Intent.ACTION_VIEW, reference.link.toUri())
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(reference.link))
             try {
                 context.startActivity(intent)
             } catch (e: ActivityNotFoundException) {
@@ -90,7 +91,7 @@ fun MainScreen() {
     }
     val onVideoClick = remember<(Video) -> Unit> { // Remember the lambda
         { video ->
-            val intent = Intent(Intent.ACTION_VIEW, video.link.toUri())
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(video.link))
             try {
                 context.startActivity(intent)
             } catch (e: ActivityNotFoundException) {
