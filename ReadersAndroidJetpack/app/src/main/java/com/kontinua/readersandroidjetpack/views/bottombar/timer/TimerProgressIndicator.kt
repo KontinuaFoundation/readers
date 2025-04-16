@@ -1,54 +1,43 @@
 package com.kontinua.readersandroidjetpack.views.bottombar.timer
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
+import kotlinx.coroutines.delay
 
+/**
+ * A standalone timer progress indicator that can be used independently
+ * from the timer controls.
+ */
 @Composable
 fun TimerProgressIndicator(timerViewModel: TimerViewModel) {
-    // Get states from ViewModel
     val isTimerRunning = timerViewModel.isTimerRunning
     val timerDuration = timerViewModel.timerDuration
     val timeLeftMillis = timerViewModel.timeLeftMillis
-    val isTimerFinished = timerViewModel.isTimerFinished
-    val isVisible = timeLeftMillis > 0 || isTimerFinished
 
-    val targetProgress = when {
-        isTimerFinished -> 1f
-        timerDuration > 0 -> 1f - (timeLeftMillis.toFloat() / timerDuration)
-        else -> 0f // Default case (timerDuration is 0 or less)
-    }
     val progress by animateFloatAsState(
-        targetValue = targetProgress,
+        targetValue = if (timerDuration > 0) 1f - (timeLeftMillis.toFloat() / timerDuration) else 0f, // Invert progress
         label = "timerProgress"
     )
 
-    val targetColor = when {
-        isTimerFinished -> Color(0xFF19BA00)
-        isTimerRunning -> Color.Red
-        timeLeftMillis > 0 -> Color(0xFFFFDB33)
-        else -> Color.Transparent
+    LaunchedEffect(timeLeftMillis) {
+        if (timeLeftMillis > 0) {
+            delay(100)
+        }
     }
 
-    val animatedColor by animateColorAsState(
-        targetValue = targetColor,
-        label = "timerColor"
-    )
-
-    if (isVisible) {
+    if (timeLeftMillis > 0) { // Only show the progress bar if time is left
         LinearProgressIndicator(
             progress = { progress },
             modifier = Modifier.fillMaxWidth(),
-            color = animatedColor,
+            color = if (isTimerRunning) Color.Green else Color.Yellow,
             trackColor = Color.LightGray,
-            strokeCap = StrokeCap.Round
         )
     }
 }

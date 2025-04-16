@@ -15,7 +15,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 
 
 object APIManager {
@@ -124,86 +123,43 @@ object APIManager {
 
                 return@withContext response.body?.string()?.let { adapter.fromJson(it) }
             }
+
+
         }
     }
-
-//    suspend fun getPDFFromWorkbook(
-//        context: android.content.Context, workbook: Workbook,
-//
-//        dispatcher: CoroutineDispatcher = Dispatchers.IO
-//    ): File? {
-//        /*
-//        Given a workbook, downloads PDF and returns it s a file.
-//         */
-//        return withContext(dispatcher) {
-//            try {
-//                val request = Request.Builder().url(workbook.pdf).build()
-//                val response = CLIENT.newCall(request).execute()
-//
-//                if (!response.isSuccessful) {
-//                    Log.e("Download PDF", "Failed: ${response.code}")
-//                    return@withContext null
-//                }
-//
-//                response.body?.let { body ->
-//                    val file = File(context.cacheDir, "downloaded.pdf")
-//                    val fos = FileOutputStream(file)
-//                    fos.use { output ->
-//                        output.write(body.bytes())
-//                    }
-//                    return@withContext file
-//                }
-//            } catch (e: Exception) {
-//                Log.e("Download PDF", "Error downloading PDF: ${e.message}")
-//                e.printStackTrace()
-//                null
-//            }
-//        }
-//    }
 
     suspend fun getPDFFromWorkbook(
-        context: android.content.Context,
-        workbook: Workbook,
+        context: android.content.Context, workbook: Workbook,
+
         dispatcher: CoroutineDispatcher = Dispatchers.IO
     ): File? {
+        /*
+        Given a workbook, downloads PDF and returns it s a file.
+         */
         return withContext(dispatcher) {
-            val filename = "workbook-${workbook.id}.pdf"
-            val file = File(context.cacheDir, filename)
-            if (file.exists() && file.length() > 0) {
-                return@withContext file
-            }
-            var success = false
             try {
                 val request = Request.Builder().url(workbook.pdf).build()
-                CLIENT.newCall(request).execute()
-                    .use { response ->
-                        if (!response.isSuccessful) {
-                            Log.e(
-                                "APIManager",
-                                "Download PDF Failed for ${workbook.pdf}: ${response.code} ${response.message}"
-                            )
-                            return@withContext null
-                        }
-                        val body = response.body ?: return@withContext null
-                        FileOutputStream(file).use { output ->
-                            body.byteStream().use { input ->
-                                input.copyTo(output)
-                            }
-                        }
-                        success = true
-                        Log.d("APIManager", "Successfully downloaded PDF to ${file.absolutePath}")
-                        return@withContext file
-                    }
+                val response = CLIENT.newCall(request).execute()
 
-            } catch (e: IOException) {
-                return@withContext null
-            } catch (e: Exception) {
-                return@withContext null
-            } finally {
-                if (!success && file.exists()) {
-                    file.delete()
+                if (!response.isSuccessful) {
+                    Log.e("Download PDF", "Failed: ${response.code}")
+                    return@withContext null
                 }
+
+                response.body?.let { body ->
+                    val file = File(context.cacheDir, "downloaded.pdf")
+                    val fos = FileOutputStream(file)
+                    fos.use { output ->
+                        output.write(body.bytes())
+                    }
+                    return@withContext file
+                }
+            } catch (e: Exception) {
+                Log.e("Download PDF", "Error downloading PDF: ${e.message}")
+                e.printStackTrace()
+                null
             }
         }
     }
+
 }

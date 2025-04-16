@@ -31,33 +31,17 @@ source venv/bin/activate
 # 3.) Install requirements.txt in the virtual environment.
 pip install -r requirements.txt
 
-
-# Start the postgres DB for developemtn
-if ! command -v docker compose &> /dev/null
-then
-    echo "Error: docker compose could not be found."
-    echo "Please install Docker Desktop:"
-    echo "  https://docs.docker.com/get-started/introduction/get-docker-desktop/"
-    exit 1
-fi
-
-cd docker-development/
-# It might be running already, so we stop it first.
-docker compose down
-docker compose up -d
-
-# 4.) Run any database migrations
-
 # Set the environment variables for Django.
 export DJANGO_DEBUG=True
 
-cd ..
+# 4.) Run any database migrations
 python3 manage.py migrate
 
-# 5.) Populate the database with workbooks and pdfs if db is empty.
+# 5.) Populate the database with workbooks and pdfs.
 python3 manage.py populate_db
 
 # 6.) Start the Django server using the local ipv4 address of the user.
+
 echo ""
 echo "============================================"
 echo "  🚀 ${bold}How To Connect${reset} 🚀  "

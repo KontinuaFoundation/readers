@@ -222,6 +222,8 @@ class CollectionTestCase(APITestCase):
     def test_delete_collection(self):
         # TODO: Test deleting collection also deletes the workbook.
 
+        url = reverse('collection-detail', kwargs={'pk': 1})
+
         body = {
             "major_version": 1,
             "minor_version": 0,
@@ -230,11 +232,7 @@ class CollectionTestCase(APITestCase):
 
         collection = Collection.objects.create(**body)
 
-        url = reverse('collection-detail', kwargs={'pk': collection.id})
-
-
         response = self.client.delete(url)
-
 
         self.assertEqual(response.status_code, 204, msg=f"Expected status code 204, but got {response.status_code}.")
         self.assertEqual(0, Collection.objects.count())

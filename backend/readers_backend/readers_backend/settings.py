@@ -81,12 +81,8 @@ WSGI_APPLICATION = "readers_backend.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": get_required_env_var("DB_NAME"),
-        "USER": get_required_env_var("DB_USER"),
-        "PASSWORD": get_required_env_var("DB_PASSWORD"),
-        "HOST": get_required_env_var("DB_HOST"),
-        "PORT": get_required_env_var("DB_PORT"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
