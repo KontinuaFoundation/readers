@@ -1,6 +1,4 @@
 package com.kontinua.readersandroidjetpack.util
-
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -18,21 +16,17 @@ class NavbarManager {
     var collectionVM: CollectionViewModel? by mutableStateOf(null)
         private set
 
-    //needs to be state
+    //needs to be state for dig resources
     var currentChapterIndex by mutableIntStateOf(-1)
 
     var pageNumber: Int = 0
         private set
-
-//    var pageNumber by mutableIntStateOf(0)
-//        private set
 
     private var pageCount: Int = -1
 
     init {
         pageNumber = 0
         pageCount = -1
-        // Initialize state vars
         isChapterVisible = false
         isWorkbookVisible = false
         collectionVM = null
@@ -59,47 +53,13 @@ class NavbarManager {
         updateChapter()
     }
 
-//    fun setPageCount(newPageCount: Int){
-//        pageCount = newPageCount
-//        Log.d("pages", "New page count: $pageCount")
-//    }
-fun setPageCount(newPageCount: Int){
-    if (newPageCount != pageCount) {
+    fun setPageCount(newPageCount: Int){
         pageCount = newPageCount
-        Log.d("NavbarManager", "Set pageCount: $pageCount")
-        // Clamp page if needed
-        if (pageCount in 1..pageNumber) {
-            val clampedPage = pageCount - 1
-            if (clampedPage != pageNumber) { // Avoid infinite loop if setPage calls setPageCount
-                pageNumber = clampedPage
-                updateChapter()
-            }
-        }
     }
-}
 
-//    fun setPage(newPage: Int){
-//        val clampedPage = if (pageCount > 0) newPage.coerceIn(0, pageCount - 1) else newPage.coerceAtLeast(0)
-//        if (clampedPage != pageNumber) {
-//            pageNumber = clampedPage // Update State -> Triggers recomposition
-//            updateChapter() // Update index based on new page and CURRENT chapter list
-//        }
-//    }
-
-    // Updates internal pageNumber variable and triggers index calculation
     fun setPage(newPage: Int){
-        val clampedPage = if (pageCount > 0) newPage.coerceIn(0, pageCount - 1) else newPage.coerceAtLeast(0)
-
-        // Update internal variable only if it changed
-        if (clampedPage != pageNumber) {
-            pageNumber = clampedPage
-            // Log.v("NavbarManager", "Set internal pageNumber var: $pageNumber")
-            updateChapter() // Calculate and potentially update the index STATE
-        } else {
-            // If page didn't change, still run updateChapter in case
-            // chapter list changed concurrently.
-            updateChapter()
-        }
+        pageNumber = newPage
+        updateChapter()
     }
 
     fun goToNextPage() {
@@ -120,44 +80,13 @@ fun setPageCount(newPageCount: Int){
         return chapter
     }
 
-//    private fun updateChapter() {
-//        val chapters = collectionVM?.chaptersState?.value ?: run { // Read StateFlow value
-//            if (currentChapterIndex != -1) { currentChapterIndex = -1 }
-//            return
-//        }
-//        if (chapters.isEmpty()) {
-//            if (currentChapterIndex != -1) { currentChapterIndex = -1 }
-//            return
-//        }
-//
-//        val startPages = chapters.map { it.startPage - 1 } // 0-indexed
-//        // Ensure startPages is sorted if using binarySearch, otherwise linear scan is safer
-//        // Linear scan implementation:
-//        var foundIndex = -1
-//        for (i in chapters.indices.reversed()) {
-//            if (pageNumber >= startPages[i]) {
-//                foundIndex = i
-//                break
-//            }
-//        }
-//        // Binary search implementation (ONLY if startPages is sorted):
-//        // val index = startPages.binarySearch(pageNumber)
-//        // val foundIndex = if (index >= 0) index else (-index - 2).coerceIn(-1, chapters.lastIndex)
-//
-//
-//        if (foundIndex != currentChapterIndex) {
-//            Log.d("NavbarManager", "Updating chapter index from $currentChapterIndex to $foundIndex for page $pageNumber")
-//            currentChapterIndex = foundIndex
-//        }
-//    }
-//}
-// Calculates index based on internal pageNumber and updates index STATE
+
 private fun updateChapter() {
     val chapters = collectionVM?.chaptersState?.value
-    val currentPage = pageNumber // Use internal variable for calculation
+    val currentPage = pageNumber
 
-    if (chapters == null || chapters.isEmpty()) {
-        if (currentChapterIndex != -1) { // Only update state if it changes
+    if (chapters.isNullOrEmpty()) {
+        if (currentChapterIndex != -1) {
             currentChapterIndex = -1
         }
         return
@@ -171,11 +100,8 @@ private fun updateChapter() {
             break
         }
     }
-
-    // --- Update the currentChapterIndex STATE only if calculated index is different ---
-    if (calculatedIndex != currentChapterIndex) {
-        Log.d("NavbarManager", "Updating chapter index STATE from $currentChapterIndex to $calculatedIndex for internal page $currentPage")
-        currentChapterIndex = calculatedIndex // *** Assignment updates State ***
+        if (calculatedIndex != currentChapterIndex) {
+            currentChapterIndex = calculatedIndex // *** Assignment updates State ***
+        }
     }
-}
 }

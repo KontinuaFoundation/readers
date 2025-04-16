@@ -1,11 +1,6 @@
 package com.kontinua.readersandroidjetpack.views
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+
+import androidx.compose.runtime.* // Use wildcard
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -16,7 +11,11 @@ import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
 @Composable
-fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
+fun PDFViewer(
+    modifier: Modifier = Modifier,
+    navbarManager: NavbarManager,
+    collectionViewModel: CollectionViewModel
+) {
     val context = LocalContext.current
     var targetPdfFile by remember { mutableStateOf<File?>(null) }
     var loadedFilePath by remember { mutableStateOf<String?>(null) }
@@ -39,8 +38,7 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, colle
     AndroidView(
         modifier = modifier,
         factory = { ctx ->
-            PDFView(ctx, null).apply {
-            }
+            PDFView(ctx, null)
         },
         update = { pdfView ->
             val currentTargetFile = targetPdfFile
@@ -49,6 +47,7 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, colle
             if (currentTargetFile != null) {
                 if (currentTargetFile.path != currentLoadedPath) {
                     loadedFilePath = null
+
                     pdfView.fromFile(currentTargetFile)
                         .defaultPage(0)
                         .enableSwipe(true)
@@ -61,25 +60,22 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, colle
                             navbarManager.setPageCount(pageCount)
                         }
                         .onLoad { nbPages ->
-                            val loadedPath =
-                                currentTargetFile.path
+                            val loadedPath = currentTargetFile.path
                             loadedFilePath = loadedPath
                             navbarManager.setPageCount(nbPages)
-
                             val finalTargetPage = navbarManager.pageNumber.coerceIn(0, nbPages - 1)
                             if (pdfView.currentPage != finalTargetPage) {
-                                pdfView.jumpTo(finalTargetPage, false) // No animation on fresh load
+                                pdfView.jumpTo(finalTargetPage, false)
                             }
                         }
                         .load()
                 }
-                else if (currentTargetFile.path == currentLoadedPath && pdfView.currentPage != targetPage) {
-                    if (pdfView.pageCount > 0) {
-                        pdfView.jumpTo(targetPage, false)
-                    }
+                else if (
+                    pdfView.currentPage != targetPage && pdfView.pageCount > 0) {
+                    pdfView.jumpTo(targetPage, false)
                 }
             } else {
-                if (loadedFilePath != null) { // If something WAS loaded, maybe clear it?
+                if (loadedFilePath != null) {
                     loadedFilePath = null
                 }
             }

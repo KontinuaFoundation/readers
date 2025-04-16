@@ -1,6 +1,5 @@
 // MainActivity.kt
 package com.kontinua.readersandroidjetpack
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,17 +22,13 @@ import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
 import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
-
-//molly changes
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
-import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.net.toUri
@@ -60,7 +55,6 @@ fun MainScreen() {
     LaunchedEffect(collectionViewModel) {
         navbarManager.setCollection(collectionViewModel)
     }
-//    val currentPageNumber = navbarManager.pageNumber
     val chapters by collectionViewModel.chaptersState.collectAsState()
     val currentChapterIndexState = navbarManager.currentChapterIndex
     val currentChapterResources = remember(currentChapterIndexState, chapters) {
@@ -78,7 +72,7 @@ fun MainScreen() {
     val currentChapterReferences = currentChapterResources.second
 
     val context = LocalContext.current
-    val onReferenceClick = remember<(Reference) -> Unit> { // Remember the lambda
+    val onReferenceClick = remember<(Reference) -> Unit> {
         { reference ->
             val intent = Intent(Intent.ACTION_VIEW, reference.link.toUri())
             try {
@@ -88,7 +82,7 @@ fun MainScreen() {
             }
         }
     }
-    val onVideoClick = remember<(Video) -> Unit> { // Remember the lambda
+    val onVideoClick = remember<(Video) -> Unit> {
         { video ->
             val intent = Intent(Intent.ACTION_VIEW, video.link.toUri())
             try {
