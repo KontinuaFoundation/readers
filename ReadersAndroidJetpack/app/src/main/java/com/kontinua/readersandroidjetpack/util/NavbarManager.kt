@@ -16,7 +16,7 @@ class NavbarManager {
     var collectionVM: CollectionViewModel? by mutableStateOf(null)
         private set
 
-    //needs to be state for dig resources
+    //needs to be state var for dig resources
     var currentChapterIndex by mutableIntStateOf(-1)
 
     var pageNumber: Int = 0
@@ -75,7 +75,7 @@ class NavbarManager {
     }
 
     fun getCurrentChapter(): Chapter? {
-        val chapters = collectionVM?.chaptersState?.value // Read StateFlow value
+        val chapters = collectionVM?.chaptersState?.value
         val chapter = chapters?.getOrNull(currentChapterIndex)
         return chapter
     }
@@ -101,7 +101,7 @@ private fun updateChapter() {
         }
     }
         if (calculatedIndex != currentChapterIndex) {
-            currentChapterIndex = calculatedIndex // *** Assignment updates State ***
+            currentChapterIndex = calculatedIndex
         }
     }
 }

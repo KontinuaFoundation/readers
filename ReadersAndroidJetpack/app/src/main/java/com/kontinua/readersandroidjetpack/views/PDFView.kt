@@ -1,6 +1,5 @@
 package com.kontinua.readersandroidjetpack.views
-
-import androidx.compose.runtime.* // Use wildcard
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView

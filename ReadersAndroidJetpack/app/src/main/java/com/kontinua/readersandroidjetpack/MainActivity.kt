@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ReadersAndroidJetpackTheme {
-                MainScreen() // Use a composable to organize the UI
+                MainScreen() // Use a composable to organize the UI in main
             }
         }
     }
@@ -50,6 +50,8 @@ fun MainScreen() {
     val timerViewModel: TimerViewModel = viewModel()
     val feedbackViewModel: FeedbackViewModel = viewModel()
     val navbarManager = remember { NavbarManager() }
+
+    //now instantiating collectionViewModel and passing around through here for dig resources!
     val collectionViewModel: CollectionViewModel = viewModel()
 
     LaunchedEffect(collectionViewModel) {
@@ -59,13 +61,12 @@ fun MainScreen() {
     val currentChapterIndexState = navbarManager.currentChapterIndex
     val currentChapterResources = remember(currentChapterIndexState, chapters) {
         val currentChapter = navbarManager.getCurrentChapter()
-
         if (currentChapter != null) {
             val videos = currentChapter.covers.flatMap { it.videos ?: emptyList() }
             val references = currentChapter.covers.flatMap { it.references ?: emptyList() }
-            Pair(videos, references) // Return pair of lists
+            Pair(videos, references)
         } else {
-            Pair(emptyList<Video>(), emptyList<Reference>()) // Return empty lists if no chapter
+            Pair(emptyList(), emptyList())
         }
     }
     val currentChapterVideos = currentChapterResources.first
