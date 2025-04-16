@@ -104,7 +104,7 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager, collectionViewModel: Coll
 fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager: NavbarManager) {
     val collectionVM = navbarManager.collectionVM
     val chapters by collectionVM?.chaptersState?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
-    val currentPage = navbarManager.pageNumber // Observe page state for index calculation trigger
+    val currentChapterIndexState = navbarManager.currentChapterIndex
     val scroll = rememberScrollState()
     Column(
         modifier = Modifier
@@ -119,19 +119,26 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         WorkbookButton(onClick = onButtonClick)
-        for (i in chapters.indices){
-            val chapter = chapters[i]
-            val bgColor = if(i == navbarManager.currentChapterIndex) Color.LightGray else Color.Transparent
-            Text(stringResource(id = R.string.chapter_info, chapter.chapNum, chapter.title), modifier = Modifier
-                .background(bgColor)
-                .clickable {
-//                collectionVM?.setWorkbook(collectionVM.currentWorkbook)
-                    navbarManager.setPage(chapter.startPage - 1)
-                    onClose()
-                })
+        if (chapters.isNotEmpty()) {
+            chapters.forEachIndexed { i, chapter ->
+                // Use the observed index state for comparison
+                val bgColor =
+                    if (i == currentChapterIndexState) Color.LightGray else Color.Transparent
+                Text(
+                    stringResource(id = R.string.chapter_info, chapter.chapNum, chapter.title),
+                    modifier = Modifier
+                        .background(bgColor)
+                        .clickable {
+                            navbarManager.setPage(chapter.startPage - 1)
+                            onClose()
+                        }
+                )
+            }
+        } else {
+            Text("Chapters loading...")
         }
     }
-}
+    }
 
 @Composable
 fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
