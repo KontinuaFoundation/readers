@@ -36,7 +36,6 @@ import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SidebarWithPDFViewer(navbarManager: NavbarManager) {
     val density = LocalDensity.current
