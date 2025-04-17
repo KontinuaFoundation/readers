@@ -61,6 +61,7 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
                     .onPageChange(object : OnPageChangeListener {
                         override fun onPageChanged(page: Int, pageCount: Int) {
                             navbarManager.setPage(page)
+                            navbarManager.setPageCountValue(pageCount)
                         }
                     })
                     // Use the correct load complete listener
