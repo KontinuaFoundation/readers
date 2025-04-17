@@ -26,8 +26,8 @@ object APIManager {
     i.e. fetching workbooks/collections and downloading pdfs.
      */
 
-    private final val CLIENT = OkHttpClient()
-    private final val MOSHI = Moshi.Builder().build()
+    private val CLIENT = OkHttpClient()
+    private val MOSHI = Moshi.Builder().build()
 
     suspend fun getCollections(
         localization: String = "en-US",
@@ -144,6 +144,16 @@ object APIManager {
     ): Boolean {
         val feedbackUrl = "$API_URL/feedback/"
 
+        Log.d("APIManager", "===== SUBMITTING FEEDBACK =====")
+        Log.d("APIManager", "URL: $feedbackUrl")
+        Log.d("APIManager", "Workbook ID: $workbookId")
+        Log.d("APIManager", "Chapter Number: $chapterNumber")
+        Log.d("APIManager", "Page Number: $pageNumber")
+        Log.d("APIManager", "Email: $userEmail")
+        Log.d("APIManager", "Description length: ${description.length}")
+        Log.d("APIManager", "Version: $majorVersion.$minorVersion")
+        Log.d("APIManager", "Localization: $localization")
+
         val json = JSONObject().apply {
             put("workbook_id", workbookId)
             put("chapter_number", chapterNumber)
@@ -157,27 +167,42 @@ object APIManager {
 
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
+        Log.d("APIManager", "Building request...")
         val request = Request.Builder()
             .url(feedbackUrl)
             .post(requestBody)
             .build()
 
+        Log.d("APIManager", "Request: ${request.method} ${request.url}")
+
         return withContext(dispatcher) {
             try {
+                Log.d("APIManager", "Executing request...")
                 val response = CLIENT.newCall(request).execute()
+                val responseCode = response.code
+                val responseBody = response.body?.string() ?: "Empty body"
+
+                Log.d("APIManager", "Response code: $responseCode")
+                Log.d("APIManager", "Response body: $responseBody")
+
                 val isSuccessful = response.isSuccessful
-                if (!isSuccessful) {
-                    Log.e("Feedback", "Failed to submit feedback: ${response.code}")
+                if (isSuccessful) {
+                    Log.d("APIManager", "Request successful")
+                } else {
+                    Log.e("APIManager", "Failed to submit feedback: $responseCode")
                 }
+
+                Log.d("APIManager", "===== FEEDBACK SUBMISSION COMPLETE =====")
                 isSuccessful
             } catch (e: Exception) {
-                Log.e("Feedback", "Error submitting feedback: ${e.message}")
+                Log.e("APIManager", "Error submitting feedback", e)
+                Log.e("APIManager", "Stack trace: ${e.stackTraceToString()}")
+                Log.d("APIManager", "===== FEEDBACK SUBMISSION FAILED =====")
                 e.printStackTrace()
                 false
             }
         }
     }
-
     suspend fun getPDFFromWorkbook(
         context: android.content.Context, workbook: Workbook,
 

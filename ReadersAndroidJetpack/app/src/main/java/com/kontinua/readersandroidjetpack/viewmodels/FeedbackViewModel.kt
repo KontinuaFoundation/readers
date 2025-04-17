@@ -1,6 +1,5 @@
 package com.kontinua.readersandroidjetpack.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kontinua.readersandroidjetpack.util.APIManager
@@ -79,27 +78,32 @@ class FeedbackViewModel(
 
     /**
      * Submits feedback to the backend
-     * - TODO: Replace with actual API call
-     * - TODO: Handle errors
-     * - TODO: Clear input after successful submission
-     * - TODO: Show success message
-     * - TODO: Validate email
      */
     fun submitFeedback() {
         val email = _userEmail.value
         val feedback = _feedbackText.value
-        if (feedback.isBlank() || email.isBlank()) return
 
-        // Get the current workbook information
-        val workbookId = navbarManager.collectionVM?.currentWorkbook?.id ?: return
-        val pageNumber = navbarManager.pageNumber + 1  // Convert from 0-indexed to 1-indexed
+        if (feedback.isBlank() || email.isBlank()) {
+            return
+        }
 
-        // Get the current chapter
-        val chapter = navbarManager.getCurrentChapter() ?: return
-        val chapterNumber = chapter.chapNum
+        val workbookId = navbarManager.collectionVM?.currentWorkbook?.id
+        if (workbookId == null) {
+            return
+        }
+
+        val pageNumber = navbarManager.pageNumber + 1
+
+        val chapter = navbarManager.getCurrentChapter()
+        // Default to chapter number 0 if chapter is null (Prefix etc..)
+        val chapterNumber = chapter?.chapNum ?: 0
 
         // Get version information from the collection
-        val collection = navbarManager.collectionVM?.collectionState?.value ?: return
+        val collection = navbarManager.collectionVM?.collectionState?.value
+        if (collection == null) {
+            return
+        }
+
         val majorVersion = collection.majorVersion
         val minorVersion = collection.minorVersion
         val localization = collection.localization
@@ -125,14 +129,12 @@ class FeedbackViewModel(
                     _userEmail.value = ""
                     _feedbackText.value = ""
                     _isShowingFeedbackForm.value = false
-                    Log.d(TAG, "Feedback submitted successfully")
                 } else {
                     // Handle submission failure
                     _submissionError.value = "Failed to submit feedback. Please try again."
                 }
             } catch (e: Exception) {
                 // Handle error
-                Log.e(TAG, "Error submitting feedback", e)
                 _submissionError.value = "Error: ${e.message}"
             } finally {
                 _isSubmitting.value = false
