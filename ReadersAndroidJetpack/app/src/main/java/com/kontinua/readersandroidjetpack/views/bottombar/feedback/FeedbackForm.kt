@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -31,6 +32,16 @@ fun FeedbackForm(
     viewModel: FeedbackViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val showToast by viewModel.showSuccessToast.collectAsState(initial = false)
+
+    // Put the LaunchedEffect before the early return
+    LaunchedEffect(showToast) {
+        if (showToast) {
+            Toast.makeText(context, "Thanks for your feedback!", Toast.LENGTH_SHORT).show()
+            viewModel.resetToastTrigger()
+        }
+    }
     // Safely collect state values
     val showDialog by viewModel.feedbackVisibility.collectAsState()
 
@@ -40,7 +51,6 @@ fun FeedbackForm(
     // Collect state values for feedback text and email
     val feedbackText by viewModel.feedbackText.collectAsState(initial = "")
     val userEmail by viewModel.userEmail.collectAsState(initial = "")
-    val context = LocalContext.current
     val submissionError by viewModel.submissionError.collectAsState(initial = null)
     val isSubmitting by viewModel.isSubmitting.collectAsState(initial = false)
 
@@ -109,7 +119,6 @@ fun FeedbackForm(
             Button(
                 onClick = {
                     viewModel.submitFeedback()
-                    Toast.makeText(context, "Thanks for your feedback!", Toast.LENGTH_SHORT).show()
                 },
                 enabled = isEnabled
             ) {

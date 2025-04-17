@@ -1,5 +1,6 @@
 package com.kontinua.readersandroidjetpack.viewmodels
 
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kontinua.readersandroidjetpack.util.APIManager
@@ -45,6 +46,9 @@ class FeedbackViewModel(
     private val _submissionError = MutableStateFlow<String?>(null)
     val submissionError: StateFlow<String?> = _submissionError.asStateFlow()
 
+    private val _showSuccessToast = MutableStateFlow(false)
+    val showSuccessToast: StateFlow<Boolean> = _showSuccessToast.asStateFlow()
+
     /**
      * Shows the feedback dialog
      */
@@ -77,8 +81,12 @@ class FeedbackViewModel(
     }
 
     fun isValidEmail(email: String): Boolean {
-        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+        val emailPattern = Patterns.EMAIL_ADDRESS
         return email.matches(emailPattern.toRegex())
+    }
+
+    fun resetToastTrigger() {
+        _showSuccessToast.value = false
     }
 
     /**
@@ -139,6 +147,7 @@ class FeedbackViewModel(
                     _userEmail.value = ""
                     _feedbackText.value = ""
                     _isShowingFeedbackForm.value = false
+                    _showSuccessToast.value = true
                 } else {
                     // Handle submission failure
                     _submissionError.value = "Failed to submit feedback. Please try again."

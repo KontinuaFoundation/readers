@@ -15,10 +15,10 @@ import kotlinx.coroutines.launch
 
 class CollectionViewModel : ViewModel() {
 
-    private val _Workbook_collectionState = MutableStateFlow<Collection?>(null)
+    private val _collectionState = MutableStateFlow<Collection?>(null)
     private val _workbookState = MutableStateFlow<Workbook?>(null)
 
-    val collectionState: StateFlow<Collection?> = _Workbook_collectionState.asStateFlow()
+    val collectionState: StateFlow<Collection?> = _collectionState.asStateFlow()
     val workbookState: StateFlow<Workbook?> = _workbookState.asStateFlow()
     lateinit var currentWorkbook: WorkbookPreview
     var chapters: List<Chapter> = emptyList()
@@ -40,7 +40,7 @@ class CollectionViewModel : ViewModel() {
     }
 
     private fun updateCollection(newCollection: Collection) {
-        _Workbook_collectionState.value = newCollection
+        _collectionState.value = newCollection
     }
 
     private fun updateWorkbook(workbook: Workbook) {
