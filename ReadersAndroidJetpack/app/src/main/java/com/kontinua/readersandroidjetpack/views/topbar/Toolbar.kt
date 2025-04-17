@@ -20,20 +20,16 @@ import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.util.NavbarManager
-import android.util.Log
-import androidx.compose.material3.*
-import androidx.compose.runtime.LaunchedEffect
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Toolbar(
     timerViewModel: TimerViewModel,
     navbarManager: NavbarManager,
-    currentChapterReferences: List<Reference>, // Use non-nullable from MainScreen derivation
-    currentChapterVideos: List<Video>,         // Use non-nullable from MainScreen derivation
-    onReferenceClick: (Reference) -> Unit,     // Callback for reference clicks
-    onVideoClick: (Video) -> Unit              // Callback for video clicks
+    currentChapterReferences: List<Reference>,
+    currentChapterVideos: List<Video>,
+    onReferenceClick: (Reference) -> Unit,
+    onVideoClick: (Video) -> Unit
 
 ) {
     var showMarkupMenu by remember { mutableStateOf(false) }
@@ -41,10 +37,6 @@ fun Toolbar(
     var showTimerMenu by remember { mutableStateOf(false) }
 
     val hasResources = currentChapterReferences.isNotEmpty() || currentChapterVideos.isNotEmpty()
-
-    LaunchedEffect(currentChapterReferences, currentChapterVideos) {
-        Log.d("ToolbarDebug", "Resources Updated - Videos: ${currentChapterVideos.size}, References: ${currentChapterReferences.size}")
-    }
 
     TopAppBar(
         title = { Text("") },
@@ -95,11 +87,9 @@ fun Toolbar(
             // Resources Button (Text Button)
             TextButton(
                 onClick = {
-                    // Add log to see if click is registered and lists before showing menu
-                    Log.d("ToolbarDebug", "Resources Button Clicked. HasResources: $hasResources, Videos: ${currentChapterVideos.size}, Refs: ${currentChapterReferences.size}")
                     showResourcesMenu = true
                 },
-                enabled = hasResources // Disable if no resources for this chapter
+                enabled = hasResources
             ) {
                 Text("Digital Resources")
             }
@@ -108,14 +98,13 @@ fun Toolbar(
                 onDismissRequest = { showResourcesMenu = false }
             ) {
                 if (currentChapterVideos.isEmpty() && currentChapterReferences.isEmpty()) {
-                    // This block now executes if *both* lists passed in are empty
                     DropdownMenuItem(
                         text = { Text("No resources for this chapter") },
-                        onClick = { showResourcesMenu = false }, // Still allow closing
-                        enabled = false // Non-interactive message
+                        onClick = { showResourcesMenu = false },
+                        enabled = false
                     )
                 } else {
-                    // Display Videos first (if any)
+                    //videos then texts
                     currentChapterVideos.forEach { video ->
                         DropdownMenuItem(
                             text = { Text(video.title) },
@@ -125,7 +114,6 @@ fun Toolbar(
                             }
                         )
                     }
-                    // Display References (if any)
                     currentChapterReferences.forEach { reference ->
                         DropdownMenuItem(
                             text = { Text(reference.title) },
