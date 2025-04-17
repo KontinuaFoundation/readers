@@ -16,6 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
+import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener
+import com.github.barteksc.pdfviewer.listener.OnPageChangeListener
 import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
@@ -48,7 +50,6 @@ fun PDFViewer(modifier: Modifier = Modifier,
             pdfFile = file
         }
     }
-
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
@@ -62,6 +63,18 @@ fun PDFViewer(modifier: Modifier = Modifier,
                         .defaultPage(navbarManager.pageNumber)
                         .pageFling(true)
                         .pageSnap(true)
+                        .onPageChange(object : OnPageChangeListener {
+                          override fun onPageChanged(page: Int, pageCount: Int) {
+                             navbarManager.setPage(page)
+                            navbarManager.setPageCountValue(pageCount)
+                          }
+                        })
+                        // Use the correct load complete listener
+                        .onLoad(object : OnLoadCompleteListener {
+                          override fun loadComplete(nbPages: Int) {
+                            navbarManager.setPage(pdfView.currentPage)
+                          }
+                        })
                         .onPageChange { page, pageCount ->
                             navbarManager.setPage(page)
                             navbarManager.setPageCountValue(pageCount)

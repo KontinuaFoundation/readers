@@ -1,8 +1,10 @@
 package com.kontinua.readersandroidjetpack.viewmodels
 
-import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kontinua.readersandroidjetpack.util.APIManager
+import com.kontinua.readersandroidjetpack.util.NavbarManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +18,9 @@ import kotlinx.coroutines.launch
  * - Feedback text input
  * - Feedback submission logic
  */
-class FeedbackViewModel : ViewModel() {
+class FeedbackViewModel(
+    private val navbarManager: NavbarManager
+) : ViewModel() {
 
     companion object {
         private const val TAG = "FeedbackViewModel"
@@ -33,6 +37,17 @@ class FeedbackViewModel : ViewModel() {
     // State to track user email
     private val _userEmail = MutableStateFlow("")
     val userEmail: StateFlow<String> = _userEmail.asStateFlow()
+
+    // State to track submission state
+    private val _isSubmitting = MutableStateFlow(false)
+    val isSubmitting: StateFlow<Boolean> = _isSubmitting.asStateFlow()
+
+    // State to track submission errors
+    private val _submissionError = MutableStateFlow<String?>(null)
+    val submissionError: StateFlow<String?> = _submissionError.asStateFlow()
+
+    private val _showSuccessToast = MutableStateFlow(false)
+    val showSuccessToast: StateFlow<Boolean> = _showSuccessToast.asStateFlow()
 
     /**
      * Shows the feedback dialog
@@ -65,30 +80,83 @@ class FeedbackViewModel : ViewModel() {
         _feedbackText.value = text
     }
 
+    fun isValidEmail(email: String): Boolean {
+        val emailPattern = Patterns.EMAIL_ADDRESS
+        return email.matches(emailPattern.toRegex())
+    }
+
+    fun resetToastTrigger() {
+        _showSuccessToast.value = false
+    }
+
     /**
      * Submits feedback to the backend
-     * - TODO: Replace with actual API call
-     * - TODO: Handle errors
-     * - TODO: Clear input after successful submission
-     * - TODO: Show success message
-     * - TODO: Validate email
      */
     fun submitFeedback() {
         val email = _userEmail.value
         val feedback = _feedbackText.value
-        if (feedback.isBlank() || email.isBlank()) return
-        viewModelScope.launch {
-            try {
-                // Example: apiService.submitFeedback(feedback)
-                Log.d(TAG, "Feedback submitted from: $email with text: $feedback")
 
-                // Reset state after successful submission
-                _userEmail.value = ""
-                _feedbackText.value = ""
-                _isShowingFeedbackForm.value = false
+        if (feedback.isBlank() || email.isBlank()) {
+            return
+        }
+
+        if (!isValidEmail(email)) {
+            _submissionError.value = "Please enter a valid email address"
+            return
+        }
+
+        val workbookId = navbarManager.collectionVM?.currentWorkbook?.id
+        if (workbookId == null) {
+            return
+        }
+
+        val pageNumber = navbarManager.pageNumber + 1
+
+        val chapter = navbarManager.getCurrentChapter()
+        // Default to chapter number 0 if chapter is null (Prefix etc..)
+        val chapterNumber = chapter?.chapNum ?: 0
+
+        // Get version information from the collection
+        val collection = navbarManager.collectionVM?.collectionState?.value
+        if (collection == null) {
+            return
+        }
+
+        val majorVersion = collection.majorVersion
+        val minorVersion = collection.minorVersion
+        val localization = collection.localization
+
+        viewModelScope.launch {
+            _isSubmitting.value = true
+            _submissionError.value = null
+
+            try {
+                val success = APIManager.submitFeedback(
+                    workbookId = workbookId,
+                    chapterNumber = chapterNumber,
+                    pageNumber = pageNumber,
+                    userEmail = email,
+                    description = feedback,
+                    majorVersion = majorVersion,
+                    minorVersion = minorVersion,
+                    localization = localization
+                )
+
+                if (success) {
+                    // Reset state after successful submission
+                    _userEmail.value = ""
+                    _feedbackText.value = ""
+                    _isShowingFeedbackForm.value = false
+                    _showSuccessToast.value = true
+                } else {
+                    // Handle submission failure
+                    _submissionError.value = "Failed to submit feedback. Please try again."
+                }
             } catch (e: Exception) {
-                // Handle error (in a real app, you might want to show an error message)
-                Log.e(TAG, "Error submitting feedback", e)
+                // Handle error
+                _submissionError.value = "Error: ${e.message}"
+            } finally {
+                _isSubmitting.value = false
             }
         }
     }
