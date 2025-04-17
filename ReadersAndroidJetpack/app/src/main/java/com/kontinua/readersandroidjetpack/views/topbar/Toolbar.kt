@@ -17,8 +17,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
+import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,9 +33,11 @@ fun Toolbar(
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
 
-
     TopAppBar(
-        title = { Text("") },
+        title = {
+            // Add Page Navigation Controls in the Title Area (or Actions)
+            PageSelector(navbarManager)
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             actionIconContentColor = MaterialTheme.colorScheme.onPrimary
         ),

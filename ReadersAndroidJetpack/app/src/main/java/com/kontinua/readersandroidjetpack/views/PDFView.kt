@@ -64,6 +64,7 @@ fun PDFViewer(modifier: Modifier = Modifier,
                         .pageSnap(true)
                         .onPageChange { page, _ ->
                             navbarManager.setPage(page)
+                            navbarManager.setPageCountValue(pageCount)
                         }
                         .onPageScroll { page, offset ->
                             scrollOffset.floatValue = offset

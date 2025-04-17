@@ -41,9 +41,7 @@ SECRET_KEY = "django-insecure-3r+kj$$&^pg-av4%scddw6bjiiufkrrpkh7%0+osn#vi!$6f83
 # That is we will integrate with some AWS services and we will expect some environment variables.
 DEBUG = get_required_env_var("DJANGO_DEBUG") == "True"
 
-
-# EC2 Elastic IP
-ALLOWED_HOSTS = ["18.189.208.93"]
+ALLOWED_HOSTS = [".awsapprunner.com", "localhost", "127.0.0.1"]
 
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
@@ -64,6 +62,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "readers_backend.middleware.HealthCheckMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

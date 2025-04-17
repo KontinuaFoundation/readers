@@ -1,5 +1,6 @@
 package com.kontinua.readersandroidjetpack.util
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +23,9 @@ class NavbarManager {
     var pageNumber by  mutableIntStateOf(0)
 
     var currentWorkbook: String
+
+    var pageCount by mutableIntStateOf(-1)
+        private set
 
     init {
         isChapterVisible = false
@@ -52,11 +56,50 @@ class NavbarManager {
         this.collectionVM = collection
     }
 
+    fun setPageCountValue(newPageCount: Int){
+        pageCount = newPageCount
+    }
+
     fun setPage(newPage: Int){
         pageNumber = newPage
+        updateChapter()
     }
 
     fun setWorkbook(newWorkbook: String){
         currentWorkbook = newWorkbook
+    }
+
+    fun goToNextPage() {
+        if (pageNumber < pageCount) {
+            setPage(pageNumber + 1)
+        }
+    }
+
+    fun goToPreviousPage() {
+        if (pageNumber > 0) {
+            setPage(pageNumber - 1)
+        }
+    }
+
+    fun getCurrentChapter(): Chapter? {
+        return if(currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex) else null
+    }
+
+    fun getAdjustedPage(): String {
+        return (pageNumber + 1).toString()
+    }
+
+    private fun updateChapter() {
+        val startPages = collectionVM?.chapters?.map { it.startPage - 1} ?: emptyList()
+        val index = startPages.binarySearch(pageNumber)
+
+        currentChapterIndex = if (index >= 0) {
+            // pageNumber exactly matches a chapter start page.
+            index
+        } else {
+            // Compute the insertion point: (-index - 1), and then adjust by subtracting 1.
+            // This gives the index of the start page that is immediately less than pageNumber.
+            (-index - 2).coerceIn(-1, startPages.lastIndex)
+        }
     }
 }

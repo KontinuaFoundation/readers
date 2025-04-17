@@ -59,7 +59,6 @@ final class NetworkingService: ObservableObject {
             completion(.failure(NetworkError.invalidURL))
             return
         }
-        
         startLoading()
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
@@ -72,26 +71,22 @@ final class NetworkingService: ObservableObject {
                 DispatchQueue.main.async { completion(.failure(error)) }
                 return
             }
-            
             guard let data = data else {
                 DispatchQueue.main.async { completion(.failure(NetworkError.noData)) }
                 return
             }
-            
             do {
                 
                 let decoder = JSONDecoder()
-                
+
                 let collection = try decoder.decode(Collection.self, from: data)
-                
+
                 let latestCollection = collection
-                
                 DispatchQueue.main.async { completion(.success(latestCollection)) }
             } catch {
                 DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
-        
         task.resume()
     }
 

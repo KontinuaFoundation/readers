@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">ReadersAndroidJetpack</string>
+    <string name="app_name">ReadersAndroidJetpack</string>\
+    <!-- the Chapter number/title as it appears in the sidebar menu buttons for user to select -->
+    <string name="chapter_info">Chapter <xliff:g id="num" example="2">%1$d</xliff:g>: <xliff:g id="title" example="Matter and Energy">%2$s</xliff:g></string>
+    <string name="next_page">Next Page</string>
+    <string name="prev_page">Previous Page</string>
 </resources>
