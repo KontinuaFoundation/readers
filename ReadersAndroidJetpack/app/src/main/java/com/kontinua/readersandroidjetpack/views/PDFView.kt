@@ -12,6 +12,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
+import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener
+import com.github.barteksc.pdfviewer.listener.OnPageChangeListener
 import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
@@ -55,6 +57,19 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager) {
                     }
                     .pageFling(true)
                     .pageSnap(true)
+                    // Use the correct page change listener method
+                    .onPageChange(object : OnPageChangeListener {
+                        override fun onPageChanged(page: Int, pageCount: Int) {
+                            navbarManager.setPage(page)
+                            navbarManager.setPageCountValue(pageCount)
+                        }
+                    })
+                    // Use the correct load complete listener
+                    .onLoad(object : OnLoadCompleteListener {
+                        override fun loadComplete(nbPages: Int) {
+                            navbarManager.setPage(pdfView.currentPage)
+                        }
+                    })
                     .load()
                 pdfView.jumpTo(navbarManager.pageNumber)
             }
