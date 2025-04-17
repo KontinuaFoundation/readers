@@ -117,6 +117,8 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
         for (chapter in chapters){
             Text(chapter.title, modifier = Modifier.clickable {
                 navbarManager.setPage(chapter.startPage - 1)
+                navbarManager.setClicked(true)
+                collectionVM.setWorkbook(collectionVM.currentWorkbook)
                 onClose()
             })
         }

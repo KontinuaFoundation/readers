@@ -3,6 +3,7 @@ package com.kontinua.readersandroidjetpack.views
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,12 +20,17 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPath
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingStore
 
 @Composable
-fun DrawingCanvas(workbookId: String, page: Int, annotationManager: AnnotationManager) {
+fun DrawingCanvas(workbookId: String, page: Int,
+                  annotationManager: AnnotationManager, offset: Float) {
     var savedPaths = remember(workbookId, page) {
         DrawingStore.getPaths(workbookId, page).toMutableStateList()
     }
@@ -32,6 +38,13 @@ fun DrawingCanvas(workbookId: String, page: Int, annotationManager: AnnotationMa
         mutableStateOf<List<Offset>>(emptyList())
     }
 
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val screenWidthPx = with(LocalDensity.current) { screenWidth.toPx() }
+
+    var swipeSpeedMultiplier = 0f
+    var offsetX = -(offset * screenWidthPx * swipeSpeedMultiplier).toInt()
+
+    // Load drawing paths
     LaunchedEffect(workbookId, page) {
         val paths = DrawingStore.getPaths(workbookId, page)
         savedPaths = paths.toMutableStateList()
@@ -57,6 +70,7 @@ fun DrawingCanvas(workbookId: String, page: Int, annotationManager: AnnotationMa
     Canvas(
         modifier = Modifier
             .fillMaxSize()
+            .offset { IntOffset(offsetX, 0)  }
             .then(gestureModifier)
     ) {
         savedPaths.forEach { drawPathLine(it.points) }

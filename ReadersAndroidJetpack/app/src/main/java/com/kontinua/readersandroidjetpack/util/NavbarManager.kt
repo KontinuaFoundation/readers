@@ -1,10 +1,9 @@
 package com.kontinua.readersandroidjetpack.util
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.kontinua.readersandroidjetpack.serialization.Workbook
-import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 class NavbarManager {
@@ -14,17 +13,20 @@ class NavbarManager {
     var isWorkbookVisible by mutableStateOf(false)
         private set
 
+    var chapterClicked by mutableStateOf(false)
+        private set
+
     var collectionVM: CollectionViewModel? by mutableStateOf(null)
         private set
 
-    var pageNumber: Int = 0
-        private set
+    var pageNumber by  mutableIntStateOf(0)
 
     var currentWorkbook: String
 
     init {
         isChapterVisible = false
         isWorkbookVisible = false
+        chapterClicked = false
         collectionVM = null
         currentWorkbook = "Workbook 1"
     }
@@ -35,6 +37,10 @@ class NavbarManager {
 
     fun toggleWorkbookSidebar() {
         isWorkbookVisible = !isWorkbookVisible
+    }
+
+    fun setClicked(boolean: Boolean) {
+        chapterClicked = boolean
     }
 
     fun closeSidebar() {

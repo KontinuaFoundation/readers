@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -27,17 +28,22 @@ fun PDFViewer(modifier: Modifier = Modifier,
               annotationManager: AnnotationManager) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
+    val scrollOffset = remember { mutableFloatStateOf(0f) }
+    val zoomFactor = remember { mutableFloatStateOf(1f) }
 
     // Anything that needs to access workbooks should receive it from this component!
     // i.e. Do NOT instantiate CollectionViewModel anywhere else, pass it down.
     val collectionViewModel: CollectionViewModel = viewModel()
     val collection by collectionViewModel.collectionState.collectAsState()
     val workbook by collectionViewModel.workbookState.collectAsState()
+    var chapterClicked by remember { mutableStateOf(false) }
 
     navbarManager.setCollection(collectionViewModel)
+    chapterClicked = navbarManager.chapterClicked
 
-    LaunchedEffect(workbook) {
+    LaunchedEffect(workbook, chapterClicked) {
         val file = workbook?.let { APIManager.getPDFFromWorkbook(context, it) }
+        navbarManager.setClicked(false)
         if (file != null) {
             pdfFile = file
         }
@@ -56,6 +62,12 @@ fun PDFViewer(modifier: Modifier = Modifier,
                         .defaultPage(navbarManager.pageNumber)
                         .pageFling(true)
                         .pageSnap(true)
+                        .onPageChange { page, _ ->
+                            navbarManager.setPage(page)
+                        }
+                        .onPageScroll { page, offset ->
+                            scrollOffset.floatValue = offset
+                        }
                         .load()
                     pdfView.jumpTo(navbarManager.pageNumber)
                 }
@@ -66,7 +78,8 @@ fun PDFViewer(modifier: Modifier = Modifier,
             DrawingCanvas(
                 workbookId = navbarManager.currentWorkbook,
                 page = navbarManager.pageNumber,
-                annotationManager = annotationManager
+                annotationManager = annotationManager,
+                offset = scrollOffset.floatValue
             )
         }
     }
