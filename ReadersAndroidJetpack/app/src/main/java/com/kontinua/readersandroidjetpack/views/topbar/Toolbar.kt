@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.util.NavbarManager
-import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
