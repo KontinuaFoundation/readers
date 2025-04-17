@@ -76,6 +76,11 @@ class FeedbackViewModel(
         _feedbackText.value = text
     }
 
+    fun isValidEmail(email: String): Boolean {
+        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+        return email.matches(emailPattern.toRegex())
+    }
+
     /**
      * Submits feedback to the backend
      */
@@ -84,6 +89,11 @@ class FeedbackViewModel(
         val feedback = _feedbackText.value
 
         if (feedback.isBlank() || email.isBlank()) {
+            return
+        }
+
+        if (!isValidEmail(email)) {
+            _submissionError.value = "Please enter a valid email address"
             return
         }
 
