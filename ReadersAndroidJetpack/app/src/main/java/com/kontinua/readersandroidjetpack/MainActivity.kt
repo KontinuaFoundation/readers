@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kontinua.readersandroidjetpack.ui.theme.ReadersAndroidJetpackTheme
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModelFactory
@@ -23,10 +24,12 @@ import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
 import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        PDFBoxResourceLoader.init(applicationContext)
         enableEdgeToEdge()
 
         setContent {
@@ -41,6 +44,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     val timerViewModel: TimerViewModel = viewModel()
     val navbarManager = remember { NavbarManager() }
+    val annotationManager = remember { AnnotationManager() }
     val feedbackViewModel: FeedbackViewModel = viewModel(
         factory = FeedbackViewModelFactory(navbarManager)
     )
@@ -49,7 +53,8 @@ fun MainScreen() {
         topBar = {
             Toolbar(
                 timerViewModel = timerViewModel,
-                navbarManager = navbarManager
+                navbarManager = navbarManager,
+                annotationManager = annotationManager
             )
         },
         bottomBar = {
@@ -67,7 +72,7 @@ fun MainScreen() {
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            SidebarWithPDFViewer(navbarManager = navbarManager)
+            SidebarWithPDFViewer(navbarManager = navbarManager, annotationManager = annotationManager)
         }
         FeedbackForm(viewModel = feedbackViewModel)
     }

@@ -7,7 +7,5 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-    <key>UILaunchStoryboardName</key>
-    <string>LaunchScreen</string>
 </dict>
-</plist>s
+</plist>

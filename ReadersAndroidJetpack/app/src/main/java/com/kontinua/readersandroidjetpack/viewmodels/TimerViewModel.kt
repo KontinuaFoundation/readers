@@ -12,41 +12,26 @@ import kotlinx.coroutines.launch
 
 class TimerViewModel : ViewModel() {
     var isTimerRunning by mutableStateOf(false)
-    var timerDuration by mutableLongStateOf(15 * 6 * 1000L)
+    var timerDuration by mutableLongStateOf(15 * 60 * 1000L)
         private set
 
     var timeLeftMillis by mutableLongStateOf(0)
-        private set
-
-    var isTimerFinished by mutableStateOf(false)
         private set
 
     private var timerJob: Job? = null
 
     fun startTimer(initialTimeMillis: Long = timerDuration) {
         timerJob?.cancel()
-        isTimerFinished = false
         timeLeftMillis = initialTimeMillis
         isTimerRunning = true
 
-        if (initialTimeMillis <= 0) {
+        timerJob = CoroutineScope(Dispatchers.Main).launch {
+            while (timeLeftMillis > 0) {
+                delay(100)
+                timeLeftMillis -= 100
+            }
             isTimerRunning = false
             timeLeftMillis = 0
-            return
-        }
-
-        timerJob = CoroutineScope(Dispatchers.Main).launch {
-            while (timeLeftMillis > 0 && isTimerRunning) {
-                delay(100)
-                if (isTimerRunning) {
-                    timeLeftMillis = (timeLeftMillis - 100).coerceAtLeast(0L)
-                }
-            }
-            if (timeLeftMillis <= 0) {
-                isTimerRunning = false
-                isTimerFinished = true
-                timeLeftMillis = 0
-            }
         }
     }
 
@@ -63,7 +48,6 @@ class TimerViewModel : ViewModel() {
         timerJob?.cancel()
         timeLeftMillis = 0
         isTimerRunning = false
-        isTimerFinished = false
     }
 
     fun setDurationAndReset(durationMillis: Long) {

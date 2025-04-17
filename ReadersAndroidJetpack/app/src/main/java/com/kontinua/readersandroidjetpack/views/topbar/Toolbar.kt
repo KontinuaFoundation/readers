@@ -16,7 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 
@@ -25,7 +25,8 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 @Composable
 fun Toolbar(
     timerViewModel: TimerViewModel,
-    navbarManager: NavbarManager
+    navbarManager: NavbarManager,
+    annotationManager: AnnotationManager
 ) {
     var showMarkupMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }
@@ -53,7 +54,7 @@ fun Toolbar(
                 onDismissRequest = { showTimerMenu = false }
             ) {
                 DropdownMenuItem(text = { Text("15 Minutes") }, onClick = {
-                    timerViewModel.setDurationAndReset(15 * 1000L)
+                    timerViewModel.setDurationAndReset(15 * 60 * 1000L)
                     showTimerMenu = false
                 })
                 DropdownMenuItem(text = { Text("20 Minutes") }, onClick = {
@@ -74,9 +75,19 @@ fun Toolbar(
                 expanded = showMarkupMenu,
                 onDismissRequest = { showMarkupMenu = false }
             ) {
-                DropdownMenuItem(text = { Text("Pen") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Highlight") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Eraser") }, onClick = { /* TODO */ })
+                DropdownMenuItem(text = { Text("Pen") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    showMarkupMenu = false})
+                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Eraser") }, onClick = {
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Exit") }, onClick = {
+                    annotationManager.toggleScribble(false)
+                    showMarkupMenu = false
+                })
             }
 
             // Resources Button (Text Button)

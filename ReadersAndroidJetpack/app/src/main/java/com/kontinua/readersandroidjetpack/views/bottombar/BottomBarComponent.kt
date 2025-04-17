@@ -32,15 +32,13 @@ fun BottomBarComponent(
 ) {
     val isTimerRunning = timerViewModel.isTimerRunning
     val timeLeftMillis = timerViewModel.timeLeftMillis
-    val isTimerFinished = timerViewModel.isTimerFinished
-    val showTimerControls = timeLeftMillis > 0 || isTimerFinished
 
     BottomAppBar(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (showTimerControls) {
+            if (timeLeftMillis > 0) {
                 TimerControls(
                     isRunning = isTimerRunning,
                     onPauseResume = {
