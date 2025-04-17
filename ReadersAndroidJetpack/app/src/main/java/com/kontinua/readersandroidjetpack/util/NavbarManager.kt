@@ -92,11 +92,4 @@ class NavbarManager {
             (-index - 2).coerceIn(-1, startPages.lastIndex)
         }
     }
-
-    fun getCurrentChapter(): Chapter? {
-        val chapters = collectionVM?.chapters ?: return null
-
-        // Find the chapter that contains the current page
-        return chapters.findLast { it.startPage <= pageNumber + 1 }
-    }
 }
