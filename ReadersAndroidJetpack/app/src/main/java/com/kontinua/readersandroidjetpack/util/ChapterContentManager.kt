@@ -4,6 +4,7 @@ import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 
+//tbh this whole class might be unncessary, but i do like the fact that it moves some stuff out of mainactivity
 class ChapterContentManager(
     private val navbarManager: NavbarManager
 ) {

@@ -60,14 +60,6 @@ class MainActivity : ComponentActivity() {
         LaunchedEffect(collectionViewModel) {
             navbarManager.setCollection(collectionViewModel)
         }
-
-//        val allChapterReferences: List<List<Reference>> = collectionViewModel.chapters.map { chapter ->
-//            chapter.covers.flatMap { it.references ?: emptyList() }
-//        }
-//
-//        val allChapterVideos: List<List<Video>> = collectionViewModel.chapters.map { chapter ->
-//            chapter.covers.flatMap { it.videos ?: emptyList() }
-//        }
         val chapterContentManager = remember(navbarManager) { // Remember based on navbarManager instance
             ChapterContentManager(
                 navbarManager = navbarManager
@@ -88,14 +80,14 @@ class MainActivity : ComponentActivity() {
         val handleReferenceClick: (Reference) -> Unit = { reference ->
             selectedReference.value = reference
             // TODO: Add logic here if you need to DO something when a reference is clicked
-            // e.g., open a browser, show details
+            // e.g., open a browser, show details (customview in the future)
             Log.d("MainActivity", "Reference clicked: ${reference.title}")
         }
 
         val handleVideoClick: (Video) -> Unit = { video ->
             selectedVideo.value = video
             // TODO: Add logic here if you need to DO something when a video is clicked
-            // e.g., open a video player
+            // e.g., open a video player (customview in the future)
             Log.d("MainActivity", "Video clicked: ${video.title}")
         }
 
@@ -104,6 +96,7 @@ class MainActivity : ComponentActivity() {
                 Toolbar(
                     timerViewModel = timerViewModel,
                     navbarManager = navbarManager,
+                    //now need to pass this stuff to toolbar
                     currentChapterReferences = currentChapterReferences,
                     currentChapterVideos = currentChapterVideos,
                     onReferenceClick = handleReferenceClick,
@@ -125,6 +118,7 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
+                //need to pass collectionview down to sidebar with pdf
                 SidebarWithPDFViewer(navbarManager = navbarManager, collectionViewModel= collectionViewModel)
             }
             FeedbackForm(viewModel = feedbackViewModel)
