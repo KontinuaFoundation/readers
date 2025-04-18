@@ -1,6 +1,4 @@
 package com.kontinua.readersandroidjetpack.util
-
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -18,8 +16,9 @@ class NavbarManager {
     var collectionVM: CollectionViewModel? by mutableStateOf(null)
         private set
 
-    var currentChapterIndex: Int = 0
-        private set
+
+    //molly change, making this mutable
+    var currentChapterIndex by mutableIntStateOf(-1)
 
     var pageNumber by mutableIntStateOf(0)
         private set

@@ -24,6 +24,8 @@ import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerControls
  * 2. Implement click handlers
  * 3. Create corresponding dialogs/screens if needed
  */
+
+
 @Composable
 fun BottomBarComponent(
     feedbackViewModel: FeedbackViewModel,
