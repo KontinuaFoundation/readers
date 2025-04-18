@@ -16,24 +16,37 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.util.NavbarManager
+
+//molly adds
+import com.kontinua.readersandroidjetpack.serialization.Reference
+import com.kontinua.readersandroidjetpack.serialization.Video
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Toolbar(
     timerViewModel: TimerViewModel,
-    navbarManager: NavbarManager
-) {
+    navbarManager: NavbarManager,
+    //molly changes
+    currentChapterReferences: List<Reference>,
+    currentChapterVideos: List<Video>,
+    onReferenceClick: (Reference) -> Unit,
+    onVideoClick: (Video) -> Unit
+
+    ) {
     var showMarkupMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
 
+    //are there any resources? enables or disables the button
+    val hasResources = currentChapterReferences.isNotEmpty() || currentChapterVideos.isNotEmpty()
+
+
     TopAppBar(
         title = {
-            // Add Page Navigation Controls in the Title Area (or Actions)
+            //page navigation stuff in the title area
             PageSelector(navbarManager)
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -53,6 +66,8 @@ fun Toolbar(
                 onDismissRequest = { showTimerMenu = false }
             ) {
                 DropdownMenuItem(text = { Text("15 Minutes") }, onClick = {
+                    //currently set to 15 seconds for testing
+                    // TODO: must be fixed to 15 minutes before deployment
                     timerViewModel.setDurationAndReset(15 * 1000L)
                     showTimerMenu = false
                 })
