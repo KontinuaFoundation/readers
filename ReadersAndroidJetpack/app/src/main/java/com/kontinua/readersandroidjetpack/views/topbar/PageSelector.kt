@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 
+//TODO: when you put in a page number that is not valid, it just jumps to the page its on, or to page 0 if its at the start which does not even exist. this should be handled cleaner.
+
 @Composable
 fun PageSelector(navbarManager: NavbarManager) {
     var pageInputText by remember { mutableStateOf(navbarManager.getAdjustedPage()) }
