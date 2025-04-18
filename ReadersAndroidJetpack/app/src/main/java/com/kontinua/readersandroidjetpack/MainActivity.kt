@@ -32,6 +32,8 @@ import androidx.compose.runtime.LaunchedEffect
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +74,14 @@ class MainActivity : ComponentActivity() {
             )
         }
 
+        val currentChapterReferences by remember(navbarManager.currentChapterIndex) {
+            derivedStateOf { chapterContentManager.getReferencesForCurrentChapter() }
+        }
+
+        val currentChapterVideos by remember(navbarManager.currentChapterIndex) {
+            derivedStateOf { chapterContentManager.getVideosForCurrentChapter() }
+        }
+
         val selectedReference = remember { mutableStateOf<Reference?>(null) }
         val selectedVideo = remember { mutableStateOf<Video?>(null) }
 
@@ -94,8 +104,8 @@ class MainActivity : ComponentActivity() {
                 Toolbar(
                     timerViewModel = timerViewModel,
                     navbarManager = navbarManager,
-                    currentChapterReferences = chapterContentManager.currentReferences,
-                    currentChapterVideos = chapterContentManager.currentVideos,
+                    currentChapterReferences = currentChapterReferences,
+                    currentChapterVideos = currentChapterVideos,
                     onReferenceClick = handleReferenceClick,
                     onVideoClick = handleVideoClick,
                 )

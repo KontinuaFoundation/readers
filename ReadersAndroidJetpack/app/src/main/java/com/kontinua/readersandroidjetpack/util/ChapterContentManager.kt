@@ -1,31 +1,28 @@
 package com.kontinua.readersandroidjetpack.util
+
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
+import com.kontinua.readersandroidjetpack.serialization.Chapter
 
-// No longer needs allReferences/allVideos in constructor
 class ChapterContentManager(
     private val navbarManager: NavbarManager
 ) {
-    // Calculate current references on demand
-    val currentReferences: List<Reference>
-        get() {
-            // Get the current chapters list from the CollectionViewModel via NavbarManager
-            val chapters = navbarManager.collectionVM?.chapters ?: emptyList()
-            // Get the specific chapter based on the current index
-            val currentChapter = chapters.getOrNull(navbarManager.currentChapterIndex)
-            // Extract references from that chapter, or return empty list if chapter/references are null/empty
-            return currentChapter?.covers?.flatMap { it.references ?: emptyList() } ?: emptyList()
-        }
+    // Helper function to get the current chapter based on navbar state
+    private fun getCurrentChapter(): Chapter? {
+        val chapters = navbarManager.collectionVM?.chapters ?: return null
+        val index = navbarManager.currentChapterIndex
+        return chapters.getOrNull(index)
+    }
 
-    // Calculate current videos on demand
-    val currentVideos: List<Video>
-        get() {
-            // Get the current chapters list from the CollectionViewModel via NavbarManager
-            val chapters = navbarManager.collectionVM?.chapters ?: emptyList()
-            // Get the specific chapter based on the current index
-            val currentChapter = chapters.getOrNull(navbarManager.currentChapterIndex)
-            // Extract videos from that chapter, or return empty list if chapter/videos are null/empty
-            return currentChapter?.covers?.flatMap { it.videos ?: emptyList() } ?: emptyList()
-        }
+    // Function to calculate references for the current chapter
+    fun getReferencesForCurrentChapter(): List<Reference> {
+        val currentChapter = getCurrentChapter()
+        return currentChapter?.covers?.flatMap { it.references ?: emptyList() } ?: emptyList()
+    }
+
+    // Function to calculate videos for the current chapter
+    fun getVideosForCurrentChapter(): List<Video> {
+        val currentChapter = getCurrentChapter()
+        return currentChapter?.covers?.flatMap { it.videos ?: emptyList() } ?: emptyList()
+    }
 }
-

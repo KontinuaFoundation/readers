@@ -1,5 +1,4 @@
 package com.kontinua.readersandroidjetpack.views
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,12 +17,10 @@ import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
-
 @Composable
 fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
-
     val collection by collectionViewModel.collectionState.collectAsState()
     val workbook by collectionViewModel.workbookState.collectAsState()
     navbarManager.setCollection(collectionViewModel)
@@ -54,18 +51,12 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, colle
                     .pageFling(true)
                     .pageSnap(true)
                     // Use the correct page change listener method
-                    .onPageChange(object : OnPageChangeListener {
-                        override fun onPageChanged(page: Int, pageCount: Int) {
-                            navbarManager.setPage(page)
-                            navbarManager.setPageCountValue(pageCount)
-                        }
-                    })
+                    .onPageChange { page, pageCount ->
+                        navbarManager.setPage(page)
+                        navbarManager.setPageCountValue(pageCount)
+                    }
                     // Use the correct load complete listener
-                    .onLoad(object : OnLoadCompleteListener {
-                        override fun loadComplete(nbPages: Int) {
-                            navbarManager.setPage(pdfView.currentPage)
-                        }
-                    })
+                    .onLoad { navbarManager.setPage(pdfView.currentPage) }
                     .load()
                 pdfView.jumpTo(navbarManager.pageNumber)
             }
@@ -73,6 +64,3 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, colle
     )
     pdfFile = null
 }
-
-
-
