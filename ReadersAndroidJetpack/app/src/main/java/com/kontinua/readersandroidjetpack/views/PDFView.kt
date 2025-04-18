@@ -14,6 +14,9 @@ import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
+
+//TODO: pages are recomposing as they change, making for messy swiping.
+
 @Composable
 fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
     val context = LocalContext.current
