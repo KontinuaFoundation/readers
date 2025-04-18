@@ -95,16 +95,48 @@ fun Toolbar(
             }
 
             // Resources Button (Text Button)
-            TextButton(onClick = { showResourcesMenu = true }) {
+            TextButton(
+                onClick = {
+                    showResourcesMenu = true
+                },
+                //only on if there are resources
+                enabled = hasResources
+            ) {
                 Text("Digital Resources")
             }
             DropdownMenu(
                 expanded = showResourcesMenu,
                 onDismissRequest = { showResourcesMenu = false }
-            ) {
-                DropdownMenuItem(text = { Text("Article") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Video") }, onClick = { /* TODO */ })
+            )
+            {
+                //if there are no resources. should not dropdown, but if it does for some reason then it will just say no resources
+                if (currentChapterVideos.isEmpty() && currentChapterReferences.isEmpty()) {
+                    DropdownMenuItem(
+                        text = { Text("No resources for this chapter") },
+                        onClick = { showResourcesMenu = false },
+                        enabled = false
+                    )
+                } else {
+                    currentChapterVideos.forEach { video ->
+                        DropdownMenuItem(
+                            text = { Text(video.title) },
+                            onClick = {
+                                onVideoClick(video)
+                                showResourcesMenu = false
+                            }
+                        )
+                    }
+                    currentChapterReferences.forEach { reference ->
+                        DropdownMenuItem(
+                            text = { Text(reference.title) },
+                            onClick = {
+                                onReferenceClick(reference)
+                                showResourcesMenu = false
+                            }
+                        )
+                    }
+                }
             }
-        }
-    )
+}
+)
 }
