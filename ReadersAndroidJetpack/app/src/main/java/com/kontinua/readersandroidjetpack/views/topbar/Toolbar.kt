@@ -30,8 +30,8 @@ fun Toolbar(
     timerViewModel: TimerViewModel,
     navbarManager: NavbarManager,
     //molly changes
-    currentChapterReferences: List<Reference>,
-    currentChapterVideos: List<Video>,
+    currentChapterReferences: Any,
+    currentChapterVideos: Any,
     onReferenceClick: (Reference) -> Unit,
     onVideoClick: (Video) -> Unit
 
@@ -40,8 +40,14 @@ fun Toolbar(
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
 
+    val references = currentChapterReferences as? List<Reference> ?: emptyList()
+    val videos = currentChapterVideos as? List<Video> ?: emptyList()
+
+//    println("References size: ${references.size}")
+//    println("Videos size: ${videos.size}")
+
     //are there any resources? enables or disables the button
-    val hasResources = currentChapterReferences.isNotEmpty() || currentChapterVideos.isNotEmpty()
+    val hasResources = references.isNotEmpty() || videos.isNotEmpty()
 
 
     TopAppBar(
@@ -110,14 +116,14 @@ fun Toolbar(
             )
             {
                 //if there are no resources. should not dropdown, but if it does for some reason then it will just say no resources
-                if (currentChapterVideos.isEmpty() && currentChapterReferences.isEmpty()) {
+                if (videos.isEmpty() && references.isEmpty()) {
                     DropdownMenuItem(
                         text = { Text("No resources for this chapter") },
                         onClick = { showResourcesMenu = false },
                         enabled = false
                     )
                 } else {
-                    currentChapterVideos.forEach { video ->
+                    videos.forEach { video ->
                         DropdownMenuItem(
                             text = { Text(video.title) },
                             onClick = {
@@ -126,7 +132,7 @@ fun Toolbar(
                             }
                         )
                     }
-                    currentChapterReferences.forEach { reference ->
+                    references.forEach { reference ->
                         DropdownMenuItem(
                             text = { Text(reference.title) },
                             onClick = {
