@@ -10,9 +10,10 @@ class ChapterContentManager(
 ) {
     // Helper function to get the current chapter based on navbar state
     private fun getCurrentChapter(): Chapter? {
-        val chapters = navbarManager.collectionVM?.chapters ?: return null
-        val index = navbarManager.currentChapterIndex
-        return chapters.getOrNull(index)
+        return navbarManager.getCurrentChapter();
+//        val chapters = navbarManager.collectionVM?.chapters ?: return null
+//        val index = navbarManager.currentChapterIndex
+//        return chapters.getOrNull(index)
     }
 
     // Function to calculate references for the current chapter

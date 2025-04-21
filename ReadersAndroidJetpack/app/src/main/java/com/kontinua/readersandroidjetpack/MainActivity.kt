@@ -25,8 +25,6 @@ import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
 import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
-
-//new molly imports
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import androidx.compose.runtime.LaunchedEffect
 import com.kontinua.readersandroidjetpack.serialization.Reference
@@ -34,6 +32,8 @@ import com.kontinua.readersandroidjetpack.serialization.Video
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+
+//TODO: add a loading screen of some sort while the PDF is getting fetched
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,12 +55,11 @@ class MainActivity : ComponentActivity() {
             factory = FeedbackViewModelFactory(navbarManager)
         )
 
-        //molly changes
         val collectionViewModel: CollectionViewModel = viewModel()
         LaunchedEffect(collectionViewModel) {
             navbarManager.setCollection(collectionViewModel)
         }
-        val chapterContentManager = remember(navbarManager) { // Remember based on navbarManager instance
+        val chapterContentManager = remember(navbarManager) {
             ChapterContentManager(
                 navbarManager = navbarManager
             )
