@@ -16,24 +16,43 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.util.NavbarManager
+
+//molly adds
+import com.kontinua.readersandroidjetpack.serialization.Reference
+import com.kontinua.readersandroidjetpack.serialization.Video
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Toolbar(
     timerViewModel: TimerViewModel,
-    navbarManager: NavbarManager
-) {
+    navbarManager: NavbarManager,
+    //molly changes
+    currentChapterReferences: Any,
+    currentChapterVideos: Any,
+    onReferenceClick: (Reference) -> Unit,
+    onVideoClick: (Video) -> Unit
+
+    ) {
     var showMarkupMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
 
+    val references = currentChapterReferences as? List<Reference> ?: emptyList()
+    val videos = currentChapterVideos as? List<Video> ?: emptyList()
+
+//    println("References size: ${references.size}")
+//    println("Videos size: ${videos.size}")
+
+    //are there any resources? enables or disables the button
+    val hasResources = references.isNotEmpty() || videos.isNotEmpty()
+
+
     TopAppBar(
         title = {
-            // Add Page Navigation Controls in the Title Area (or Actions)
+            //page navigation stuff in the title area
             PageSelector(navbarManager)
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -53,6 +72,8 @@ fun Toolbar(
                 onDismissRequest = { showTimerMenu = false }
             ) {
                 DropdownMenuItem(text = { Text("15 Minutes") }, onClick = {
+                    //currently set to 15 seconds for testing
+                    // TODO: must be fixed to 15 minutes before deployment
                     timerViewModel.setDurationAndReset(15 * 1000L)
                     showTimerMenu = false
                 })
@@ -80,16 +101,48 @@ fun Toolbar(
             }
 
             // Resources Button (Text Button)
-            TextButton(onClick = { showResourcesMenu = true }) {
+            TextButton(
+                onClick = {
+                    showResourcesMenu = true
+                },
+                //only on if there are resources
+                enabled = hasResources
+            ) {
                 Text("Digital Resources")
             }
             DropdownMenu(
                 expanded = showResourcesMenu,
                 onDismissRequest = { showResourcesMenu = false }
-            ) {
-                DropdownMenuItem(text = { Text("Article") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Video") }, onClick = { /* TODO */ })
+            )
+            {
+                //if there are no resources. should not dropdown, but if it does for some reason then it will just say no resources
+                if (videos.isEmpty() && references.isEmpty()) {
+                    DropdownMenuItem(
+                        text = { Text("No resources for this chapter") },
+                        onClick = { showResourcesMenu = false },
+                        enabled = false
+                    )
+                } else {
+                    videos.forEach { video ->
+                        DropdownMenuItem(
+                            text = { Text(video.title) },
+                            onClick = {
+                                onVideoClick(video)
+                                showResourcesMenu = false
+                            }
+                        )
+                    }
+                    references.forEach { reference ->
+                        DropdownMenuItem(
+                            text = { Text(reference.title) },
+                            onClick = {
+                                onReferenceClick(reference)
+                                showResourcesMenu = false
+                            }
+                        )
+                    }
+                }
             }
-        }
-    )
+}
+)
 }
