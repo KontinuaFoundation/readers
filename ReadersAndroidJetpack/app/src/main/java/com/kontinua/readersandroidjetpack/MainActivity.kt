@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,6 +33,10 @@ import com.kontinua.readersandroidjetpack.serialization.Video
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+
+//molly updates
+import androidx.compose.runtime.setValue // Import setValue
+import com.kontinua.readersandroidjetpack.views.ResourceOverlayView // Import the new overlay view
 
 //TODO: add a loading screen of some sort while the PDF is getting fetched
 
@@ -76,51 +81,66 @@ class MainActivity : ComponentActivity() {
         val selectedReference = remember { mutableStateOf<Reference?>(null) }
         val selectedVideo = remember { mutableStateOf<Video?>(null) }
 
+        //molly new
+        var overlayContent by remember { mutableStateOf<Any?>(null) }
+
         val handleReferenceClick: (Reference) -> Unit = { reference ->
-            selectedReference.value = reference
-            // TODO: Add logic here if you need to DO something when a reference is clicked
-            // e.g., open a browser, show details (customview in the future)
-            Log.d("MainActivity", "Reference clicked: ${reference.title}")
+//            Log.d("MainActivity", "Reference clicked: ${reference.title}, URL: ${reference.url}")
+            overlayContent = reference // Set the state to show overlay with this reference
         }
 
         val handleVideoClick: (Video) -> Unit = { video ->
-            selectedVideo.value = video
-            // TODO: Add logic here if you need to DO something when a video is clicked
-            // e.g., open a video player (customview in the future)
+            // Assuming video object has a 'url' property. Adjust if necessary.
             Log.d("MainActivity", "Video clicked: ${video.title}")
+            overlayContent = video // Set the state to show overlay with this video
         }
 
-        Scaffold(
-            topBar = {
-                Toolbar(
-                    timerViewModel = timerViewModel,
-                    navbarManager = navbarManager,
-                    //now need to pass this stuff to toolbar
-                    currentChapterReferences = currentChapterReferences,
-                    currentChapterVideos = currentChapterVideos,
-                    onReferenceClick = handleReferenceClick,
-                    onVideoClick = handleVideoClick,
-                )
-            },
-            bottomBar = {
-                Column {
-                    // Timer progress indicator above the bottom bar
-                    TimerProgressIndicator(timerViewModel = timerViewModel)
+        // --- Callback to dismiss the overlay ---
+        val dismissOverlay: () -> Unit = {
+            overlayContent = null
+        }
+        Box(modifier = Modifier.fillMaxSize()) { // Use Box to allow overlaying
+            Scaffold(
+                topBar = {
+                    Toolbar(
+                        timerViewModel = timerViewModel,
+                        navbarManager = navbarManager,
+                        //now need to pass this stuff to toolbar
+                        currentChapterReferences = currentChapterReferences,
+                        currentChapterVideos = currentChapterVideos,
+                        onReferenceClick = handleReferenceClick,
+                        onVideoClick = handleVideoClick,
+                    )
+                },
+                bottomBar = {
+                    Column {
+                        // Timer progress indicator above the bottom bar
+                        TimerProgressIndicator(timerViewModel = timerViewModel)
 
-                    // Unified bottom bar with timer controls and feedback button
-                    BottomBarComponent(
-                        feedbackViewModel = feedbackViewModel,
-                        timerViewModel = timerViewModel
+                        // Unified bottom bar with timer controls and feedback button
+                        BottomBarComponent(
+                            feedbackViewModel = feedbackViewModel,
+                            timerViewModel = timerViewModel
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) { innerPadding ->
+                Column(modifier = Modifier.padding(innerPadding)) {
+                    //need to pass collectionview down to sidebar with pdf
+                    SidebarWithPDFViewer(
+                        navbarManager = navbarManager,
+                        collectionViewModel = collectionViewModel
                     )
                 }
-            },
-            modifier = Modifier.fillMaxSize()
-        ) { innerPadding ->
-            Column(modifier = Modifier.padding(innerPadding)) {
-                //need to pass collectionview down to sidebar with pdf
-                SidebarWithPDFViewer(navbarManager = navbarManager, collectionViewModel= collectionViewModel)
+                FeedbackForm(viewModel = feedbackViewModel)
             }
-            FeedbackForm(viewModel = feedbackViewModel)
         }
+            if (overlayContent != null) {
+                ResourceOverlayView(
+                    content = overlayContent,
+                    onDismissRequest = dismissOverlay // Pass the dismiss function
+                )
+            }
     }
 }
