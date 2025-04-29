@@ -4,10 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kontinua.readersandroidjetpack.serialization.Chapter
-import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.serialization.Collection
 import com.kontinua.readersandroidjetpack.serialization.Workbook
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
+import com.kontinua.readersandroidjetpack.util.APIManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +36,6 @@ class CollectionViewModel : ViewModel() {
             // Default to the first workbook for now...
             setWorkbook(latestCollection.workbooks.first())
         }
-
     }
 
     private fun updateCollection(newCollection: Collection) {
@@ -51,7 +50,6 @@ class CollectionViewModel : ViewModel() {
     }
 
     fun setWorkbook(preview: WorkbookPreview) {
-
         /*
         Sets the current workbook by fetching the workbook based on its preview.
         Previews should come from collection.workbooks
@@ -68,7 +66,6 @@ class CollectionViewModel : ViewModel() {
             currentWorkbook = preview
             chapters = workbook.chapters
             updateWorkbook(workbook)
-
         }
     }
 }

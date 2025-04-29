@@ -20,7 +20,6 @@ fun TimerControls(
     onRestart: () -> Unit,
     onCancel: () -> Unit
 ) {
-
     // TODO: icon colors must be changed to match iOS before deployment
     Row(modifier = Modifier.padding(end = 8.dp)) {
         IconButton(onClick = onPauseResume) {

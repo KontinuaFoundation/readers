@@ -35,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 
-//TODO: when you put in a page number that is not valid, it just jumps to the page its on minus one, or to page 0 if its at the start which does not even exist. this should be handled cleaner.
-//TODO: keyboard does not fully pop up when entering a page number, and i think it should.
+// TODO: when you put in a page number that is not valid, it just jumps to the page its on minus one, or to page 0 if its at the start which does not even exist. this should be handled cleaner.
+// TODO: keyboard does not fully pop up when entering a page number, and i think it should.
 
 @Composable
 fun PageSelector(navbarManager: NavbarManager) {
@@ -77,8 +77,11 @@ fun PageSelector(navbarManager: NavbarManager) {
                 .width(48.dp)
                 .border(
                     width = 1.dp,
-                    color = if (isFocused) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.outline,
+                    color = if (isFocused) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outline
+                    },
                     shape = RoundedCornerShape(4.dp)
                 )
                 .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -131,8 +134,6 @@ fun PageSelector(navbarManager: NavbarManager) {
             )
         }
     }
-
-
 }
 
 private fun resolvePageNumber(
@@ -149,7 +150,7 @@ private fun resolvePageNumber(
         // Check if the new page is within the valid range (0 to pageCount-1)
         if (newPage in 0 until pageCount) {
             navbarManager.setPage(newPage)
-            //onResult(newPage)
+            // onResult(newPage)
         } else {
             // Out of range, revert to the current page
             onResult(currentPage)

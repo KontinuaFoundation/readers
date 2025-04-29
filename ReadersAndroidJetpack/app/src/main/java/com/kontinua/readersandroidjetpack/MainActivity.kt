@@ -11,12 +11,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kontinua.readersandroidjetpack.serialization.Reference
+import com.kontinua.readersandroidjetpack.serialization.Video
 import com.kontinua.readersandroidjetpack.ui.theme.ReadersAndroidJetpackTheme
 import com.kontinua.readersandroidjetpack.util.ChapterContentManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModelFactory
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
@@ -25,15 +32,8 @@ import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
 import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
-import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
-import androidx.compose.runtime.LaunchedEffect
-import com.kontinua.readersandroidjetpack.serialization.Reference
-import com.kontinua.readersandroidjetpack.serialization.Video
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 
-//TODO: add a loading screen of some sort while the PDF is getting fetched
+// TODO: add a loading screen of some sort while the PDF is getting fetched
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,11 +95,11 @@ class MainActivity : ComponentActivity() {
                 Toolbar(
                     timerViewModel = timerViewModel,
                     navbarManager = navbarManager,
-                    //now need to pass this stuff to toolbar
+                    // now need to pass this stuff to toolbar
                     currentChapterReferences = currentChapterReferences,
                     currentChapterVideos = currentChapterVideos,
                     onReferenceClick = handleReferenceClick,
-                    onVideoClick = handleVideoClick,
+                    onVideoClick = handleVideoClick
                 )
             },
             bottomBar = {
@@ -117,8 +117,8 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
-                //need to pass collectionview down to sidebar with pdf
-                SidebarWithPDFViewer(navbarManager = navbarManager, collectionViewModel= collectionViewModel)
+                // need to pass collectionview down to sidebar with pdf
+                SidebarWithPDFViewer(navbarManager = navbarManager, collectionViewModel = collectionViewModel)
             }
             FeedbackForm(viewModel = feedbackViewModel)
         }

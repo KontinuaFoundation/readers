@@ -15,7 +15,7 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
-//TODO: pages are recomposing as they change, making for messy swiping.
+// TODO: pages are recomposing as they change, making for messy swiping.
 
 @Composable
 fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
@@ -43,7 +43,7 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, colle
                     .swipeHorizontal(true)
                     .enableDoubletap(true)
                     .defaultPage(navbarManager.pageNumber)
-                    .onPageChange{ page, pageCount ->
+                    .onPageChange { page, pageCount ->
                         navbarManager.setPage(page)
                         navbarManager.setPageCountValue(pageCount)
                     }
