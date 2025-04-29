@@ -47,6 +47,10 @@ ktlint {
     reporters {
         reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
     }
+    filter {
+        exclude("**/test/**")
+        exclude("**/androidTest/**")
+    }
 }
 
 dependencies {
