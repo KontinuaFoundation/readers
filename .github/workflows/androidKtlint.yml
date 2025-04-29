@@ -44,16 +44,16 @@ jobs:
           cache: "gradle"
 
       #Step 5: Grant permissions
-      - name: Grant execute permission for gradlew
-        if: steps.cache-ktlint.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
-        run: chmod +x ./ReadersAndroidJetpack/gradlew
+      # - name: Grant execute permission for gradlew
+      #  if: steps.cache-ktlint.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
+      #  run: chmod +x ./ReadersAndroidJetpack/gradlew
 
       #Step 6: Run ktlint check
       - name: Run ktlint checks
         if: steps.cache-ktlint.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
         working-directory: ./ReadersAndroidJetpack
         run: |
-          ./gradlew ktlintCheck --stacktrace
+          ./gradlew ktlintCheck
           mkdir -p ../.cache/android-ktlint
           echo "Ktlint check passed at $(date)" > ../.cache/android-ktlint/result
 
