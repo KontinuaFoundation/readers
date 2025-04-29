@@ -97,7 +97,7 @@ fun ResourceOverlayView(
                                 ViewGroup.LayoutParams.MATCH_PARENT
                             )
                             webViewClient = WebViewClient()
-                            //needs to be enabled for the videos to be able to play
+                            // needs to be enabled for the videos to be able to play
                             settings.javaScriptEnabled = true
                             loadUrl(url)
                         }

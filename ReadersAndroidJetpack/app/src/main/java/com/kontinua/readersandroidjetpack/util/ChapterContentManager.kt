@@ -10,7 +10,7 @@ class ChapterContentManager(
 ) {
     // Helper function to get the current chapter based on navbar state
     private fun getCurrentChapter(): Chapter? {
-        return navbarManager.getCurrentChapter();
+        return navbarManager.getCurrentChapter()
     }
 
     // Function to calculate references for the current chapter

@@ -2,7 +2,6 @@
 package com.kontinua.readersandroidjetpack
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,6 +16,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kontinua.readersandroidjetpack.serialization.Reference
@@ -28,22 +28,14 @@ import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModelFactory
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
+import com.kontinua.readersandroidjetpack.views.ResourceOverlayView
 import com.kontinua.readersandroidjetpack.views.SidebarWithPDFViewer
 import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
 import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
-import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
-import androidx.compose.runtime.LaunchedEffect
-import com.kontinua.readersandroidjetpack.serialization.Reference
-import com.kontinua.readersandroidjetpack.serialization.Video
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import com.kontinua.readersandroidjetpack.views.ResourceOverlayView
 
-//TODO: add a loading screen of some sort while the PDF is getting fetched
+// TODO: add a loading screen of some sort while the PDF is getting fetched
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,7 +98,7 @@ class MainActivity : ComponentActivity() {
                         currentChapterReferences = currentChapterReferences,
                         currentChapterVideos = currentChapterVideos,
                         onReferenceClick = handleReferenceClick,
-                        onVideoClick = handleVideoClick,
+                        onVideoClick = handleVideoClick
                     )
                 },
                 bottomBar = {
@@ -124,7 +116,7 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize()
             ) { innerPadding ->
                 Column(modifier = Modifier.padding(innerPadding)) {
-                    //need to pass collectionview down to sidebar with pdf
+                    // need to pass collectionview down to sidebar with pdf
                     SidebarWithPDFViewer(
                         navbarManager = navbarManager,
                         collectionViewModel = collectionViewModel
@@ -133,11 +125,11 @@ class MainActivity : ComponentActivity() {
                 FeedbackForm(viewModel = feedbackViewModel)
             }
         }
-            if (overlayContent != null) {
-                ResourceOverlayView(
-                    content = overlayContent,
-                    onDismissRequest = dismissOverlay // Pass the dismiss function
-                )
-            }
+        if (overlayContent != null) {
+            ResourceOverlayView(
+                content = overlayContent,
+                onDismissRequest = dismissOverlay // Pass the dismiss function
+            )
+        }
     }
 }

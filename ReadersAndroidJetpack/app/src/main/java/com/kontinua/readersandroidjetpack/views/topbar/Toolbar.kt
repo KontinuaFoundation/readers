@@ -16,10 +16,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
-import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
+import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +39,7 @@ fun Toolbar(
     val references = currentChapterReferences as? List<Reference> ?: emptyList()
     val videos = currentChapterVideos as? List<Video> ?: emptyList()
 
-    //are there any resources? enables or disables the button
+    // are there any resources? enables or disables the button
     val hasResources = references.isNotEmpty() || videos.isNotEmpty()
 
     TopAppBar(
