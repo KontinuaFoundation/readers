@@ -53,7 +53,7 @@ jobs:
         if: steps.cache-ktlint.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
         working-directory: ./ReadersAndroidJetpack
         run: |
-          ./gradlew ktlintCheck
+          ./gradlew ktlintCheck --stacktrace
           mkdir -p ../.cache/android-ktlint
           echo "Ktlint check passed at $(date)" > ../.cache/android-ktlint/result
 
