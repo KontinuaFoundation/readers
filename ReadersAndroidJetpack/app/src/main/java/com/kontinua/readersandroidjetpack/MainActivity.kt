@@ -53,19 +53,21 @@ class MainActivity : ComponentActivity() {
     fun MainScreen() {
         val timerViewModel: TimerViewModel = viewModel()
         val navbarManager = remember { NavbarManager() }
-        val feedbackViewModel: FeedbackViewModel = viewModel(
-            factory = FeedbackViewModelFactory(navbarManager)
-        )
+        val feedbackViewModel: FeedbackViewModel =
+            viewModel(
+                factory = FeedbackViewModelFactory(navbarManager)
+            )
 
         val collectionViewModel: CollectionViewModel = viewModel()
         LaunchedEffect(collectionViewModel) {
             navbarManager.setCollection(collectionViewModel)
         }
-        val chapterContentManager = remember(navbarManager) {
-            ChapterContentManager(
-                navbarManager = navbarManager
-            )
-        }
+        val chapterContentManager =
+            remember(navbarManager) {
+                ChapterContentManager(
+                    navbarManager = navbarManager
+                )
+            }
 
         val currentChapterReferences by remember(navbarManager.currentChapterIndex) {
             derivedStateOf { chapterContentManager.getReferencesForCurrentChapter() }
