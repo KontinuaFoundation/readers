@@ -101,7 +101,6 @@ object APIManager {
     suspend fun getWorkbook(
         preview: WorkbookPreview,
         dispatcher: CoroutineDispatcher = Dispatchers.IO
-
     ): Workbook? {
         val adapter = MOSHI.adapter(Workbook::class.java)
 
@@ -141,24 +140,27 @@ object APIManager {
         Log.d("APIManager", "Version: $majorVersion.$minorVersion")
         Log.d("APIManager", "Localization: $localization")
 
-        val json = JSONObject().apply {
-            put("workbook_id", workbookId)
-            put("chapter_number", chapterNumber)
-            put("page_number", pageNumber)
-            put("user_email", userEmail)
-            put("description", description)
-            put("major_version", majorVersion)
-            put("minor_version", minorVersion)
-            put("localization", localization)
-        }
+        val json =
+            JSONObject().apply {
+                put("workbook_id", workbookId)
+                put("chapter_number", chapterNumber)
+                put("page_number", pageNumber)
+                put("user_email", userEmail)
+                put("description", description)
+                put("major_version", majorVersion)
+                put("minor_version", minorVersion)
+                put("localization", localization)
+            }
 
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
         Log.d("APIManager", "Building request...")
-        val request = Request.Builder()
-            .url(feedbackUrl)
-            .post(requestBody)
-            .build()
+        val request =
+            Request
+                .Builder()
+                .url(feedbackUrl)
+                .post(requestBody)
+                .build()
 
         Log.d("APIManager", "Request: ${request.method} ${request.url}")
 
@@ -190,10 +192,10 @@ object APIManager {
             }
         }
     }
+
     suspend fun getPDFFromWorkbook(
         context: android.content.Context,
         workbook: Workbook,
-
         dispatcher: CoroutineDispatcher = Dispatchers.IO
     ): File? {
         /*
