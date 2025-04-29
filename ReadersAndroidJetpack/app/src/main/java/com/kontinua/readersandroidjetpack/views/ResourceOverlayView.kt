@@ -1,5 +1,6 @@
 package com.kontinua.readersandroidjetpack.views
 
+import android.annotation.SuppressLint
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -8,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -15,21 +17,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 
+@SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResourceOverlayView(
     content: Any?, // Can be Reference or Video
     onDismissRequest: () -> Unit
 ) {
-    // Determine URL and Title based on content type
     val url: String? = when (content) {
-        is Reference -> content.link // Accesses Reference.url directly
-        is Video -> content.link     // Accesses Video.url directly (assuming it exists)
+        is Reference -> content.link
+        is Video -> content.link
         else -> null
     }
     val title: String = when (content) {
@@ -45,7 +46,6 @@ fun ResourceOverlayView(
         return
     }
 
-    // Semi-transparent background overlay to catch dismiss clicks
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -55,17 +55,17 @@ fun ResourceOverlayView(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onDismissRequest() },
-        contentAlignment = Alignment.Center // Center the card
+        contentAlignment = Alignment.Center
     ) {
         // Prevent clicks on the card from propagating to the background dismiss
         Card(
             modifier = Modifier
-                .fillMaxWidth(0.9f) // Take 90% of width
-                .fillMaxHeight(0.85f) // Take 85% of height
-                .clickable( // Add this empty clickable to consume clicks
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(0.85f)
+                .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
-                ) {}, // Empty lambda consumes the click
+                ) {},
             shape = MaterialTheme.shapes.large
         ) {
             Column {
@@ -80,32 +80,30 @@ fun ResourceOverlayView(
                     },
                     navigationIcon = {
                         IconButton(onClick = onDismissRequest) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Close Resource")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Close Resource")
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant // Or other appropriate color
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
 
                 // WebView to display the content
                 AndroidView(
-                    modifier = Modifier.fillMaxSize(), // Fill remaining space in the Card
+                    modifier = Modifier.fillMaxSize(),
                     factory = { context ->
                         WebView(context).apply {
                             layoutParams = ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.MATCH_PARENT
                             )
-                            webViewClient = WebViewClient() // Basic WebViewClient
-//                            settings.javaScriptEnabled = true // Enable JS if needed
+                            webViewClient = WebViewClient()
+                            //needs to be enabled for the videos to be able to play
+                            settings.javaScriptEnabled = true
                             loadUrl(url)
                         }
                     },
                     update = { webView ->
-                        // Can update settings or reload URL if needed,
-                        // but typically factory is sufficient for initial load.
-                        // Check if URL changed (though unlikely with this state management)
                         if (webView.originalUrl != url) {
                             webView.loadUrl(url)
                         }

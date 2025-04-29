@@ -33,10 +33,8 @@ import com.kontinua.readersandroidjetpack.serialization.Video
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-
-//molly updates
-import androidx.compose.runtime.setValue // Import setValue
-import com.kontinua.readersandroidjetpack.views.ResourceOverlayView // Import the new overlay view
+import androidx.compose.runtime.setValue
+import com.kontinua.readersandroidjetpack.views.ResourceOverlayView
 
 //TODO: add a loading screen of some sort while the PDF is getting fetched
 
@@ -78,33 +76,26 @@ class MainActivity : ComponentActivity() {
             derivedStateOf { chapterContentManager.getVideosForCurrentChapter() }
         }
 
-        val selectedReference = remember { mutableStateOf<Reference?>(null) }
-        val selectedVideo = remember { mutableStateOf<Video?>(null) }
-
-        //molly new
         var overlayContent by remember { mutableStateOf<Any?>(null) }
 
         val handleReferenceClick: (Reference) -> Unit = { reference ->
-            overlayContent = reference // Set the state to show overlay with this reference
+            overlayContent = reference
         }
 
         val handleVideoClick: (Video) -> Unit = { video ->
-            // Assuming video object has a 'url' property. Adjust if necessary.
-            Log.d("MainActivity", "Video clicked: ${video.title}")
-            overlayContent = video // Set the state to show overlay with this video
+            overlayContent = video
         }
 
         // --- Callback to dismiss the overlay ---
         val dismissOverlay: () -> Unit = {
             overlayContent = null
         }
-        Box(modifier = Modifier.fillMaxSize()) { // Use Box to allow overlaying
+        Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
                 topBar = {
                     Toolbar(
                         timerViewModel = timerViewModel,
                         navbarManager = navbarManager,
-                        //now need to pass this stuff to toolbar
                         currentChapterReferences = currentChapterReferences,
                         currentChapterVideos = currentChapterVideos,
                         onReferenceClick = handleReferenceClick,
