@@ -85,7 +85,6 @@ class MainActivity : ComponentActivity() {
         var overlayContent by remember { mutableStateOf<Any?>(null) }
 
         val handleReferenceClick: (Reference) -> Unit = { reference ->
-//            Log.d("MainActivity", "Reference clicked: ${reference.title}, URL: ${reference.url}")
             overlayContent = reference // Set the state to show overlay with this reference
         }
 

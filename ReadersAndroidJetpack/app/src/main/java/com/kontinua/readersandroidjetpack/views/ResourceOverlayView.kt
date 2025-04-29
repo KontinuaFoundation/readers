@@ -28,8 +28,8 @@ fun ResourceOverlayView(
 ) {
     // Determine URL and Title based on content type
     val url: String? = when (content) {
-//        is Reference -> content.url
-        is Video -> content.url // Assuming Video also has a 'url' property
+        is Reference -> content.link // Accesses Reference.url directly
+        is Video -> content.link     // Accesses Video.url directly (assuming it exists)
         else -> null
     }
     val title: String = when (content) {
@@ -115,9 +115,3 @@ fun ResourceOverlayView(
         }
     }
 }
-
-// Helper function to get the URL - adjust if Video structure differs
-private val Video.url: String?
-    get() = this.url // Assuming Video has a public 'url' property. Change if needed.
-
-// Reference already has a url property, so no extension needed.
