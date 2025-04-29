@@ -1,5 +1,6 @@
 package com.kontinua.readersandroidjetpack.views
 
+import android.content.Context
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,9 +31,10 @@ import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.Drawing
 
 @Composable
 fun DrawingCanvas(workbookId: String, page: Int,
-                  annotationManager: AnnotationManager, offset: Float) {
-    var savedPaths = remember(workbookId, page) {
-        DrawingStore.getPaths(workbookId, page).toMutableStateList()
+                  annotationManager: AnnotationManager, offset: Float,
+                  prevOffset: Float, context: Context) {
+    var savedPaths by remember(workbookId, page) {
+        mutableStateOf(DrawingStore.getPaths(context, workbookId, page).toMutableStateList())
     }
     var currentPath by remember(workbookId, page) {
         mutableStateOf<List<Offset>>(emptyList())
@@ -41,12 +43,14 @@ fun DrawingCanvas(workbookId: String, page: Int,
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val screenWidthPx = with(LocalDensity.current) { screenWidth.toPx() }
 
-    var swipeSpeedMultiplier = 0f
+    var swipeSpeedMultiplier = 50f
     var offsetX = -(offset * screenWidthPx * swipeSpeedMultiplier).toInt()
+
+    var prevOffsetX = -(prevOffset * screenWidthPx * swipeSpeedMultiplier).toInt()
 
     // Load drawing paths
     LaunchedEffect(workbookId, page) {
-        val paths = DrawingStore.getPaths(workbookId, page)
+        val paths = DrawingStore.getPaths(context, workbookId, page)
         savedPaths = paths.toMutableStateList()
     }
 
@@ -58,7 +62,8 @@ fun DrawingCanvas(workbookId: String, page: Int,
                 onDragEnd = {
                     val newPath = DrawingPath(currentPath)
                     savedPaths.add(newPath)
-                    DrawingStore.addPath(workbookId, page, newPath)
+                    DrawingStore.addPath(context, workbookId, page, newPath)
+                    println("Saving path for workbookId=$workbookId, page=$page, current total paths=${savedPaths.size}")
                     currentPath = emptyList()
                 }
             )
@@ -70,7 +75,7 @@ fun DrawingCanvas(workbookId: String, page: Int,
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .offset { IntOffset(offsetX, 0)  }
+            .offset { IntOffset(offsetX - prevOffsetX, 0)  }
             .then(gestureModifier)
     ) {
         savedPaths.forEach { drawPathLine(it.points) }

@@ -1,24 +1,65 @@
 package com.kontinua.readersandroidjetpack.viewmodels
 
-import androidx.compose.runtime.mutableStateListOf
+import android.content.Context
 import androidx.compose.ui.geometry.Offset
-import androidx.lifecycle.ViewModel
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
 
-class AnnotationViewModel : ViewModel() {
+class AnnotationViewModel : androidx.lifecycle.ViewModel() {
     data class DrawingPath(val points: List<Offset>)
 
-    object DrawingStore {
-        // Map: Workbook ID → Page Number → List of Drawings
-        val drawings: MutableMap<String, MutableMap<Int, MutableList<DrawingPath>>> = mutableMapOf()
+    @Serializable
+    data class OffsetSerializable(val x: Float, val y: Float)
 
-        fun getPaths(workbookId: String, page: Int): List<DrawingPath> {
-            return drawings[workbookId]?.get(page) ?: emptyList()
+    @Serializable
+    data class DrawingPathSerializable(val points: List<OffsetSerializable>)
+
+    object DrawingStore {
+        private const val DIR_NAME = "annotations"
+
+        fun addPath(context: Context, workbookId: String, page: Int, path: DrawingPath) {
+            val current = getPaths(context, workbookId, page).toMutableList()
+            current.add(path)
+            val serializableList = current.map { drawingPath ->
+                DrawingPathSerializable(
+                    drawingPath.points.map { offset ->
+                        OffsetSerializable(offset.x, offset.y)
+                    }
+                )
+            }
+            savePaths(context, workbookId, page, serializableList)
         }
 
-        fun addPath(workbookId: String, page: Int, path: DrawingPath) {
-            val pages = drawings.getOrPut(workbookId) { mutableMapOf() }
-            val pathList = pages.getOrPut(page) { mutableListOf() }
-            pathList.add(path)
+        fun getPaths(context: Context, workbookId: String, page: Int): List<DrawingPath> {
+            return try {
+                val file = getFile(context, workbookId, page)
+                if (!file.exists()) return emptyList()
+                val json = file.readText()
+                Json.decodeFromString<List<DrawingPathSerializable>>(json)
+                    .map { DrawingPath(it.points.map { pt -> Offset(pt.x, pt.y) }) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        }
+
+        private fun savePaths(context: Context, workbookId: String, page: Int, paths: List<DrawingPathSerializable>) {
+            try {
+                val file = getFile(context, workbookId, page)
+                file.parentFile?.mkdirs()
+                file.writeText(Json.encodeToString(paths))
+                println("Saved ${paths.size} paths to ${file.absolutePath}")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("Failed to save paths!")
+            }
+        }
+
+        private fun getFile(context: Context, workbookId: String, page: Int): File {
+            val dir = File(context.filesDir, DIR_NAME)
+            return File(dir, "${workbookId}_page_$page.json")
         }
     }
 }
