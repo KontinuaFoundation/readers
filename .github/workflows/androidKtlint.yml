@@ -15,6 +15,7 @@ jobs:
       # Step 1: Checkout the repository
       - name: Checkout
         uses: actions/checkout@v3
+
       # Step 2: Generate hash for the Android directory
       - name: Generate Android code hash
         id: android-hash
@@ -43,12 +44,7 @@ jobs:
           distribution: "temurin"
           cache: "gradle"
 
-      #Step 5: Grant permissions
-      # - name: Grant execute permission for gradlew
-      #  if: steps.cache-ktlint.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
-      #  run: chmod +x ./ReadersAndroidJetpack/gradlew
-
-      #Step 6: Run ktlint check
+      #Step 5: Run ktlint check
       - name: Run ktlint checks
         if: steps.cache-ktlint.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
         working-directory: ./ReadersAndroidJetpack
@@ -57,7 +53,7 @@ jobs:
           mkdir -p ../.cache/android-ktlint
           echo "Ktlint check passed at $(date)" > ../.cache/android-ktlint/result
 
-      #Step 7: Report success
+      #Step 6: Report success
       - name: Report success
         if: success()
         run: echo "✅ Android code passed ktlint formatting and linting checks!"
