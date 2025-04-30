@@ -21,32 +21,21 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPath
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingStore
 
 @Composable
 fun DrawingCanvas(workbookId: String, page: Int,
-                  annotationManager: AnnotationManager, offset: Float,
-                  prevOffset: Float, context: Context) {
+                  annotationManager: AnnotationManager,
+                  context: Context, zoom: Float, pan: Offset) {
     var savedPaths by remember(workbookId, page) {
         mutableStateOf(DrawingStore.getPaths(context, workbookId, page).toMutableStateList())
     }
     var currentPath by remember(workbookId, page) {
         mutableStateOf<List<Offset>>(emptyList())
     }
-
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    val screenWidthPx = with(LocalDensity.current) { screenWidth.toPx() }
-
-    var swipeSpeedMultiplier = 50f
-    var offsetX = -(offset * screenWidthPx * swipeSpeedMultiplier).toInt()
-
-    var prevOffsetX = -(prevOffset * screenWidthPx * swipeSpeedMultiplier).toInt()
 
     // Load drawing paths
     LaunchedEffect(workbookId, page) {
@@ -57,8 +46,12 @@ fun DrawingCanvas(workbookId: String, page: Int,
     val gestureModifier = if (annotationManager.scribbleEnabled) {
         Modifier.pointerInput(workbookId, page) {
             detectDragGestures(
-                onDragStart = { offset -> currentPath = listOf(offset) },
-                onDrag = { change, _ -> currentPath += change.position },
+                onDragStart = { offset ->
+                    val normalized = Offset(offset.x / size.width, offset.y / size.height)
+                    currentPath = listOf(normalized) },
+                onDrag = { change, _ ->
+                    val normalized = Offset(change.position.x / size.width, change.position.y / size.height)
+                    currentPath += normalized },
                 onDragEnd = {
                     val newPath = DrawingPath(currentPath)
                     savedPaths.add(newPath)
@@ -69,31 +62,55 @@ fun DrawingCanvas(workbookId: String, page: Int,
             )
         }
     } else {
+        // allows gestures to pass through when annotations are disabled
         Modifier
     }
+
+    // swiping the page continuously builds the offset (page 1: 0-1600; page 2: 1600-3200)
+    // panX corrects offset to 0 when zooming to fix location of annotations
+    // page starts at -45 so panY corrects while also accounting for zoom
+    val panX = 1600 * zoom * page
+    val panY = 45 * zoom
+    var newOffsetX = (panX-pan.x).toInt()
+    var newOffsetY = (-pan.y - panY).toInt()
 
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .offset { IntOffset(offsetX - prevOffsetX, 0)  }
+            .offset { IntOffset(newOffsetX, newOffsetY)  }
             .then(gestureModifier)
     ) {
-        savedPaths.forEach { drawPathLine(it.points) }
-        drawPathLine(currentPath)
+        val pageWidth = size.width
+        val pageHeight = size.height
+
+        savedPaths.forEach { drawPathLine(it.points, pageWidth, pageHeight, zoom) }
+        drawPathLine(currentPath, pageWidth, pageHeight, zoom)
     }
 }
 
-private fun DrawScope.drawPathLine(points: List<Offset>) {
+private fun DrawScope.drawPathLine(
+    points: List<Offset>,
+    pageWidth: Float,
+    pageHeight: Float,
+    zoom: Float
+) {
     if (points.size < 2) return
     val path = Path().apply {
-        moveTo(points.first().x, points.first().y)
+        moveTo(
+            (points.first().x * pageWidth ) * zoom ,
+            (points.first().y * pageHeight ) * zoom
+        )
         for (i in 1 until points.size) {
-            lineTo(points[i].x, points[i].y)
+            lineTo(
+                (points[i].x * pageWidth ) * zoom ,
+                (points[i].y * pageHeight ) * zoom
+            )
         }
     }
     drawPath(
         path = path,
         color = Color.Black,
-        style = Stroke(width = 5f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+        style = Stroke(width = 5f * zoom , cap = StrokeCap.Round, join = StrokeJoin.Round)
     )
 }
+

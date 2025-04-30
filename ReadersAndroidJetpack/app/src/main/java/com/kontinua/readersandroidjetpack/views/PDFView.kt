@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,17 +30,15 @@ fun PDFViewer(modifier: Modifier = Modifier,
               annotationManager: AnnotationManager) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
-    val scrollOffset = remember { mutableFloatStateOf(0f) }
-    val prevOffset = remember { mutableFloatStateOf(0f) }
-    val zoomFactor = remember { mutableFloatStateOf(1f) }
 
     // Anything that needs to access workbooks should receive it from this component!
     // i.e. Do NOT instantiate CollectionViewModel anywhere else, pass it down.
     val collectionViewModel: CollectionViewModel = viewModel()
-    val collection by collectionViewModel.collectionState.collectAsState()
     val workbook by collectionViewModel.workbookState.collectAsState()
     var chapterClicked by remember { mutableStateOf(false) }
-    val pageSwipe = 0.019230768f
+    val currentZoom = remember { mutableFloatStateOf(1f) }
+    val zoomPoint = remember { mutableStateOf(Offset.Zero) }
+    val panOffset = remember { mutableStateOf(Offset.Zero) }
 
     navbarManager.setCollection(collectionViewModel)
     chapterClicked = navbarManager.chapterClicked
@@ -55,8 +54,25 @@ fun PDFViewer(modifier: Modifier = Modifier,
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
-            factory = { ctx -> PDFView(ctx, null) },
-            update = { pdfView ->
+            factory = { ctx ->
+                // adds zoom overlay over pdfview in order to grab where the zoom is occurring at
+                val overlay = ZoomOverlay(context)
+                val pdfView = PDFView(ctx, null)
+
+                overlay.addView(pdfView)
+
+                overlay.onGestureFocus = { pointF ->
+                    zoomPoint.value = Offset(pointF.x, pointF.y)
+                }
+
+                overlay.tag = pdfView
+                overlay },
+            update = { viewGroup ->
+                val pdfView = viewGroup.tag as PDFView
+                // resets zoom to center when not zoomed
+                if (currentZoom.floatValue == 1f){
+                    zoomPoint.value = Offset(pdfView.width / 2f, pdfView.height / 2f)
+                }
                 pdfFile?.let { file ->
                     pdfView.fromFile(file)
                         .enableSwipe(true)
@@ -67,19 +83,21 @@ fun PDFViewer(modifier: Modifier = Modifier,
                         .pageSnap(true)
                         .onPageChange(object : OnPageChangeListener {
                           override fun onPageChanged(page: Int, pageCount: Int) {
-                              prevOffset.floatValue = pageSwipe * page
                               navbarManager.setPage(page)
                               navbarManager.setPageCountValue(pageCount)
                           }
                         })
-                        // Use the correct load complete listener
                         .onLoad(object : OnLoadCompleteListener {
                           override fun loadComplete(nbPages: Int) {
                             navbarManager.setPage(pdfView.currentPage)
                           }
                         })
                         .onPageScroll { page, offset ->
-                            scrollOffset.floatValue = offset
+                            currentZoom.floatValue = pdfView.zoom
+                            panOffset.value = Offset(
+                                -pdfView.currentXOffset,
+                                -pdfView.currentYOffset
+                            )
                         }
                         .load()
                     pdfView.jumpTo(navbarManager.pageNumber)
@@ -91,9 +109,9 @@ fun PDFViewer(modifier: Modifier = Modifier,
             workbookId = navbarManager.currentWorkbook,
             page = navbarManager.pageNumber,
             annotationManager = annotationManager,
-            offset = scrollOffset.floatValue,
-            prevOffset = prevOffset.floatValue,
-            context = context
+            context = context,
+            zoom = currentZoom.floatValue,
+            pan = panOffset.value
         )
     }
     pdfFile = null
