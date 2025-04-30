@@ -10,17 +10,15 @@ import SwiftUI
 @main
 struct ReaderIOSApp: App {
     @StateObject private var initManager = InitializationManager()
-
+    
     var body: some Scene {
         WindowGroup {
             if initManager.isInitialized {
                 SplitView(
-                          workbooks: initManager.workbooks,
-                          currentCollection: initManager.latestCollection,
-                          selectedWorkbookID: initManager.workbookID,
-                          currentWorkbook: initManager.workbook
-                          //pdfDocument: initManager.pdfDocument
-                        
+                    workbooks: initManager.workbooks,
+                    currentCollection: initManager.latestCollection,
+                    selectedWorkbookID: initManager.workbookID,
+                    currentWorkbook: initManager.workbook
                 )
             } else {
                 SplashView(initManager: initManager)
