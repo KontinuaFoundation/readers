@@ -91,7 +91,7 @@ final class InitializationManager: ObservableObject {
                 switch result {
                 case let .success(workbook):
                     self?.workbook = workbook
-                    self?.fetchPDF(for: workbook)
+                    //self?.fetchPDF(for: workbook)
                 case let .failure(error):
                     print("Error fetching PDF: \(error)")
                 }

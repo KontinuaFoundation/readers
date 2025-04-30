@@ -34,7 +34,7 @@ struct SplitView: View {
     @State private var bookmarkManager = BookmarkManager()
 
     // PDFDocument loaded by PDFView
-    @State var pdfDocument: PDFDocument?
+    @State private var pdfDocument: PDFDocument?
 
     // Chapter manager, detemines chapter from current page
     @State private var chapterManager: ChapterManager?

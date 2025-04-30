@@ -18,8 +18,8 @@ struct ReaderIOSApp: App {
                           workbooks: initManager.workbooks,
                           currentCollection: initManager.latestCollection,
                           selectedWorkbookID: initManager.workbookID,
-                          currentWorkbook: initManager.workbook,
-                          pdfDocument: initManager.pdfDocument
+                          currentWorkbook: initManager.workbook
+                          //pdfDocument: initManager.pdfDocument
                         
                 )
             } else {
