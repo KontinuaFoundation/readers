@@ -101,7 +101,9 @@ final class NetworkingService: ObservableObject {
             completion(.failure(NetworkError.invalidURL))
             return
         }
+        
         startLoading()
+        
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
 

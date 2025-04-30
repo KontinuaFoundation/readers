@@ -8,16 +8,19 @@ import PDFKit
 import SwiftUI
 
 struct SplitView: View {
+    /*
     var initialWorkbooks: [WorkbookPreview] = []
-    var initialWorkbookID: Int?
     var initialPDFDocument: PDFDocument?
     var initialCollection: Collection?
-
+     */
+    
+    var initialWorkbookID: Int?
+    
     // Loaded workbooks information state vars
-    @State private var workbooks: [WorkbookPreview]?
-    @State private var chapters: [Chapter]?
-    @State private var covers: [Cover]?
-    @State private var currentCollection: Collection?
+    @Binding var workbooks: [WorkbookPreview]?
+    @State var chapters: [Chapter]?
+    @State var covers: [Cover]?
+    @Binding var currentCollection: Collection?
 
     // User selection (what they are viewing) state vars
     @State private var selectedWorkbookID: Int?
@@ -31,7 +34,7 @@ struct SplitView: View {
     @State private var bookmarkManager = BookmarkManager()
 
     // PDFDocument loaded by PDFView
-    @State private var pdfDocument: PDFDocument?
+    @Binding var pdfDocument: PDFDocument?
 
     // Chapter manager, detemines chapter from current page
     @State private var chapterManager: ChapterManager?
@@ -51,10 +54,8 @@ struct SplitView: View {
             } else {
                 ProgressView("Fetching Workbooks")
                     .onAppear {
-                        if !initialWorkbooks.isEmpty {
-                            workbooks = initialWorkbooks
-                            selectedWorkbookID = initialWorkbookID
-                        }
+                        selectedWorkbookID = initialWorkbookID
+                        
                     }
             }
         }
@@ -107,6 +108,7 @@ struct SplitView: View {
             }
         }
         .onAppear {
+            /*
             if let collection = initialCollection {
                 // Initialize currentCollection from initialCollection
                 currentCollection = collection
@@ -115,6 +117,7 @@ struct SplitView: View {
             if let initialPDF = initialPDFDocument {
                 pdfDocument = initialPDF
             }
+             */
         }
         .onChange(of: selectedWorkbookID) {
             fetchWorkbookAndChapters()
@@ -142,10 +145,9 @@ struct SplitView: View {
         }
     }
 
+    /*
     func fetchWorkbooks() {
-        guard let initialCollection else { return }
-
-        NetworkingService.shared.fetchWorkbooks(collection: initialCollection) { result in
+        NetworkingService.shared.fetchWorkbooks(collection: currentCollection) { result in
             switch result {
             case let .success(workbookResponse):
                 workbooks = workbookResponse
@@ -169,7 +171,7 @@ struct SplitView: View {
                 print("Error fetching workbooks: \(error)")
             }
         }
-    }
+    }*/
 
     func fetchWorkbookAndChapters() {
         guard let id = selectedWorkbook?.id else { return }
@@ -205,6 +207,8 @@ struct SplitView: View {
     }
 }
 
-#Preview {
-    SplitView()
-}
+/*
+ #Preview {
+ SplitView()
+ }
+ */

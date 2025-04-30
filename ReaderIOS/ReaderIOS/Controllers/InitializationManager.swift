@@ -17,7 +17,7 @@ enum FetchConstants {
 final class InitializationManager: ObservableObject {
     @Published var isInitialized = false
     @Published var loadFailed = false
-    @Published var workbooks: [WorkbookPreview] = []
+    @Published var workbooks: [WorkbookPreview]?
     @Published var pdfDocument: PDFDocument?
     @Published var workbookID: Int?
     @Published var latestCollection: Collection?
