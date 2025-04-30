@@ -110,23 +110,11 @@ struct SplitView: View {
             }
         }
         .onAppear {
-            fetchWorkbookAndChapters()
+            
 
             if let selectedWorkbookID {
                 currentPage = StateRestoreManager.shared.loadPageNumber(for: selectedWorkbookID)
             }
-
-            persistState()
-            /*
-            if let collection = initialCollection {
-                // Initialize currentCollection from initialCollection
-                currentCollection = collection
-            }
-            // Optionally, if initialPDFDocument is available, set it.
-            if let initialPDF = initialPDFDocument {
-                pdfDocument = initialPDF
-            }
-             */
         }
         .onChange(of: selectedWorkbookID) {
             fetchWorkbookAndChapters()
@@ -134,8 +122,6 @@ struct SplitView: View {
             if let selectedWorkbookID {
                 currentPage = StateRestoreManager.shared.loadPageNumber(for: selectedWorkbookID)
             }
-
-            persistState()
         }
         .onChange(of: currentPage) { _, _ in
             updateSelectedChapter()

@@ -17,7 +17,7 @@ struct ReaderIOSApp: App {
                 SplitView(
                           workbooks: initManager.workbooks,
                           currentCollection: initManager.latestCollection,
-                          selectedWorkbookID: 0,
+                          selectedWorkbookID: initManager.workbookID,
                           currentWorkbook: initManager.workbook,
                           pdfDocument: initManager.pdfDocument
                         
