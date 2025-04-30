@@ -44,7 +44,7 @@ struct SplitView: View {
                     }
                 }
             } else {
-                 ProgressView("Fetching workbooks...")
+                ProgressView("Fetching workbooks...")
             }
         }
         content: {

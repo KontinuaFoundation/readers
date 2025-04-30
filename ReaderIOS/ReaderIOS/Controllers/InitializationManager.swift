@@ -94,7 +94,7 @@ final class InitializationManager: ObservableObject {
                 case let .failure(error):
                     print("Error fetching initial workbook information: \(error)")
                 }
-                
+
                 self?.isInitialized = true
             }
         }
