@@ -17,10 +17,10 @@ struct SplitView: View {
     //var initialWorkbookID: Int?
     
     // Loaded workbooks information state vars
-    @Binding var workbooks: [WorkbookPreview]?
+    @State var workbooks: [WorkbookPreview]?
     @State var chapters: [Chapter]?
     @State var covers: [Cover]?
-    @Binding var currentCollection: Collection?
+    @State var currentCollection: Collection?
 
     // User selection (what they are viewing) state vars
     @State var selectedWorkbookID: Int?
@@ -34,7 +34,7 @@ struct SplitView: View {
     @State private var bookmarkManager = BookmarkManager()
 
     // PDFDocument loaded by PDFView
-    @Binding var pdfDocument: PDFDocument?
+    @State var pdfDocument: PDFDocument?
 
     // Chapter manager, detemines chapter from current page
     @State private var chapterManager: ChapterManager?

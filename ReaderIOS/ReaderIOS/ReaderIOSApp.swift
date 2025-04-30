@@ -15,11 +15,11 @@ struct ReaderIOSApp: App {
         WindowGroup {
             if initManager.isInitialized {
                 SplitView(
-                          workbooks: $initManager.workbooks,
-                          currentCollection: $initManager.latestCollection,
+                          workbooks: initManager.workbooks,
+                          currentCollection: initManager.latestCollection,
                           selectedWorkbookID: 0,
                           currentWorkbook: initManager.workbook,
-                          pdfDocument: $initManager.pdfDocument
+                          pdfDocument: initManager.pdfDocument
                         
                 )
             } else {
