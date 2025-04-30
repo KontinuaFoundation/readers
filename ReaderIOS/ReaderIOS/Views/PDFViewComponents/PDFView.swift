@@ -3,19 +3,19 @@ import SwiftUI
 
 struct PDFView: View {
     // MARK: - Bindings
-    
+
     @Binding var currentWorkbook: Workbook?
     @Binding var currentPage: Int
     @Binding var covers: [Cover]?
     @Binding var pdfDocument: PDFDocument?
     @Binding var collection: Collection?
-    
+
     // MARK: - Observed Objects
-    
+
     @ObservedObject var bookmarkManager: BookmarkManager
-    
+
     // MARK: - State Variables
-    
+
     // misc variables
     @State private var showDigitalResources = false
     @State private var showingFeedback = false
@@ -33,22 +33,21 @@ struct PDFView: View {
     @State private var textOpened = false
     @State private var isHidden = false
     @State private var showClearAlert = false
-    
+
     // MARK: - StateObjects and Observed
-    
+
     @StateObject private var feedbackManager = FeedbackManager()
     @StateObject private var timerManager = TimerManager()
     @ObservedObject private var zoomManager = ZoomManager()
     @ObservedObject private var textManager = TextManager()
     @ObservedObject private var annotationStorageManager = AnnotationStorageManager()
-    
+
     // MARK: - Body
-    
+
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
                 ZStack {
-                    
                     if let pdfDoc = pdfDocument {
                         ZStack {
                             // PDF Document View
@@ -62,7 +61,7 @@ struct PDFView: View {
                             .onChange(of: currentPage) { _, newValue in
                                 loadPaths(for: newValue)
                             }
-                            
+
                             // Annotations
                             AnnotationsView(
                                 pagePaths: $pagePaths,
@@ -82,7 +81,7 @@ struct PDFView: View {
                             )
                             .scaleEffect(zoomManager.newZoomLevel(),
                                          anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
-                            
+
                             // Text Overlay
                             TextView(
                                 textManager: textManager,
@@ -120,7 +119,7 @@ struct PDFView: View {
                                 PageControlView(currentPage: $currentPage, totalPages: pdfDoc.pageCount)
                                     .padding(.leading, 10)
                             }
-                            
+
                             ToolbarItemGroup(placement: .navigationBarTrailing) {
                                 TimerControlsView(timerManager: timerManager)
                                 MarkupMenu(
@@ -136,7 +135,7 @@ struct PDFView: View {
                                     pagePaths: pagePaths,
                                     highlightPaths: highlightPaths
                                 )
-                                
+
                                 Button(action: { showDigitalResources = true }, label: {
                                     Text("Digital Resources")
                                         .padding(5)
@@ -147,7 +146,7 @@ struct PDFView: View {
                                 .fullScreenCover(isPresented: $showDigitalResources, content: {
                                     DigitalResourcesView(covers: covers)
                                 })
-                                
+
                                 Button {
                                     bookmarkManager.toggleBookmark(for: currentWorkbook, currentPage: currentPage)
                                 } label: {
@@ -155,9 +154,9 @@ struct PDFView: View {
                                         workbook: currentWorkbook,
                                         currentPage: currentPage
                                     ) ? "bookmark.fill" : "bookmark")
-                                    .foregroundColor(.yellow)
+                                        .foregroundColor(.yellow)
                                 }
-                                
+
                                 if zoomManager.getZoomedIn() {
                                     Button("Reset Zoom") {
                                         zoomManager.resetZoom()
@@ -170,7 +169,7 @@ struct PDFView: View {
                                     // Timer controls and progress bar should fill available space
                                     TimerProgressView(timerManager: timerManager)
                                         .frame(maxWidth: .infinity)
-                                    
+
                                     // Feedback button with minimal spacing
                                     FeedbackView.button(
                                         feedbackManager: feedbackManager,
@@ -191,8 +190,8 @@ struct PDFView: View {
                                 textManager.loadTextBoxes(textBoxes: &textBoxes)
                             }
                     }
-                    
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onDisappear {
                     textManager.saveTextBoxes(textBoxes: textBoxes)
                     annotationStorageManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
@@ -213,12 +212,12 @@ struct PDFView: View {
             }
         }
     }
-    
+
     // MARK: - Helper Methods
-    
+
     private func loadPDFDocument() {
         guard let currentWorkbook = currentWorkbook else { return }
-        
+
         NetworkingService.shared.fetchPDF(workbook: currentWorkbook) { result in
             switch result {
             case let .success(document):
@@ -228,31 +227,31 @@ struct PDFView: View {
             }
         }
     }
-    
+
     private func loadPaths(for pageIndex: Int) {
         let key = uniqueKey(for: pageIndex)
         if pagePaths[key] == nil { pagePaths[key] = [] }
         if highlightPaths[key] == nil { highlightPaths[key] = [] }
     }
-    
+
     private func uniqueKey(for pageIndex: Int) -> String {
         guard let workbook = currentWorkbook else { return "\(pageIndex)" }
         return "\(workbook.id)-\(pageIndex)"
     }
-    
+
     private func clearMarkup() {
         let key = uniqueKey(for: currentPage)
         highlightPaths.removeValue(forKey: key)
         pagePaths.removeValue(forKey: key)
         textManager.deleteAllText(textBoxes: $textBoxes, key: uniqueKey(for: currentPage))
     }
-    
+
     private func goToNextPage() {
         if let pdfDoc = pdfDocument, currentPage < pdfDoc.pageCount - 1 {
             currentPage += 1
         }
     }
-    
+
     private func goToPreviousPage() {
         if currentPage > 0 {
             currentPage -= 1

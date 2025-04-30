@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct ReaderIOSApp: App {
     @StateObject private var initManager = InitializationManager()
-    
+
     var body: some Scene {
         WindowGroup {
             if initManager.isInitialized {
