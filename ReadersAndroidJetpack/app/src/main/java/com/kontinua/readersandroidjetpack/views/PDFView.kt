@@ -1,5 +1,6 @@
 package com.kontinua.readersandroidjetpack.views
 
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -14,20 +15,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
-import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener
-import com.github.barteksc.pdfviewer.listener.OnPageChangeListener
 import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
+//TODO: pages are recomposing as they change, making for messy swiping.
+
 @Composable
 fun PDFViewer(modifier: Modifier = Modifier,
               navbarManager: NavbarManager,
-              annotationManager: AnnotationManager) {
+              annotationManager: AnnotationManager,
+              collectionViewModel: CollectionViewModel) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
 
@@ -39,7 +40,6 @@ fun PDFViewer(modifier: Modifier = Modifier,
     val currentZoom = remember { mutableFloatStateOf(1f) }
     val zoomPoint = remember { mutableStateOf(Offset.Zero) }
     val panOffset = remember { mutableStateOf(Offset.Zero) }
-
     navbarManager.setCollection(collectionViewModel)
     chapterClicked = navbarManager.chapterClicked
 
@@ -81,17 +81,11 @@ fun PDFViewer(modifier: Modifier = Modifier,
                         .defaultPage(navbarManager.pageNumber)
                         .pageFling(true)
                         .pageSnap(true)
-                        .onPageChange(object : OnPageChangeListener {
-                          override fun onPageChanged(page: Int, pageCount: Int) {
-                              navbarManager.setPage(page)
-                              navbarManager.setPageCountValue(pageCount)
-                          }
-                        })
-                        .onLoad(object : OnLoadCompleteListener {
-                          override fun loadComplete(nbPages: Int) {
-                            navbarManager.setPage(pdfView.currentPage)
-                          }
-                        })
+                        .onPageChange{ page, pageCount ->
+                            navbarManager.setPage(page)
+                            navbarManager.setPageCountValue(pageCount)
+                        }
+                        .onLoad { navbarManager.setPage(pdfView.currentPage) }
                         .onPageScroll { page, offset ->
                             currentZoom.floatValue = pdfView.zoom
                             panOffset.value = Offset(
@@ -116,6 +110,3 @@ fun PDFViewer(modifier: Modifier = Modifier,
     }
     pdfFile = null
 }
-
-
-

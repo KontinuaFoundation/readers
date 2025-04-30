@@ -20,7 +20,7 @@ class NavbarManager {
     var collectionVM: CollectionViewModel? by mutableStateOf(null)
         private set
 
-    var currentChapterIndex: Int = 0
+    var currentChapterIndex by mutableIntStateOf(-1)
         private set
 
     var pageNumber by  mutableIntStateOf(0)

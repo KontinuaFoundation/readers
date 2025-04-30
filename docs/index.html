@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ReaderIOS - Interactive PDF Reader for iOS</title>
+    <style>
+      :root {
+        --primary-color: #226ba2;
+        --secondary-color: #7ba7bc;
+        --accent-color: #fb8500;
+        --text-color: #333;
+        --light-gray: #f5f5f5;
+        --dark-gray: #444;
+        --white: #fff;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+          "Helvetica Neue", sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+        background-color: var(--white);
+      }
+
+      header {
+        background-color: var(--primary-color);
+        color: var(--white);
+        padding: 2rem 0;
+        text-align: center;
+      }
+
+      .logo {
+        height: 80px;
+        margin-bottom: 1rem;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      section {
+        padding: 4rem 0;
+      }
+
+      section:nth-child(even) {
+        background-color: var(--light-gray);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin-bottom: 1rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      h2 {
+        font-size: 2rem;
+        color: var(--primary-color);
+      }
+
+      h3 {
+        font-size: 1.5rem;
+        color: var(--dark-gray);
+      }
+
+      p {
+        margin-bottom: 1.5rem;
+      }
+
+      ul,
+      ol {
+        margin-bottom: 1.5rem;
+        margin-left: 2rem;
+      }
+
+      li {
+        margin-bottom: 0.5rem;
+      }
+
+      .btn {
+        display: inline-block;
+        background-color: var(--accent-color);
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.3s;
+      }
+
+      .btn:hover {
+        background-color: #e67e00;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .feature-item {
+        background-color: var(--white);
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+
+      .feature-item:hover {
+        transform: translateY(-5px);
+      }
+
+      .feature-icon {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+
+      .screenshot {
+        max-width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin: 2rem 0;
+      }
+
+      .installation-steps {
+        background-color: var(--white);
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: 2rem;
+      }
+
+      .code-block {
+        background-color: #282c34;
+        color: #abb2bf;
+        padding: 1rem;
+        border-radius: 5px;
+        font-family: "SF Mono", Consolas, Monaco, "Andale Mono", monospace;
+        overflow-x: auto;
+        margin-bottom: 1.5rem;
+      }
+
+      footer {
+        background-color: var(--dark-gray);
+        color: var(--white);
+        padding: 2rem 0;
+        text-align: center;
+      }
+
+      footer a {
+        color: var(--secondary-color);
+      }
+
+      .feedback-form {
+        max-width: 600px;
+        margin: 2rem auto;
+        background-color: var(--white);
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-family: inherit;
+      }
+
+      .form-group textarea {
+        min-height: 150px;
+      }
+
+      @media (max-width: 768px) {
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        h2 {
+          font-size: 1.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <img src="./kontinua-logo-full.png" alt="ReaderIOS Logo" class="logo" />
+        <h1>Kontinua Reader</h1>
+        <p>
+          An Interactive PDF Reader for iOS and Android, to interact with the
+          sequence.
+        </p>
+        <a href="#download" class="btn">Download Alpha Release</a>
+      </div>
+    </header>
+
+    <section id="about">
+      <div class="container">
+        <h2>About Kontinua Reader</h2>
+        <p>
+          Kontinua Reader is a powerful PDF reader application designed
+          specifically for educational workbooks. Built for iOS devices and
+          Android, it provides an intuitive interface with powerful annotation
+          tools, digital resource integration, and navigation features that make
+          studying more effective.
+        </p>
+        <p>
+          This alpha release is designed to gather user feedback and identify
+          improvements as we prepare for our full public release. We appreciate
+          your participation in testing Kontinua Reader iOS and providing your
+          valuable insights.
+        </p>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="container">
+        <h2>Key Features</h2>
+        <p>
+          Kontinua Reader is packed with features to enhance your reading and
+          studying experience:
+        </p>
+
+        <div class="feature-grid">
+          <div class="feature-item">
+            <div class="feature-icon">📝</div>
+            <h3>Advanced Annotations</h3>
+            <p>
+              Highlight, underline, and add notes to your PDF documents. Use
+              different colors and tools to mark up your content effectively.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">🔍</div>
+            <h3>Powerful Search</h3>
+            <p>
+              Search for text within chapters and pages. Instantly find what
+              you're looking for with highlighted results.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">📚</div>
+            <h3>Workbook Management</h3>
+            <p>
+              Easily manage multiple workbooks and navigate between chapters
+              with an intuitive interface.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">🔖</div>
+            <h3>Bookmarking</h3>
+            <p>
+              Create bookmarks for important pages and quickly return to them
+              when needed.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">🌐</div>
+            <h3>Digital Resources</h3>
+            <p>
+              Access complementary digital content that enhances the learning
+              experience.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">⏱️</div>
+            <h3>Built-in Timer</h3>
+            <p>
+              Set study timers to manage your learning sessions effectively.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screenshots">
+      <div class="container">
+        <h2>App Screenshots</h2>
+        <p>Take a look at Kontinua Reader iOS in action:</p>
+        <div
+          style="display: flex; flex-wrap: wrap; justify-content: space-between"
+        >
+          <div style="flex: 0 0 48%; margin-bottom: 2rem">
+            <img src="./pdfView.png" alt="PDF Reader View" class="screenshot" />
+            <p>
+              <strong>Main Reader View:</strong> Navigate, annotate, and read
+              your PDFs with ease.
+            </p>
+          </div>
+          <div style="flex: 0 0 48%; margin-bottom: 2rem">
+            <img
+              src="./markupView.png"
+              alt="Annotation Tools"
+              class="screenshot"
+            />
+            <p>
+              <strong>Annotation Tools:</strong> Highlight, draw, and add notes
+              to your documents.
+            </p>
+          </div>
+          <div style="flex: 0 0 48%; margin-bottom: 2rem">
+            <img
+              src="./searchView.png"
+              alt="Search Functionality"
+              class="screenshot"
+            />
+            <p>
+              <strong>Search Functionality:</strong> Find content quickly with
+              powerful search capabilities.
+            </p>
+          </div>
+          <div style="flex: 0 0 48%; margin-bottom: 2rem">
+            <img
+              src="./rescourcesView.png"
+              alt="Digital Resources"
+              class="screenshot"
+            />
+            <p>
+              <strong>Digital Resources:</strong> Access complementary learning
+              materials.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="download">
+      <div class="container">
+        <h2>Download Alpha Release</h2>
+        <p>
+          Kontinua Reader iOS is currently available as an alpha release for
+          testing purposes. There are two ways to install the app:
+        </p>
+
+        <div class="installation-steps">
+          <h3>Option 1: TestFlight Installation (Recommended)</h3>
+          <ol>
+            <li>
+              Make sure you have
+              <a
+                href="https://apps.apple.com/us/app/testflight/id899247664"
+                target="_blank"
+                >TestFlight</a
+              >
+              installed on your iOS device.
+            </li>
+            <li>
+              Click on the TestFlight invitation link that was sent to your
+              email.
+            </li>
+            <li>
+              Follow the on-screen instructions to install Kontinua Reader iOS.
+            </li>
+            <li>Once installed, the app will appear on your home screen.</li>
+          </ol>
+          <p><a href="#" class="btn">Request TestFlight Invitation</a></p>
+
+          <h3>Option 2: Manual Installation for Developers</h3>
+          <ol>
+            <li>Clone the repository from GitHub:</li>
+            <div class="code-block">
+              git clone https://github.com/KontinuaFoundation/readers.git
+            </div>
+
+            <li>Open the project in Xcode:</li>
+            <div class="code-block">cd ReaderIOS open ReaderIOS.xcodeproj</div>
+
+            <li>Build and run the project on your device or simulator.</li>
+          </ol>
+          <p>
+            <a
+              href="https://github.com/KontinuaFoundation/readers"
+              target="_blank"
+              class="btn"
+              >View on GitHub</a
+            >
+          </p>
+        </div>
+
+        <h3>System Requirements</h3>
+        <ul>
+          <li>iOS 17.0 or later</li>
+          <li>iPad device</li>
+          <li>Approximately 50MB of free space</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="feedback">
+      <div class="container">
+        <h2>Provide Feedback</h2>
+        <p>
+          Your feedback is essential to help us improve Kontinua Reader. Please
+          let us know about any bugs, suggestions, or features you'd like to see
+          in future versions.
+        </p>
+
+        <div class="feedback-form">
+          <form action="https://formspree.io/f/yourformid" method="POST">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+
+            <div class="form-group">
+              <label for="feedback-type">Feedback Type</label>
+              <select id="feedback-type" name="feedback-type" required>
+                <option value="">-- Select Feedback Type --</option>
+                <option value="bug">Bug Report</option>
+                <option value="feature">Feature Request</option>
+                <option value="improvement">Improvement Suggestion</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="device">Device Model & iOS Version</label>
+              <input
+                type="text"
+                id="device"
+                name="device"
+                placeholder="e.g., iPad Pro 13-inch, iOS 17.4"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="message">Your Feedback</label>
+              <textarea id="message" name="message" required></textarea>
+            </div>
+
+            <button type="submit" class="btn">Submit Feedback</button>
+          </form>
+        </div>
+
+        <p>
+          Alternatively, you can send feedback directly to our team at
+          <a href="mailto:feedback@kontinua.org">feedback@kontinua.org</a> or
+          create an issue on our
+          <a
+            href="https://github.com/KontinuaFoundation/readers/issues"
+            target="_blank"
+            >GitHub repository</a
+          >.
+        </p>
+      </div>
+    </section>
+
+    <section id="legal">
+      <div class="container">
+        <h2>Legal Information</h2>
+
+        <h3>End User License Agreement (EULA)</h3>
+        <p>
+          Before using Kontinua Reader, please review our End User License
+          Agreement:
+        </p>
+        <p>
+          <a href="eula.html" target="_blank"
+            >View End User License Agreement</a
+          >
+        </p>
+
+        <h3>Privacy Policy</h3>
+        <p>We value your privacy. Learn how we handle your data:</p>
+        <p>
+          <a href="privacy-policy.html" target="_blank">View Privacy Policy</a>
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2025 KontinuaFoundation. All rights reserved.</p>
+        <p>
+          <a href="eula.html">EULA</a> |
+          <a href="privacy-policy.html">Privacy Policy</a> |
+          <a href="https://github.com/KontinuaFoundation/readers">GitHub</a> |
+          <a href="mailto:feedback@kontinua.org">Contact</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -33,9 +33,11 @@ import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @Composable
-fun SidebarWithPDFViewer(navbarManager: NavbarManager, annotationManager: AnnotationManager) {
+fun SidebarWithPDFViewer(navbarManager: NavbarManager, annotationManager: AnnotationManager,
+                         collectionViewModel: CollectionViewModel) {
     val density = LocalDensity.current
 
     val animatedChapterSidebarWidth by animateDpAsState(
@@ -45,9 +47,11 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager, annotationManager: Annota
 
     Box(modifier = Modifier.fillMaxSize()) {
         // PDF Viewer
+        //now passing down the collectionviewmodel which is made earlier
         PDFViewer(modifier = Modifier.fillMaxSize(),
                 navbarManager = navbarManager,
-                annotationManager = annotationManager)
+                annotationManager = annotationManager,
+                collectionViewModel = collectionViewModel)
 
         //Transparent clickable overlay.
         if (navbarManager.isChapterVisible) {
