@@ -14,7 +14,7 @@ struct SplitView: View {
     var initialCollection: Collection?
      */
     
-    var initialWorkbookID: Int?
+    //var initialWorkbookID: Int?
     
     // Loaded workbooks information state vars
     @Binding var workbooks: [WorkbookPreview]?
@@ -23,9 +23,9 @@ struct SplitView: View {
     @Binding var currentCollection: Collection?
 
     // User selection (what they are viewing) state vars
-    @State private var selectedWorkbookID: Int?
+    @State var selectedWorkbookID: Int?
     @State private var selectedChapterID: String?
-    @State private var currentWorkbook: Workbook?
+    @State var currentWorkbook: Workbook?
     @State private var currentPage: Int = 0
     @State private var columnVisibility = NavigationSplitViewVisibility.automatic
 
@@ -52,11 +52,13 @@ struct SplitView: View {
                     }
                 }
             } else {
+                /*
                 ProgressView("Fetching Workbooks")
                     .onAppear {
-                        selectedWorkbookID = initialWorkbookID
+                        
                         
                     }
+                 */
             }
         }
         content: {
@@ -108,6 +110,13 @@ struct SplitView: View {
             }
         }
         .onAppear {
+            fetchWorkbookAndChapters()
+
+            if let selectedWorkbookID {
+                currentPage = StateRestoreManager.shared.loadPageNumber(for: selectedWorkbookID)
+            }
+
+            persistState()
             /*
             if let collection = initialCollection {
                 // Initialize currentCollection from initialCollection
