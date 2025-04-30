@@ -18,8 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.util.NavbarManager
-
-//molly adds
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 
@@ -29,7 +27,6 @@ import com.kontinua.readersandroidjetpack.serialization.Video
 fun Toolbar(
     timerViewModel: TimerViewModel,
     navbarManager: NavbarManager,
-    //molly changes
     currentChapterReferences: Any,
     currentChapterVideos: Any,
     onReferenceClick: (Reference) -> Unit,
@@ -42,9 +39,6 @@ fun Toolbar(
 
     val references = currentChapterReferences as? List<Reference> ?: emptyList()
     val videos = currentChapterVideos as? List<Video> ?: emptyList()
-
-//    println("References size: ${references.size}")
-//    println("Videos size: ${videos.size}")
 
     //are there any resources? enables or disables the button
     val hasResources = references.isNotEmpty() || videos.isNotEmpty()
