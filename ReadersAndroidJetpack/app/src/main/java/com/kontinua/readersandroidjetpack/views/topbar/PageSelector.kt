@@ -34,8 +34,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.util.NavbarManager
-
-//TODO: when you put in a page number that is not valid, it just jumps to the page its on minus one, or to page 0 if its at the start which does not even exist. this should be handled cleaner.
 //TODO: keyboard does not fully pop up when entering a page number, and i think it should.
 
 @Composable
@@ -68,8 +66,8 @@ fun PageSelector(navbarManager: NavbarManager) {
         BasicTextField(
             value = pageInputText,
             onValueChange = { newValue ->
-                // Only allow numeric input
-                if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
+                // Only allow numeric input, max 4 digits to prevent overflow
+                if ((newValue.isEmpty() || newValue.all { it.isDigit() }) && newValue.length <= 4) {
                     pageInputText = newValue
                 }
             },
@@ -138,24 +136,43 @@ fun PageSelector(navbarManager: NavbarManager) {
 private fun resolvePageNumber(
     input: String,
     navbarManager: NavbarManager,
-    onResult: (Int) -> Unit
+    onResult: (String) -> Unit
 ) {
+
     val currentPage = navbarManager.pageNumber
     val pageCount = navbarManager.pageCount
 
+    // Helper function to get the current page display string (1-based)
+    fun getCurrentPageDisplayString(): String = (currentPage + 1).toString()
+    if (pageCount <= 0 || input.isBlank()) {
+        onResult(getCurrentPageDisplayString())
+        return
+    }
+
+    val lastPage = pageCount - 1
+
     try {
+        val desiredPageDisplayInt = input.toInt()
         val newPage = input.toInt() - 1
 
-        // Check if the new page is within the valid range (0 to pageCount-1)
-        if (newPage in 0 until pageCount) {
-            navbarManager.setPage(newPage)
-            //onResult(newPage)
-        } else {
-            // Out of range, revert to the current page
-            onResult(currentPage)
+        when {
+            // Case 1: Valid page number entered (0-based index is within range)
+            newPage in 0..lastPage -> {
+                navbarManager.setPage(newPage)
+                onResult(desiredPageDisplayInt.toString())
+            }
+            // Case 2: Page number entered is too high (0-based index is >= pageCount)
+            newPage >= pageCount -> {
+                navbarManager.setPage(lastPage)
+                onResult((lastPage + 1).toString())
+            }
+            // Case 3: Page number entered is too low (e.g., 0 or negative, resulting in newPage < 0)
+            //this should not happen
+            else -> {
+                onResult(getCurrentPageDisplayString())
+            }
         }
     } catch (e: NumberFormatException) {
-        // Invalid number format, revert to the current page
-        onResult(currentPage)
+        onResult(getCurrentPageDisplayString())
     }
 }
