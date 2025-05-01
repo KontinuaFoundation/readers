@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ktlint)
     id("com.google.devtools.ksp")
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -70,6 +71,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose.v270alpha02)
     ksp(libs.moshi.kotlin.codegen)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.pdfbox.android)
+    implementation(libs.kotlinx.serialization.json)
+
     ktlintRuleset(libs.ktlint.compose.rules)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

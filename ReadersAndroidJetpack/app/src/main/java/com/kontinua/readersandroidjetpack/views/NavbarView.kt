@@ -33,11 +33,16 @@ import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @Composable
-fun SidebarWithPDFViewer(navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
+fun SidebarWithPDFViewer(
+    navbarManager: NavbarManager,
+    collectionViewModel: CollectionViewModel,
+    annotationManager: AnnotationManager
+) {
     val density = LocalDensity.current
 
     val animatedChapterSidebarWidth by animateDpAsState(
@@ -51,7 +56,8 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager, collectionViewModel: Coll
         PDFViewer(
             modifier = Modifier.fillMaxSize(),
             navbarManager = navbarManager,
-            collectionViewModel = collectionViewModel
+            collectionViewModel = collectionViewModel,
+            annotationManager = annotationManager
         )
 
         // Transparent clickable overlay.
@@ -105,7 +111,7 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager, collectionViewModel: Coll
 @Composable
 fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager: NavbarManager) {
     val collectionVM = navbarManager.collectionVM
-    val chapters: List<Chapter> = collectionVM?.chapters ?: emptyList()
+    val chapters: List<Chapter> = collectionVM!!.chapters
     val scroll = rememberScrollState()
     Column(
         modifier = Modifier
@@ -129,7 +135,7 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
                 modifier = Modifier
                     .background(bgColor)
                     .clickable {
-                        collectionVM?.setWorkbook(collectionVM.currentWorkbook)
+                        collectionVM.setWorkbook(collectionVM.currentWorkbook)
                         navbarManager.setPage(chapter.startPage - 1)
                         onClose()
                     }

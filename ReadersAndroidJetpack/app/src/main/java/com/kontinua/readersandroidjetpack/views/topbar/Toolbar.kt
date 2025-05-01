@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 
@@ -26,6 +27,7 @@ import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 fun Toolbar(
     timerViewModel: TimerViewModel,
     navbarManager: NavbarManager,
+    annotationManager: AnnotationManager,
     currentChapterReferences: Any,
     currentChapterVideos: Any,
     onReferenceClick: (Reference) -> Unit,
@@ -86,9 +88,25 @@ fun Toolbar(
                 expanded = showMarkupMenu,
                 onDismissRequest = { showMarkupMenu = false }
             ) {
-                DropdownMenuItem(text = { Text("Pen") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Highlight") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Eraser") }, onClick = { /* TODO */ })
+                DropdownMenuItem(text = { Text("Pen") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    annotationManager.togglePen(true)
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    annotationManager.toggleHighlight(true)
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Eraser") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    annotationManager.toggleErase(true)
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Exit") }, onClick = {
+                    annotationManager.toggleScribble(false)
+                    showMarkupMenu = false
+                })
             }
 
             // Resources Button (Text Button)
