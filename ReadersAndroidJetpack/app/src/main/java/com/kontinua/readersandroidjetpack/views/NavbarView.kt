@@ -28,8 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
@@ -38,9 +38,11 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @Composable
-fun SidebarWithPDFViewer(navbarManager: NavbarManager,
-                         collectionViewModel: CollectionViewModel,
-                         annotationManager: AnnotationManager,) {
+fun SidebarWithPDFViewer(
+    navbarManager: NavbarManager,
+    collectionViewModel: CollectionViewModel,
+    annotationManager: AnnotationManager
+) {
     val density = LocalDensity.current
 
     val animatedChapterSidebarWidth by animateDpAsState(
@@ -50,11 +52,13 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager,
 
     Box(modifier = Modifier.fillMaxSize()) {
         // PDF Viewer
-        //now passing down the collectionviewmodel which is made earlier
-        PDFViewer(modifier = Modifier.fillMaxSize(),
+        // now passing down the collectionviewmodel which is made earlier
+        PDFViewer(
+            modifier = Modifier.fillMaxSize(),
             navbarManager = navbarManager,
             collectionViewModel = collectionViewModel,
-            annotationManager = annotationManager)
+            annotationManager = annotationManager
+        )
 
         // Transparent clickable overlay.
         if (navbarManager.isChapterVisible) {

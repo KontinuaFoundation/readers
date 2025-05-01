@@ -8,19 +8,23 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 
 class ZoomOverlay @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null
+    context: Context,
+    attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
     // class to get the focus point when double tapping
 
     var onGestureFocus: ((PointF) -> Unit)? = null
 
-    private val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-        override fun onDoubleTap(e: MotionEvent): Boolean {
-            onGestureFocus?.invoke(PointF(e.x, e.y))
-            return false
+    private val gestureDetector = GestureDetector(
+        context,
+        object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                onGestureFocus?.invoke(PointF(e.x, e.y))
+                return false
+            }
         }
-    })
+    )
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         gestureDetector.onTouchEvent(ev)

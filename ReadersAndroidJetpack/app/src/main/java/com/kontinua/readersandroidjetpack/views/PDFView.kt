@@ -24,10 +24,12 @@ import java.io.File
 // TODO: pages are recomposing as they change, making for messy swiping.
 
 @Composable
-fun PDFViewer(modifier: Modifier = Modifier,
-              navbarManager: NavbarManager,
-              collectionViewModel: CollectionViewModel,
-              annotationManager: AnnotationManager) {
+fun PDFViewer(
+    modifier: Modifier = Modifier,
+    navbarManager: NavbarManager,
+    collectionViewModel: CollectionViewModel,
+    annotationManager: AnnotationManager
+) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
     // file currently in the view
@@ -71,7 +73,8 @@ fun PDFViewer(modifier: Modifier = Modifier,
                 }
 
                 overlay.tag = pdfView
-                overlay },
+                overlay
+            },
             update = { viewGroup ->
                 val pdfView = viewGroup.tag as PDFView
                 // resets zoom to center when not zoomed
@@ -102,11 +105,11 @@ fun PDFViewer(modifier: Modifier = Modifier,
                             }
                             .load()
                     }
-                        // only jump to the new page if it’s different
-                        val target = navbarManager.pageNumber
-                        if (pdfView.currentPage != target) {
-                            pdfView.jumpTo(target, true)
-                        }
+                    // only jump to the new page if it’s different
+                    val target = navbarManager.pageNumber
+                    if (pdfView.currentPage != target) {
+                        pdfView.jumpTo(target, true)
+                    }
                 }
             }
         )

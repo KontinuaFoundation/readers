@@ -29,9 +29,14 @@ import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.Drawing
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.OffsetSerializable
 
 @Composable
-fun DrawingCanvas(workbookId: String, page: Int,
-                  annotationManager: AnnotationManager,
-                  context: Context, zoom: Float, pan: Offset) {
+fun DrawingCanvas(
+    workbookId: String,
+    page: Int,
+    annotationManager: AnnotationManager,
+    context: Context,
+    zoom: Float,
+    pan: Offset
+) {
     var savedPaths by remember(workbookId, page) {
         mutableStateOf(DrawingStore.getPaths(context, workbookId, page).toMutableStateList())
     }
@@ -69,10 +74,12 @@ fun DrawingCanvas(workbookId: String, page: Int,
                                     isHighlight = path.isHighlight
                                 )
                             }
-                            DrawingStore.savePaths(context, workbookId, page, serializableList)                        }
+                            DrawingStore.savePaths(context, workbookId, page, serializableList)
+                        }
                     } else {
                         currentPath += normalized
-                    } },
+                    }
+                },
                 onDragEnd = {
                     if (!annotationManager.eraseEnabled && currentPath.isNotEmpty()) {
                         val newPath = DrawingPath(currentPath, isHighlight = annotationManager.highlightEnabled)
@@ -93,13 +100,13 @@ fun DrawingCanvas(workbookId: String, page: Int,
     // page starts at -45 so panY corrects while also accounting for zoom
     val panX = 1600 * zoom * page
     val panY = 45 * zoom
-    var newOffsetX = (panX-pan.x).toInt()
+    var newOffsetX = (panX - pan.x).toInt()
     var newOffsetY = (-pan.y - panY).toInt()
 
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .offset { IntOffset(newOffsetX, newOffsetY)  }
+            .offset { IntOffset(newOffsetX, newOffsetY) }
             .then(gestureModifier)
     ) {
         val pageWidth = size.width
@@ -110,7 +117,10 @@ fun DrawingCanvas(workbookId: String, page: Int,
         }
         drawPathLine(
             DrawingPath(currentPath, isHighlight = annotationManager.highlightEnabled),
-            pageWidth, pageHeight, zoom)
+            pageWidth,
+            pageHeight,
+            zoom
+        )
     }
 }
 
@@ -125,13 +135,13 @@ private fun DrawScope.drawPathLine(
     if (points.size < 2) return
     val path = Path().apply {
         moveTo(
-            (points.first().x * pageWidth ) * zoom ,
-            (points.first().y * pageHeight ) * zoom
+            (points.first().x * pageWidth) * zoom,
+            (points.first().y * pageHeight) * zoom
         )
         for (i in 1 until points.size) {
             lineTo(
-                (points[i].x * pageWidth ) * zoom ,
-                (points[i].y * pageHeight ) * zoom
+                (points[i].x * pageWidth) * zoom,
+                (points[i].y * pageHeight) * zoom
             )
         }
     }
@@ -145,4 +155,3 @@ private fun DrawScope.drawPathLine(
         )
     )
 }
-

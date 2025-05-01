@@ -2,11 +2,10 @@ package com.kontinua.readersandroidjetpack.viewmodels
 
 import android.content.Context
 import androidx.compose.ui.geometry.Offset
+import java.io.File
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.io.File
-
 
 class AnnotationViewModel : androidx.lifecycle.ViewModel() {
     data class DrawingPath(val points: List<Offset>, val isHighlight: Boolean = false)

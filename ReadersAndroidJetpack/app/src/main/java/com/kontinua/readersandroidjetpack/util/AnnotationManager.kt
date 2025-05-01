@@ -24,28 +24,28 @@ class AnnotationManager {
         highlightEnabled = false
     }
 
-    fun toggleScribble(boolean: Boolean){
+    fun toggleScribble(boolean: Boolean) {
         scribbleEnabled = boolean
-        if (!boolean){
+        if (!boolean) {
             penEnabled = false
             highlightEnabled = false
             eraseEnabled = false
         }
     }
 
-    fun togglePen(boolean: Boolean){
+    fun togglePen(boolean: Boolean) {
         penEnabled = boolean
         eraseEnabled = false
         highlightEnabled = false
     }
 
-    fun toggleHighlight(boolean: Boolean){
+    fun toggleHighlight(boolean: Boolean) {
         highlightEnabled = boolean
         penEnabled = false
         eraseEnabled = false
     }
 
-    fun toggleErase(boolean: Boolean){
+    fun toggleErase(boolean: Boolean) {
         eraseEnabled = boolean
         penEnabled = false
         highlightEnabled = false

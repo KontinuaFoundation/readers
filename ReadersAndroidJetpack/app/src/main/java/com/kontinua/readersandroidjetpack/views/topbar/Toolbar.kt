@@ -91,7 +91,8 @@ fun Toolbar(
                 DropdownMenuItem(text = { Text("Pen") }, onClick = {
                     annotationManager.toggleScribble(true)
                     annotationManager.togglePen(true)
-                    showMarkupMenu = false})
+                    showMarkupMenu = false
+                })
                 DropdownMenuItem(text = { Text("Highlight") }, onClick = {
                     annotationManager.toggleScribble(true)
                     annotationManager.toggleHighlight(true)

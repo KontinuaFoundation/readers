@@ -105,7 +105,8 @@ class MainActivity : ComponentActivity() {
                         currentChapterVideos = currentChapterVideos,
                         onReferenceClick = handleReferenceClick,
                         onVideoClick = handleVideoClick,
-                        annotationManager = annotationManager)
+                        annotationManager = annotationManager
+                    )
                 },
                 bottomBar = {
                     Column {
