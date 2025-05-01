@@ -94,16 +94,14 @@ fun PDFViewer(modifier: Modifier = Modifier,
                 }
             }
         )
-        if (pdfFile != null){
-            DrawingCanvas(
-                workbookId = navbarManager.currentWorkbook,
-                page = navbarManager.pageNumber,
-                annotationManager = annotationManager,
-                context = context,
-                zoom = currentZoom.floatValue,
-                pan = panOffset.value
-            )
-        }
+        DrawingCanvas(
+            workbookId = navbarManager.currentWorkbook,
+            page = navbarManager.pageNumber,
+            annotationManager = annotationManager,
+            context = context,
+            zoom = currentZoom.floatValue,
+            pan = panOffset.value
+        )
     }
     pdfFile = null
 }
