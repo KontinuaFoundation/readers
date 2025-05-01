@@ -36,6 +36,7 @@ fun PDFViewer(modifier: Modifier = Modifier,
     val currentZoom = remember { mutableFloatStateOf(1f) }
     val zoomPoint = remember { mutableStateOf(Offset.Zero) }
     val panOffset = remember { mutableStateOf(Offset.Zero) }
+    val pdf = remember { mutableStateOf(false) }
     navbarManager.setCollection(collectionViewModel)
     chapterClicked = navbarManager.chapterClicked
 
@@ -44,6 +45,7 @@ fun PDFViewer(modifier: Modifier = Modifier,
         navbarManager.setClicked(false)
         if (file != null) {
             pdfFile = file
+            pdf.value = true
         }
     }
 
@@ -94,14 +96,17 @@ fun PDFViewer(modifier: Modifier = Modifier,
                 }
             }
         )
-        DrawingCanvas(
-            workbookId = navbarManager.currentWorkbook,
-            page = navbarManager.pageNumber,
-            annotationManager = annotationManager,
-            context = context,
-            zoom = currentZoom.floatValue,
-            pan = panOffset.value
-        )
+        if (pdf.value) {
+            val workbookId = "Workbook ${collectionViewModel.currentWorkbook.number}"
+            DrawingCanvas(
+                workbookId = workbookId,
+                page = navbarManager.pageNumber,
+                annotationManager = annotationManager,
+                context = context,
+                zoom = currentZoom.floatValue,
+                pan = panOffset.value
+            )
+        }
     }
     pdfFile = null
 }

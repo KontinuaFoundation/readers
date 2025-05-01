@@ -121,7 +121,6 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
             Text(chapter.title, modifier = Modifier.clickable {
                 navbarManager.setPage(chapter.startPage - 1)
                 navbarManager.setClicked(true)
-                collectionVM.setWorkbook(collectionVM.currentWorkbook)
                 onClose()
             })
         }
@@ -150,7 +149,6 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
             Text("Workbook ${workbook.number}", modifier = Modifier.clickable {
                 collectionVM.setWorkbook(workbook)
                 navbarManager.setPage(0)
-                navbarManager.setWorkbook("Workbook ${workbook.number}")
                 onClose()
             })
         }

@@ -32,7 +32,8 @@ class AnnotationViewModel : androidx.lifecycle.ViewModel() {
                 DrawingPathSerializable(
                     drawingPath.points.map { offset ->
                         OffsetSerializable(offset.x, offset.y)
-                    }
+                    },
+                    drawingPath.isHighlight
                 )
             }
             savePaths(context, workbookId, page, serializableList)
