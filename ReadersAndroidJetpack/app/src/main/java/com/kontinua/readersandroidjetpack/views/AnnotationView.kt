@@ -24,7 +24,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPath
+import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPathSerializable
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingStore
+import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.OffsetSerializable
 
 @Composable
 fun DrawingCanvas(workbookId: String, page: Int,
@@ -48,16 +50,36 @@ fun DrawingCanvas(workbookId: String, page: Int,
             detectDragGestures(
                 onDragStart = { offset ->
                     val normalized = Offset(offset.x / size.width, offset.y / size.height)
-                    currentPath = listOf(normalized) },
+                    if (!annotationManager.eraseEnabled) {
+                        currentPath = listOf(normalized)
+                    }
+                },
                 onDrag = { change, _ ->
                     val normalized = Offset(change.position.x / size.width, change.position.y / size.height)
-                    currentPath += normalized },
+                    if (annotationManager.eraseEnabled) {
+                        val eraseThreshold = 0.02f
+                        val touch = normalized
+                        val removed = savedPaths.removeAll { path ->
+                            path.points.any { pt -> (pt - touch).getDistance() < eraseThreshold }
+                        }
+                        if (removed) {
+                            val serializableList = savedPaths.map { path ->
+                                DrawingPathSerializable(
+                                    points = path.points.map { pt -> OffsetSerializable(pt.x, pt.y) },
+                                    isHighlight = path.isHighlight
+                                )
+                            }
+                            DrawingStore.savePaths(context, workbookId, page, serializableList)                        }
+                    } else {
+                        currentPath += normalized
+                    } },
                 onDragEnd = {
-                    val newPath = DrawingPath(currentPath)
-                    savedPaths.add(newPath)
-                    DrawingStore.addPath(context, workbookId, page, newPath)
-                    println("Saving path for workbookId=$workbookId, page=$page, current total paths=${savedPaths.size}")
-                    currentPath = emptyList()
+                    if (!annotationManager.eraseEnabled && currentPath.isNotEmpty()) {
+                        val newPath = DrawingPath(currentPath, isHighlight = annotationManager.highlightEnabled)
+                        savedPaths.add(newPath)
+                        DrawingStore.addPath(context, workbookId, page, newPath)
+                        currentPath = emptyList()
+                    }
                 }
             )
         }
@@ -83,17 +105,23 @@ fun DrawingCanvas(workbookId: String, page: Int,
         val pageWidth = size.width
         val pageHeight = size.height
 
-        savedPaths.forEach { drawPathLine(it.points, pageWidth, pageHeight, zoom) }
-        drawPathLine(currentPath, pageWidth, pageHeight, zoom)
+        savedPaths.forEach {
+            drawPathLine(it, pageWidth, pageHeight, zoom)
+        }
+        drawPathLine(
+            DrawingPath(currentPath, isHighlight = annotationManager.highlightEnabled),
+            pageWidth, pageHeight, zoom)
     }
 }
 
 private fun DrawScope.drawPathLine(
-    points: List<Offset>,
+    path: DrawingPath,
     pageWidth: Float,
     pageHeight: Float,
     zoom: Float
 ) {
+    val points = path.points
+    val highlight = path.isHighlight
     if (points.size < 2) return
     val path = Path().apply {
         moveTo(
@@ -109,8 +137,12 @@ private fun DrawScope.drawPathLine(
     }
     drawPath(
         path = path,
-        color = Color.Black,
-        style = Stroke(width = 5f * zoom , cap = StrokeCap.Round, join = StrokeJoin.Round)
+        color = if (highlight) Color.Yellow.copy(alpha = 0.4f) else Color.Black,
+        style = Stroke(
+            width = if (highlight) 20f * zoom else 5f * zoom,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
     )
 }
 

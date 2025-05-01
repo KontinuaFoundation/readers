@@ -7,14 +7,20 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 
-class AnnotationViewModel : androidx.lifecycle.ViewModel() {
-    data class DrawingPath(val points: List<Offset>)
 
+class AnnotationViewModel : androidx.lifecycle.ViewModel() {
+    data class DrawingPath(val points: List<Offset>, val isHighlight: Boolean = false)
+
+    @OptIn(kotlinx.serialization.InternalSerializationApi::class)
     @Serializable
     data class OffsetSerializable(val x: Float, val y: Float)
 
+    @OptIn(kotlinx.serialization.InternalSerializationApi::class)
     @Serializable
-    data class DrawingPathSerializable(val points: List<OffsetSerializable>)
+    data class DrawingPathSerializable(
+        val points: List<OffsetSerializable>,
+        val isHighlight: Boolean = false
+    )
 
     object DrawingStore {
         private const val DIR_NAME = "annotations"
@@ -38,14 +44,14 @@ class AnnotationViewModel : androidx.lifecycle.ViewModel() {
                 if (!file.exists()) return emptyList()
                 val json = file.readText()
                 Json.decodeFromString<List<DrawingPathSerializable>>(json)
-                    .map { DrawingPath(it.points.map { pt -> Offset(pt.x, pt.y) }) }
+                    .map { DrawingPath(it.points.map { pt -> Offset(pt.x, pt.y) }, isHighlight = it.isHighlight) }
             } catch (e: Exception) {
                 e.printStackTrace()
                 emptyList()
             }
         }
 
-        private fun savePaths(context: Context, workbookId: String, page: Int, paths: List<DrawingPathSerializable>) {
+        fun savePaths(context: Context, workbookId: String, page: Int, paths: List<DrawingPathSerializable>) {
             try {
                 val file = getFile(context, workbookId, page)
                 file.parentFile?.mkdirs()
