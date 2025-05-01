@@ -63,7 +63,7 @@ fun PDFViewer(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
                 // adds zoom overlay over pdfview in order to grab where the zoom is occurring at
-                val overlay = ZoomOverlay(context)
+                val overlay = ZoomView(context)
                 val pdfView = PDFView(ctx, null)
 
                 overlay.addView(pdfView)

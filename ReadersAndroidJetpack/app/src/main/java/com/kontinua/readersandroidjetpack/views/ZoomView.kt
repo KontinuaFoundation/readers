@@ -7,7 +7,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.widget.FrameLayout
 
-class ZoomOverlay @JvmOverloads constructor(
+class ZoomView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
