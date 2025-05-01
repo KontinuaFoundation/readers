@@ -50,7 +50,6 @@ struct PDFView: View {
                 ZStack {
                     if let pdfDoc = pdfDocument {
                         ZStack {
-                            // PDF Document View
                             DocumentView(
                                 pdfDocument: pdfDoc,
                                 currentPageIndex: $currentPage
@@ -62,7 +61,6 @@ struct PDFView: View {
                                 loadPaths(for: newValue)
                             }
 
-                            // Annotations
                             AnnotationsView(
                                 pagePaths: $pagePaths,
                                 highlightPaths: $highlightPaths,
@@ -82,7 +80,7 @@ struct PDFView: View {
                             .scaleEffect(zoomManager.newZoomLevel(),
                                          anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
 
-                            // Text Overlay
+                            // Annotations Text Overlay
                             TextView(
                                 textManager: textManager,
                                 textBoxes: $textBoxes,
@@ -164,20 +162,17 @@ struct PDFView: View {
                                 }
                             }
                             ToolbarItemGroup(placement: .bottomBar) {
-                                // Create a horizontal stack for the entire bottom toolbar
                                 HStack(spacing: 0) {
-                                    // Timer controls and progress bar should fill available space
                                     TimerProgressView(timerManager: timerManager)
                                         .frame(maxWidth: .infinity)
-
-                                    // Feedback button with minimal spacing
+                                    
                                     FeedbackView.button(
                                         feedbackManager: feedbackManager,
                                         workbook: currentWorkbook,
                                         currentPage: currentPage,
                                         collection: collection
                                     )
-                                    .padding(.leading, 4) // Minimal padding between progress bar and button
+                                    .padding(.leading, 4)
                                 }
                             }
                         }
