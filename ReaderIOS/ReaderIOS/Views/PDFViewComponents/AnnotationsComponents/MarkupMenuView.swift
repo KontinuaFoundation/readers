@@ -94,7 +94,7 @@ struct MarkupMenu: View {
 
     private func penColorButton(color: Color, label: String) -> some View {
         Button {
-            selectedPenColor = color
+            selectPenColor(color)
             selectScribbleTool("Pen")
             exitNotSelected = true
             isPenSubmenuVisible = false
@@ -110,7 +110,7 @@ struct MarkupMenu: View {
 
     private func highlighterColorButton(color: Color, label: String) -> some View {
         Button {
-            selectedHighlighterColor = color
+            selectHighlightColor(color)
             selectScribbleTool("Highlight")
             exitNotSelected = true
             isPenSubmenuVisible = false
@@ -126,5 +126,11 @@ struct MarkupMenu: View {
 
     private func selectScribbleTool(_ tool: String) {
         selectedScribbleTool = tool
+    }
+    private func selectPenColor(_ color: Color) {
+        selectedPenColor = color
+    }
+    private func selectHighlightColor(_ color: Color) {
+        selectedHighlighterColor = color
     }
 }

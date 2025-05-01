@@ -14,8 +14,8 @@ struct AnnotationsView: View {
     let key: String
     let nextPage: (() -> Void)?
     let previousPage: (() -> Void)?
-    let selectedColor: Color
-    let selectedHighlighterColor: Color
+    @Binding var selectedColor: Color
+    @Binding var selectedHighlighterColor: Color
     let zoomedIn: Bool
     let zoomManager: ZoomManager
 
@@ -31,10 +31,9 @@ struct AnnotationsView: View {
     // MARK: - Local State
 
     @State private var liveDrawingPath: Path = .init()
-    @State private var liveDrawingColor: Color = .black
-    @State private var liveHighlighterColor: Color = .yellow
 
     @State private var lastDragValue: CGSize = .zero
+
 
     // MARK: - Body
 
@@ -59,8 +58,8 @@ struct AnnotationsView: View {
                 // Draw live drawing path
                 context.stroke(Path(liveDrawingPath.cgPath),
                                with: selectedScribbleTool == "Highlight" ?
-                                   .color(liveHighlighterColor.opacity(0.2)) :
-                                   .color(liveDrawingColor),
+                    .color(selectedHighlighterColor.opacity(0.2)) :
+                        .color(selectedColor),
                                lineWidth: selectedScribbleTool == "Highlight" ? 15 : 2)
             }
             .gesture(
@@ -89,9 +88,9 @@ struct AnnotationsView: View {
 
                         if !zoomManager.getZoomedIn() || !selectedScribbleTool.isEmpty {
                             if selectedScribbleTool == "Pen" {
-                                finalizeCurrentPath(for: &pagePaths, using: liveDrawingColor)
+                                finalizeCurrentPath(for: &pagePaths, using: selectedColor)
                             } else if selectedScribbleTool == "Highlight" {
-                                finalizeCurrentPath(for: &highlightPaths, using: liveHighlighterColor)
+                                finalizeCurrentPath(for: &highlightPaths, using: selectedHighlighterColor)
                             } else if selectedScribbleTool.isEmpty || selectedScribbleTool == "Text" {
                                 // Page change logic (swipe left/right) only when not zoomed in.
                                 if value.translation.width < 0 {
@@ -124,17 +123,6 @@ struct AnnotationsView: View {
                     textOpened = false
                 }
             }
-        }
-        .onAppear {
-            // Initialize color values
-            liveDrawingColor = selectedColor
-            liveHighlighterColor = selectedHighlighterColor
-        }
-        .onChange(of: selectedColor) { newColor, _ in
-            liveDrawingColor = newColor
-        }
-        .onChange(of: selectedHighlighterColor) { newColor, _ in
-            liveHighlighterColor = newColor
         }
         // Listen for geometry changes to update zoom manager
         .background(GeometryReader { geometry in
@@ -177,7 +165,7 @@ struct AnnotationsView: View {
                                      using _: Color)
     {
         guard !liveDrawingPath.isEmpty else { return }
-        let finalColor = selectedScribbleTool == "Highlight" ? liveHighlighterColor : liveDrawingColor
+        let finalColor = selectedScribbleTool == "Highlight" ? selectedHighlighterColor : selectedColor
         paths[key, default: []].append((path: liveDrawingPath, color: finalColor))
         liveDrawingPath = Path()
     }

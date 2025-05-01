@@ -24,8 +24,8 @@ struct PDFView: View {
     @State private var exitNotSelected = false
     @State private var pagePaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var highlightPaths: [String: [(path: Path, color: Color)]] = [:]
-    @State private var selectedPenColor: Color = .black
-    @State private var selectedHighlighterColor: Color = .yellow
+    @State private var selectedPenColor: Color = .clear
+    @State private var selectedHighlighterColor: Color = .clear
     @State private var isPenSubmenuVisible = false
     @State private var textBoxes: [String: [TextBoxData]] = [:]
     @State private var deleteTextBox = false
@@ -33,6 +33,7 @@ struct PDFView: View {
     @State private var textOpened = false
     @State private var isHidden = false
     @State private var showClearAlert = false
+    @State private var isLandscape = false
 
     // MARK: - StateObjects and Observed
 
@@ -46,6 +47,7 @@ struct PDFView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let isNowLandscape = geometry.size.width > geometry.size.height
             NavigationStack {
                 ZStack {
                     VStack {
@@ -72,14 +74,16 @@ struct PDFView: View {
                                     key: uniqueKey(for: currentPage),
                                     nextPage: { goToNextPage() },
                                     previousPage: { goToPreviousPage() },
-                                    selectedColor: selectedPenColor,
-                                    selectedHighlighterColor: selectedHighlighterColor,
+                                    selectedColor: $selectedPenColor,
+                                    selectedHighlighterColor: $selectedHighlighterColor,
                                     zoomedIn: zoomManager.getZoomedIn(),
                                     zoomManager: zoomManager,
                                     annotationManager: annotationStorageManager,
                                     textManager: textManager,
                                     textBoxes: $textBoxes
                                 )
+                                .frame(width: isNowLandscape ? geometry.size.height * 0.6 : geometry.size.width,
+                                       height: isNowLandscape ? geometry.size.height * 0.8 : geometry.size.height)
                                 .scaleEffect(zoomManager.newZoomLevel(),
                                              anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
 
@@ -95,6 +99,8 @@ struct PDFView: View {
                                     textOpened: $textOpened,
                                     isHidden: $isHidden
                                 )
+                                .frame(width: isNowLandscape ? geometry.size.height * 0.6 : geometry.size.width,
+                                       height: isNowLandscape ? geometry.size.height * 0.8 : geometry.size.height)
                                 .scaleEffect(zoomManager.newZoomLevel(),
                                              anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
                                 .alert("Are you sure you want to delete the text box?",

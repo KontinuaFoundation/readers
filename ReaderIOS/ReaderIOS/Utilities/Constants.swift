@@ -9,7 +9,7 @@ import Foundation
 
 enum ApplicationConstants {
     enum API {
-        static let baseURLString = "https://d5hsjjmy8w.us-west-2.awsapprunner.com/api/"
+        static let baseURLString = "http://192.168.1.181:8000/api/"
     }
 
     enum APIEndpoints {
