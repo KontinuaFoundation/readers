@@ -19,20 +19,32 @@ class NavbarManager {
     var currentChapterIndex by mutableIntStateOf(-1)
         private set
 
+    var chapterClicked by mutableStateOf(false)
+        private set
+
     var pageNumber by mutableIntStateOf(0)
         private set
 
     var pageCount by mutableIntStateOf(-1)
         private set
 
+    var currentWorkbook: String
+
+
     init {
         isChapterVisible = false
         isWorkbookVisible = false
         collectionVM = null
+        chapterClicked = false
+        currentWorkbook = "Workbook 1"
     }
 
     fun toggleChapterSidebar() {
         isChapterVisible = !isChapterVisible
+    }
+
+    fun setClicked(boolean: Boolean) {
+        chapterClicked = boolean
     }
 
     fun toggleWorkbookSidebar() {
@@ -55,6 +67,10 @@ class NavbarManager {
     fun setPage(newPage: Int){
         pageNumber = newPage
         updateChapter()
+    }
+
+    fun setWorkbook(newWorkbook: String){
+        currentWorkbook = newWorkbook
     }
 
     fun goToNextPage() {

@@ -1,16 +1,22 @@
 package com.kontinua.readersandroidjetpack.views
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
 import com.kontinua.readersandroidjetpack.util.APIManager
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
@@ -18,46 +24,86 @@ import java.io.File
 //TODO: pages are recomposing as they change, making for messy swiping.
 
 @Composable
-fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
+fun PDFViewer(modifier: Modifier = Modifier,
+              navbarManager: NavbarManager,
+              collectionViewModel: CollectionViewModel,
+              annotationManager: AnnotationManager) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
     val workbook by collectionViewModel.workbookState.collectAsState()
+    val collectionViewModel: CollectionViewModel = viewModel()
+    var chapterClicked by remember { mutableStateOf(false) }
+    val currentZoom = remember { mutableFloatStateOf(1f) }
+    val zoomPoint = remember { mutableStateOf(Offset.Zero) }
+    val panOffset = remember { mutableStateOf(Offset.Zero) }
     navbarManager.setCollection(collectionViewModel)
+    chapterClicked = navbarManager.chapterClicked
 
-    LaunchedEffect(workbook) {
+    LaunchedEffect(workbook, chapterClicked) {
         val file = workbook?.let { APIManager.getPDFFromWorkbook(context, it) }
+        navbarManager.setClicked(false)
         if (file != null) {
             pdfFile = file
         }
     }
 
-    AndroidView(
-        modifier = modifier,
-        factory = { ctx ->
-            PDFView(ctx, null)
-        },
-        update = { pdfView ->
-            pdfFile?.let { file ->
-                pdfView.fromFile(file)
-                    .enableSwipe(true)
-                    .swipeHorizontal(true)
-                    .enableDoubletap(true)
-                    .defaultPage(navbarManager.pageNumber)
-                    .onPageChange{ page, pageCount ->
-                        navbarManager.setPage(page)
-                        navbarManager.setPageCountValue(pageCount)
-                    }
-                    .pageFling(true)
-                    .pageSnap(true)
-                    .onPageChange { page, pageCount ->
-                        navbarManager.setPage(page)
-                        navbarManager.setPageCountValue(pageCount)
-                    }
-                    .onLoad { navbarManager.setPage(pdfView.currentPage) }
-                    .load()
-                pdfView.jumpTo(navbarManager.pageNumber)
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { ctx ->
+                // adds zoom overlay over pdfview in order to grab where the zoom is occurring at
+                val overlay = ZoomOverlay(context)
+                val pdfView = PDFView(ctx, null)
+
+                overlay.addView(pdfView)
+
+                overlay.onGestureFocus = { pointF ->
+                    zoomPoint.value = Offset(pointF.x, pointF.y)
+                }
+
+                overlay.tag = pdfView
+                overlay },
+            update = { viewGroup ->
+                val pdfView = viewGroup.tag as PDFView
+                // resets zoom to center when not zoomed
+                if (currentZoom.floatValue == 1f) {
+                    zoomPoint.value = Offset(pdfView.width / 2f, pdfView.height / 2f)
+                }
+                pdfFile?.let { file ->
+                    pdfView.fromFile(file)
+                        .enableSwipe(true)
+                        .swipeHorizontal(true)
+                        .enableDoubletap(true)
+                        .defaultPage(navbarManager.pageNumber)
+                        .pageFling(true)
+                        .pageSnap(true)
+                        .onPageChange { page, pageCount ->
+                            navbarManager.setPage(page)
+                            navbarManager.setPageCountValue(pageCount)
+                        }
+                        .onLoad { navbarManager.setPage(pdfView.currentPage) }
+                        .onPageScroll { page, offset ->
+                            currentZoom.floatValue = pdfView.zoom
+                            panOffset.value = Offset(
+                                -pdfView.currentXOffset,
+                                -pdfView.currentYOffset
+                            )
+                        }
+                        .load()
+                    pdfView.jumpTo(navbarManager.pageNumber)
+                }
             }
+        )
+        if (pdfFile != null){
+            DrawingCanvas(
+                workbookId = navbarManager.currentWorkbook,
+                page = navbarManager.pageNumber,
+                annotationManager = annotationManager,
+                context = context,
+                zoom = currentZoom.floatValue,
+                pan = panOffset.value
+            )
         }
-    )
+    }
     pdfFile = null
 }

@@ -16,17 +16,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
-import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
-
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
+import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Toolbar(
     timerViewModel: TimerViewModel,
     navbarManager: NavbarManager,
+    annotationManager: AnnotationManager,
     currentChapterReferences: Any,
     currentChapterVideos: Any,
     onReferenceClick: (Reference) -> Unit,
@@ -89,9 +90,19 @@ fun Toolbar(
                 expanded = showMarkupMenu,
                 onDismissRequest = { showMarkupMenu = false }
             ) {
-                DropdownMenuItem(text = { Text("Pen") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Highlight") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Eraser") }, onClick = { /* TODO */ })
+                DropdownMenuItem(text = { Text("Pen") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    showMarkupMenu = false})
+                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Eraser") }, onClick = {
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Exit") }, onClick = {
+                    annotationManager.toggleScribble(false)
+                    showMarkupMenu = false
+                })
             }
 
             // Resources Button (Text Button)
