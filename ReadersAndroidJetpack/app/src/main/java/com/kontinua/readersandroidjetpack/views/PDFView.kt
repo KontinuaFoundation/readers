@@ -49,15 +49,10 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, colle
                     }
                     .pageFling(true)
                     .pageSnap(true)
-                    .onPageChange { page, pageCount ->
-                        navbarManager.setPage(page)
-                        navbarManager.setPageCountValue(pageCount)
-                    }
                     .onLoad { navbarManager.setPage(pdfView.currentPage) }
                     .load()
                 pdfView.jumpTo(navbarManager.pageNumber)
             }
         }
     )
-    pdfFile = null
 }
