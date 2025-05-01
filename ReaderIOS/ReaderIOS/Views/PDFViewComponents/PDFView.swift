@@ -165,7 +165,7 @@ struct PDFView: View {
                                 HStack(spacing: 0) {
                                     TimerProgressView(timerManager: timerManager)
                                         .frame(maxWidth: .infinity)
-                                    
+
                                     FeedbackView.button(
                                         feedbackManager: feedbackManager,
                                         workbook: currentWorkbook,
