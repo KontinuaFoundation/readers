@@ -18,17 +18,26 @@ import java.io.File
 //TODO: pages are recomposing as they change, making for messy swiping.
 
 @Composable
-fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
+fun PDFViewer(
+    modifier: Modifier = Modifier,
+    navbarManager: NavbarManager,
+    collectionViewModel: CollectionViewModel
+) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
+    // file currently in the view
+    var lastLoadedFile by remember { mutableStateOf<File?>(null) }
     val workbook by collectionViewModel.workbookState.collectAsState()
-    navbarManager.setCollection(collectionViewModel)
 
+    LaunchedEffect(collectionViewModel) {
+        navbarManager.setCollection(collectionViewModel)
+    }
+
+    // only fetch new file when workbook changes
     LaunchedEffect(workbook) {
-        val file = workbook?.let { APIManager.getPDFFromWorkbook(context, it) }
-        if (file != null) {
-            pdfFile = file
-        }
+        workbook?.let {
+            APIManager.getPDFFromWorkbook(context, it)
+        }?.also { pdfFile = it }
     }
 
     AndroidView(
@@ -38,20 +47,28 @@ fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, colle
         },
         update = { pdfView ->
             pdfFile?.let { file ->
-                pdfView.fromFile(file)
-                    .enableSwipe(true)
-                    .swipeHorizontal(true)
-                    .enableDoubletap(true)
-                    .defaultPage(navbarManager.pageNumber)
-                    .onPageChange{ page, pageCount ->
-                        navbarManager.setPage(page)
-                        navbarManager.setPageCountValue(pageCount)
-                    }
-                    .pageFling(true)
-                    .pageSnap(true)
-                    .onLoad { navbarManager.setPage(pdfView.currentPage) }
-                    .load()
-                pdfView.jumpTo(navbarManager.pageNumber)
+                if (lastLoadedFile != file) {
+                    lastLoadedFile = file
+                    pdfView.fromFile(file)
+                        .enableSwipe(true)
+                        .swipeHorizontal(true)
+                        .enableDoubletap(true)
+                        .pageFling(true)
+                        .pageSnap(true)
+                        .defaultPage(navbarManager.pageNumber)
+                        .onPageChange { page, count ->
+                            navbarManager.setPage(page)
+                            navbarManager.setPageCountValue(count)
+                        }
+                        .onLoad { navbarManager.setPage(pdfView.currentPage) }
+                        .load()
+                }
+
+                // only jump to the new page if it’s different
+                val target = navbarManager.pageNumber
+                if (pdfView.currentPage != target) {
+                    pdfView.jumpTo(target, true)
+                }
             }
         }
     )
