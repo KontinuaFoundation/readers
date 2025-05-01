@@ -33,6 +33,12 @@ fun PDFViewer(
         navbarManager.setCollection(collectionViewModel)
     }
 
+    LaunchedEffect(workbook) {
+        // whenever workbook switches, force reload
+        pdfFile = null
+        lastLoadedFile = null
+    }
+
     // only fetch new file when workbook changes
     LaunchedEffect(workbook) {
         workbook?.let {
