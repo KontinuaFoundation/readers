@@ -9,7 +9,7 @@ data class Workbook(
     val number: Int,
     val chapters: List<Chapter>,
     val pdf: String,
-    val collection: Int,
+    val collection: Int
 )
 
 @JsonClass(generateAdapter = true)

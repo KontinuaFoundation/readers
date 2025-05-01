@@ -1,0 +1,59 @@
+name: Android Format & Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  format:
+    name: Run Kotlin Formatting and Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Step 2: Generate hash for the Android directory
+      - name: Generate Android code hash
+        id: android-hash
+        run: |
+          if [ -d "ReadersAndroidJetpack" ]; then
+            find ReadersAndroidJetpack -type f | sort | xargs md5sum | md5sum | cut -d' ' -f1 > android_hash.txt
+            echo "hash=$(cat android_hash.txt)" >> $GITHUB_OUTPUT
+          else
+            echo "hash=no-android-files" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 3: Check cache based on the hash
+      - name: Cache ktlint check results
+        id: cache-ktlint
+        uses: actions/cache@v3
+        with:
+          path: .cache/android-ktlint
+          key: android-ktlint-${{ steps.android-hash.outputs.hash }}
+
+      #Step 4: Set up Java version
+      - name: Set up JDK
+        if: steps.cache-ktlint.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "gradle"
+
+      #Step 5: Run ktlint check
+      - name: Run ktlint checks
+        if: steps.cache-ktlint.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
+        working-directory: ./ReadersAndroidJetpack
+        run: |
+          ./gradlew ktlintCheck
+          mkdir -p ../.cache/android-ktlint
+          echo "Ktlint check passed at $(date)" > ../.cache/android-ktlint/result
+
+      #Step 6: Report success
+      - name: Report success
+        if: success()
+        run: echo "✅ Android code passed ktlint formatting and linting checks!"
