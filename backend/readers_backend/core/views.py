@@ -9,6 +9,7 @@ from .utils import send_feedback_email
 from rest_framework.viewsets import GenericViewSet
 from django.utils import timezone
 from django.conf import settings
+from rest_framework.exceptions import ValidationError
 
 from core.models import Collection, Workbook, Feedback
 from core.serializers import (
@@ -54,6 +55,22 @@ class CollectionViewSet(
         if self.action in ["list", "retrieve", "latest"]:
             return []
         return [IsAuthenticated()]
+    
+    def validate_query_params(self, params):
+        '''
+        Throws validation error if any of the query params are not valid.
+        '''
+        if params.get("major_version") is not None:
+            try:
+                int(params.get("major_version"))
+            except ValueError:
+                raise ValidationError({"major_version": "Major version must be an integer."})
+        if params.get("minor_version") is not None:
+            try:
+                int(params.get("minor_version"))
+            except ValueError:
+                raise ValidationError({"minor_version": "Minor version must be an integer."})
+        
 
     def get_queryset(self):
         queryset = Collection.objects.all()
@@ -67,6 +84,8 @@ class CollectionViewSet(
             return queryset
 
         params = self.request.query_params
+
+        self.validate_query_params(params)
 
         major_version = params.get("major_version")
         minor_version = params.get("minor_version")

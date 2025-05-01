@@ -18,8 +18,6 @@ class CollectionTestCase(APITestCase):
         self._original_throttle_classes = CollectionViewSet.throttle_classes
         CollectionViewSet.throttle_classes = []
 
-
-
     def tearDown(self):
         """Ensure uploaded files are deleted after tests"""
         for workbook in Workbook.objects.all():
@@ -659,3 +657,17 @@ class CollectionTestCase(APITestCase):
         self.assertEqual(response.status_code, 404)
 
         self.assertEqual(response.data['message'], "No collections found.")
+    
+    def test_retrieve_latest_collection_with_major_version_not_int(self):
+        url = reverse('collection-latest')
+        response = self.client.get(f"{url}?major_version=not_int")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['major_version'], "Major version must be an integer.")
+    
+    def test_retrieve_latest_collection_with_minor_version_not_int(self):
+        url = reverse('collection-latest')
+        response = self.client.get(f"{url}?minor_version=not_int")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['minor_version'], "Minor version must be an integer.")
