@@ -34,13 +34,10 @@ fun PDFViewer(modifier: Modifier = Modifier,
     var lastLoadedFile by remember { mutableStateOf<File?>(null) }
     val workbook by collectionViewModel.workbookState.collectAsState()
     val collectionViewModel: CollectionViewModel = viewModel()
-    var chapterClicked by remember { mutableStateOf(false) }
     val currentZoom = remember { mutableFloatStateOf(1f) }
     val zoomPoint = remember { mutableStateOf(Offset.Zero) }
     val panOffset = remember { mutableStateOf(Offset.Zero) }
-    val pdf = remember { mutableStateOf(false) }
     navbarManager.setCollection(collectionViewModel)
-    chapterClicked = navbarManager.chapterClicked
 
     LaunchedEffect(collectionViewModel) {
         navbarManager.setCollection(collectionViewModel)
