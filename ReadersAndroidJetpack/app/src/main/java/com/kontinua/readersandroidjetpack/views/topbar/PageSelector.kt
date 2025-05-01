@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.util.NavbarManager
-//TODO: keyboard does not fully pop up when entering a page number, and i think it should.
+// TODO: keyboard does not fully pop up when entering a page number, and i think it should.
 
 @Composable
 fun PageSelector(navbarManager: NavbarManager) {
@@ -139,7 +139,6 @@ private fun resolvePageNumber(
     navbarManager: NavbarManager,
     onResult: (String) -> Unit
 ) {
-
     val currentPage = navbarManager.pageNumber
     val pageCount = navbarManager.pageCount
 
@@ -168,7 +167,7 @@ private fun resolvePageNumber(
                 onResult((lastPage + 1).toString())
             }
             // Case 3: Page number entered is too low (e.g., 0 or negative, resulting in newPage < 0)
-            //this should not happen
+            // this should not happen
             else -> {
                 onResult(getCurrentPageDisplayString())
             }
