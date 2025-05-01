@@ -56,11 +56,11 @@ class NavbarManager {
         this.collectionVM = collection
     }
 
-    fun setPageCountValue(newPageCount: Int){
+    fun setPageCountValue(newPageCount: Int) {
         pageCount = newPageCount
     }
 
-    fun setPage(newPage: Int){
+    fun setPage(newPage: Int) {
         pageNumber = newPage
         updateChapter()
     }
@@ -78,7 +78,7 @@ class NavbarManager {
     }
 
     fun getCurrentChapter(): Chapter? {
-        return if(currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex) else null
+        return if (currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex) else null
     }
 
     fun getAdjustedPage(): String {
@@ -86,7 +86,7 @@ class NavbarManager {
     }
 
     private fun updateChapter() {
-        val startPages = collectionVM?.chapters?.map { it.startPage - 1} ?: emptyList()
+        val startPages = collectionVM?.chapters?.map { it.startPage - 1 } ?: emptyList()
         val index = startPages.binarySearch(pageNumber)
 
         currentChapterIndex = if (index >= 0) {

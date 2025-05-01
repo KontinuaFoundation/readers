@@ -33,7 +33,7 @@ fun Toolbar(
     onReferenceClick: (Reference) -> Unit,
     onVideoClick: (Video) -> Unit
 
-    ) {
+) {
     var showMarkupMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
@@ -41,13 +41,12 @@ fun Toolbar(
     val references = currentChapterReferences as? List<Reference> ?: emptyList()
     val videos = currentChapterVideos as? List<Video> ?: emptyList()
 
-    //are there any resources? enables or disables the button
+    // are there any resources? enables or disables the button
     val hasResources = references.isNotEmpty() || videos.isNotEmpty()
-
 
     TopAppBar(
         title = {
-            //page navigation stuff in the title area
+            // page navigation stuff in the title area
             PageSelector(navbarManager)
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -67,7 +66,7 @@ fun Toolbar(
                 onDismissRequest = { showTimerMenu = false }
             ) {
                 DropdownMenuItem(text = { Text("15 Minutes") }, onClick = {
-                    //currently set to 15 seconds for testing
+                    // currently set to 15 seconds for testing
                     // TODO: must be fixed to 15 minutes before deployment
                     timerViewModel.setDurationAndReset(15 * 1000L)
                     showTimerMenu = false
@@ -80,7 +79,6 @@ fun Toolbar(
                     timerViewModel.setDurationAndReset(25 * 60 * 1000L)
                     showTimerMenu = false
                 })
-
             }
             // Markup Button (Text Button)
             TextButton(onClick = { showMarkupMenu = true }) {
@@ -115,7 +113,7 @@ fun Toolbar(
                 onClick = {
                     showResourcesMenu = true
                 },
-                //only on if there are resources
+                // only on if there are resources
                 enabled = hasResources
             ) {
                 Text("Digital Resources")
@@ -123,9 +121,8 @@ fun Toolbar(
             DropdownMenu(
                 expanded = showResourcesMenu,
                 onDismissRequest = { showResourcesMenu = false }
-            )
-            {
-                //if there are no resources. should not dropdown, but if it does for some reason then it will just say no resources
+            ) {
+                // if there are no resources. should not dropdown, but if it does for some reason then it will just say no resources
                 if (videos.isEmpty() && references.isEmpty()) {
                     DropdownMenuItem(
                         text = { Text("No resources for this chapter") },
@@ -153,6 +150,6 @@ fun Toolbar(
                     }
                 }
             }
-}
-)
+        }
+    )
 }

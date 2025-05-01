@@ -37,7 +37,7 @@ import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressInd
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 
-//TODO: add a loading screen of some sort while the PDF is getting fetched
+// TODO: add a loading screen of some sort while the PDF is getting fetched
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,20 +56,22 @@ class MainActivity : ComponentActivity() {
     fun MainScreen() {
         val timerViewModel: TimerViewModel = viewModel()
         val navbarManager = remember { NavbarManager() }
-        val feedbackViewModel: FeedbackViewModel = viewModel(
-            factory = FeedbackViewModelFactory(navbarManager)
-        )
         val annotationManager = remember { AnnotationManager() }
+        val feedbackViewModel: FeedbackViewModel =
+            viewModel(
+                factory = FeedbackViewModelFactory(navbarManager)
+            )
 
         val collectionViewModel: CollectionViewModel = viewModel()
         LaunchedEffect(collectionViewModel) {
             navbarManager.setCollection(collectionViewModel)
         }
-        val chapterContentManager = remember(navbarManager) {
-            ChapterContentManager(
-                navbarManager = navbarManager
-            )
-        }
+        val chapterContentManager =
+            remember(navbarManager) {
+                ChapterContentManager(
+                    navbarManager = navbarManager
+                )
+            }
 
         val currentChapterReferences by remember(navbarManager.currentChapterIndex) {
             derivedStateOf { chapterContentManager.getReferencesForCurrentChapter() }
@@ -103,8 +105,7 @@ class MainActivity : ComponentActivity() {
                         currentChapterVideos = currentChapterVideos,
                         onReferenceClick = handleReferenceClick,
                         onVideoClick = handleVideoClick,
-                        annotationManager = annotationManager
-                    )
+                        annotationManager = annotationManager)
                 },
                 bottomBar = {
                     Column {
@@ -121,7 +122,7 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize()
             ) { innerPadding ->
                 Column(modifier = Modifier.padding(innerPadding)) {
-                    //need to pass collectionview down to sidebar with pdf
+                    // need to pass collectionview down to sidebar with pdf
                     SidebarWithPDFViewer(
                         navbarManager = navbarManager,
                         collectionViewModel = collectionViewModel,
@@ -131,11 +132,11 @@ class MainActivity : ComponentActivity() {
                 FeedbackForm(viewModel = feedbackViewModel)
             }
         }
-            if (overlayContent != null) {
-                ResourceOverlayView(
-                    content = overlayContent,
-                    onDismissRequest = dismissOverlay // Pass the dismiss function
-                )
-            }
+        if (overlayContent != null) {
+            ResourceOverlayView(
+                content = overlayContent,
+                onDismissRequest = dismissOverlay // Pass the dismiss function
+            )
+        }
     }
 }

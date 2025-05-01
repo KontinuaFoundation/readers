@@ -21,7 +21,7 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
-//TODO: pages are recomposing as they change, making for messy swiping.
+// TODO: pages are recomposing as they change, making for messy swiping.
 
 @Composable
 fun PDFViewer(modifier: Modifier = Modifier,
@@ -30,6 +30,8 @@ fun PDFViewer(modifier: Modifier = Modifier,
               annotationManager: AnnotationManager) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
+    // file currently in the view
+    var lastLoadedFile by remember { mutableStateOf<File?>(null) }
     val workbook by collectionViewModel.workbookState.collectAsState()
     val collectionViewModel: CollectionViewModel = viewModel()
     var chapterClicked by remember { mutableStateOf(false) }
@@ -40,13 +42,21 @@ fun PDFViewer(modifier: Modifier = Modifier,
     navbarManager.setCollection(collectionViewModel)
     chapterClicked = navbarManager.chapterClicked
 
-    LaunchedEffect(workbook, chapterClicked) {
-        val file = workbook?.let { APIManager.getPDFFromWorkbook(context, it) }
-        navbarManager.setClicked(false)
-        if (file != null) {
-            pdfFile = file
-            pdf.value = true
-        }
+    LaunchedEffect(collectionViewModel) {
+        navbarManager.setCollection(collectionViewModel)
+    }
+
+    LaunchedEffect(workbook) {
+        // whenever workbook switches, force reload
+        pdfFile = null
+        lastLoadedFile = null
+    }
+
+    // only fetch new file when workbook changes
+    LaunchedEffect(workbook) {
+        workbook?.let {
+            APIManager.getPDFFromWorkbook(context, it)
+        }?.also { pdfFile = it }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -72,31 +82,38 @@ fun PDFViewer(modifier: Modifier = Modifier,
                     zoomPoint.value = Offset(pdfView.width / 2f, pdfView.height / 2f)
                 }
                 pdfFile?.let { file ->
-                    pdfView.fromFile(file)
-                        .enableSwipe(true)
-                        .swipeHorizontal(true)
-                        .enableDoubletap(true)
-                        .defaultPage(navbarManager.pageNumber)
-                        .pageFling(true)
-                        .pageSnap(true)
-                        .onPageChange { page, pageCount ->
-                            navbarManager.setPage(page)
-                            navbarManager.setPageCountValue(pageCount)
+                    if (lastLoadedFile != file) {
+                        lastLoadedFile = file
+                        pdfView.fromFile(file)
+                            .enableSwipe(true)
+                            .swipeHorizontal(true)
+                            .enableDoubletap(true)
+                            .defaultPage(navbarManager.pageNumber)
+                            .pageFling(true)
+                            .pageSnap(true)
+                            .onPageChange { page, pageCount ->
+                                navbarManager.setPage(page)
+                                navbarManager.setPageCountValue(pageCount)
+                            }
+                            .onLoad { navbarManager.setPage(pdfView.currentPage) }
+                            .onPageScroll { page, offset ->
+                                currentZoom.floatValue = pdfView.zoom
+                                panOffset.value = Offset(
+                                    -pdfView.currentXOffset,
+                                    -pdfView.currentYOffset
+                                )
+                            }
+                            .load()
+                    }
+                        // only jump to the new page if it’s different
+                        val target = navbarManager.pageNumber
+                        if (pdfView.currentPage != target) {
+                            pdfView.jumpTo(target, true)
                         }
-                        .onLoad { navbarManager.setPage(pdfView.currentPage) }
-                        .onPageScroll { page, offset ->
-                            currentZoom.floatValue = pdfView.zoom
-                            panOffset.value = Offset(
-                                -pdfView.currentXOffset,
-                                -pdfView.currentYOffset
-                            )
-                        }
-                        .load()
-                    pdfView.jumpTo(navbarManager.pageNumber)
                 }
             }
         )
-        if (pdf.value) {
+        if (pdfFile != null) {
             val workbookId = "Workbook ${collectionViewModel.currentWorkbook.number}"
             DrawingCanvas(
                 workbookId = workbookId,
@@ -108,5 +125,4 @@ fun PDFViewer(modifier: Modifier = Modifier,
             )
         }
     }
-    pdfFile = null
 }

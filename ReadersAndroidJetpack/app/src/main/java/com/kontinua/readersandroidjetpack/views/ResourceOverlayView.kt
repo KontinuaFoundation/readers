@@ -7,10 +7,21 @@ import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -23,20 +34,23 @@ import com.kontinua.readersandroidjetpack.serialization.Video
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("FunctionName")
 fun ResourceOverlayView(
     content: Any?, // Can be Reference or Video
     onDismissRequest: () -> Unit
 ) {
-    val url: String? = when (content) {
-        is Reference -> content.link
-        is Video -> content.link
-        else -> null
-    }
-    val title: String = when (content) {
-        is Reference -> content.title
-        is Video -> content.title
-        else -> "Resource" // Fallback title
-    }
+    val url: String? =
+        when (content) {
+            is Reference -> content.link
+            is Video -> content.link
+            else -> null
+        }
+    val title: String =
+        when (content) {
+            is Reference -> content.title
+            is Video -> content.title
+            else -> "Resource" // Fallback title
+        }
 
     if (url == null) {
         // Handle cases where content is null or doesn't have a URL unexpectedly
@@ -46,7 +60,8 @@ fun ResourceOverlayView(
     }
 
     Box(
-        modifier = Modifier
+        modifier =
+        Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.6f))
             .clickable(
@@ -58,7 +73,8 @@ fun ResourceOverlayView(
     ) {
         // Prevent clicks on the card from propagating to the background dismiss
         Card(
-            modifier = Modifier
+            modifier =
+            Modifier
                 .fillMaxWidth(0.9f)
                 .fillMaxHeight(0.85f)
                 .clickable(
@@ -82,7 +98,8 @@ fun ResourceOverlayView(
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Close Resource")
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
+                    colors =
+                    TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
@@ -92,12 +109,13 @@ fun ResourceOverlayView(
                     modifier = Modifier.fillMaxSize(),
                     factory = { context ->
                         WebView(context).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
+                            layoutParams =
+                                ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                                )
                             webViewClient = WebViewClient()
-                            //needs to be enabled for the videos to be able to play
+                            // needs to be enabled for the videos to be able to play
                             settings.javaScriptEnabled = true
                             loadUrl(url)
                         }
