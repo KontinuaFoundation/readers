@@ -59,10 +59,18 @@ jobs:
       - name: Run backend tests
         if: steps.cache-test.outputs.cache-hit != 'true' && steps.backend-hash.outputs.hash != 'no-backend-files'
         working-directory: ./backend/readers_backend
+        env:
+          DJANGO_DEBUG: "True"
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
         run: |
-          DJANGO_DEBUG=True python3 manage.py test 
-          echo "Backend test passed at $(date)" > ./.cache/backend-test/result
+          python3 manage.py test 
+          echo "Backend test at $(date)" > ./.cache/backend-test/result
 
       # Step 7: Report success
       - name: Report test status
+        if: success()
         run: echo "backend test successful!"
