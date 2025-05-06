@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kontinua Foundation Readers</title>
+    <title>Kontinua Foundation Sequence</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
@@ -33,7 +33,7 @@
 </body>
 
 <style>
-    /* Basic Reset & Global Styles */
+
     *,
     *::before,
     *::after {
@@ -43,92 +43,84 @@
     }
 
     html {
-        font-size: 16px; /* Base font size */
+        font-size: 16px;
         scroll-behavior: smooth;
     }
 
     body {
         font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-        background-color: #f9fafb; /* Very light gray, almost white */
-        color: #1f2937; /* Darker gray for better contrast */
+        background-color: #f9fafb;
+        color: #1f2937; 
         line-height: 1.6;
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Header */
     header {
         background-color: #ffffff;
-        padding: 1.25rem 2rem; /* 20px 32px */
+        padding: 1.25rem 2rem; 
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
         text-align: center;
-        border-bottom: 1px solid #e5e7eb; /* Subtle border */
+        border-bottom: 1px solid #e5e7eb; 
     }
 
     .logo {
-        max-height: 48px; /* Slightly reduced for a sleeker look */
+        max-height: 48px; 
         width: auto;
         vertical-align: middle;
     }
 
-    /* Main Content Container */
     .container {
-        max-width: 1280px; /* Common max-width for modern layouts */
+        max-width: 1280px; 
         margin: 0 auto;
-        padding: 2.5rem 2rem; /* 40px 32px */
-        flex-grow: 1; /* Allows container to expand and push footer down */
+        padding: 2.5rem 2rem; 
+        flex-grow: 1; 
         width: 100%;
     }
 
-    /* Workbook Grid */
     .workbook-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Slightly larger cards */
-        gap: 2rem; /* 32px */
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 2rem;
     }
 
-    /* Individual Workbook Link/Card */
     .workbook-link {
         display: block;
         position: relative;
-        border-radius: 12px; /* Softer, more modern rounding */
+        border-radius: 12px; 
         overflow: hidden;
-        background-color: #ffffff; /* Card background */
+        background-color: #ffffff; 
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
         transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
-        text-decoration: none; /* Remove underline from link */
+        text-decoration: none; 
     }
 
     .workbook-link:hover,
-    .workbook-link:focus-visible { /* Added focus-visible for accessibility */
+    .workbook-link:focus-visible { 
         transform: translateY(-6px);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
     }
 
     .workbook-cover {
         width: 100%;
-        height: auto; /* Maintain aspect ratio */
-        aspect-ratio: 3 / 4; /* Common book cover aspect ratio, adjust if needed */
-        object-fit: cover; /* Ensures image covers the area without distortion */
+        height: auto;
+        aspect-ratio: 3 / 4; 
+        object-fit: cover;
         display: block;
-        background-color: #e5e7eb; /* Placeholder color for images */
+        background-color: #e5e7eb; 
     }
 
-    /* Workbook Overlay */
     .workbook-overlay {
         position: absolute;
-        inset: 0; /* top, right, bottom, left = 0 */
-        background: linear-gradient(to top, rgba(17, 24, 39, 0.85) 0%, rgba(17, 24, 39, 0.3) 60%, transparent 100%); /* Dark gradient overlay */
+        inset: 0; 
+        background: linear-gradient(to top, rgba(17, 24, 39, 0.85) 0%, rgba(17, 24, 39, 0.3) 60%, transparent 100%); 
         display: flex;
         flex-direction: column;
-        justify-content: flex-end; /* Align text to the bottom */
-        align-items: center; /* Center text horizontally */
+        justify-content: flex-end; 
+        align-items: center; 
         opacity: 0;
         transition: opacity 0.25s ease-in-out;
-        padding: 1.25rem 1rem; /* Padding for the text inside */
+        padding: 1.25rem 1rem; 
         text-align: center;
     }
 
@@ -140,19 +132,18 @@
     .workbook-overlay span {
         color: #ffffff;
         font-weight: 500;
-        font-size: 1rem; /* Slightly larger for better readability on overlay */
+        font-size: 1rem; 
         line-height: 1.4;
     }
 
-    /* Version Text (Footer-like) */
     .version-text {
         text-align: center;
-        color: #6b7280; /* Softer gray */
-        font-size: 0.875rem; /* 14px */
-        padding: 1.5rem 1rem; /* 24px 16px */
-        margin-top: 2rem; /* Space above version text */
-        border-top: 1px solid #e5e7eb; /* Subtle separator */
-        background-color: #ffffff; /* Match header background for consistency */
+        color: #6b7280; 
+        font-size: 0.875rem; 
+        padding: 1.5rem 1rem; 
+        margin-top: 2rem; 
+        border-top: 1px solid #e5e7eb; 
+        background-color: #ffffff; 
     }
 
     .no-collection-message {
@@ -162,10 +153,9 @@
         padding: 3rem 1rem;
     }
 
-    /* Responsive Adjustments */
     @media (max-width: 1024px) {
         .workbook-container {
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 1.5rem;
         }
         .container {
@@ -175,7 +165,7 @@
 
     @media (max-width: 768px) {
         html {
-            font-size: 15px; /* Slightly smaller base for smaller screens */
+            font-size: 15px; 
         }
         header {
             padding: 1rem 1.5rem;
@@ -200,7 +190,7 @@
 
     @media (max-width: 480px) {
         .workbook-container {
-            grid-template-columns: 1fr; /* Single column for very small screens */
+            grid-template-columns: 1fr;
             gap: 1.5rem;
         }
         .workbook-overlay span {
