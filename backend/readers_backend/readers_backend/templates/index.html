@@ -5,17 +5,218 @@
     <meta charset="UTF-8">
     <title>Kontinua Foundation Readers</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>The Sequence</h1>
-
+    <header>
+        <img src="{% static 'kontinua-logo-full.png' %}" alt="Kontinua Foundation" class="logo">
+    </header>
+    <div class="container">
+        {% if latest_us_collection %}
+            <div class="workbook-container">
+                {% for workbook in latest_us_collection.workbooks.all %}
+                    <a class="workbook-link" target="_blank" rel="noopener noreferrer" href="{{ workbook.pdf.url }}">
+                        <img class="workbook-cover" src="{% static 'covers/' %}{{ workbook.number }}.png" alt="Workbook {{ workbook.number }} Cover">
+                        <div class="workbook-overlay">
+                            <span>View Workbook {{ workbook.number }}</span>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-collection-message">No workbooks are currently available. Please check back later.</p>
+        {% endif %}
+    </div>
     {% if latest_us_collection %}
-    <h2>Latest Collection: {{ latest_us_collection.major_version }}.{{ latest_us_collection.minor_version }}</h2>
-    {% for workbook in latest_us_collection.workbooks.all %}
-    <a target="_blank" rel="noopener noreferrer" href="{{workbook.pdf.url}}">
-        <img src="{% static 'covers/' %}{{workbook.number}}.png" alt="My image">
-    </a>
-    {% endfor %}
+    <p class="version-text">Version {{ latest_us_collection.major_version }}.{{ latest_us_collection.minor_version }} {{ latest_us_collection.localization }}</p>
     {% endif %}
 </body>
+
+<style>
+    /* Basic Reset & Global Styles */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        font-size: 16px; /* Base font size */
+        scroll-behavior: smooth;
+    }
+
+    body {
+        font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        background-color: #f9fafb; /* Very light gray, almost white */
+        color: #1f2937; /* Darker gray for better contrast */
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header */
+    header {
+        background-color: #ffffff;
+        padding: 1.25rem 2rem; /* 20px 32px */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+        text-align: center;
+        border-bottom: 1px solid #e5e7eb; /* Subtle border */
+    }
+
+    .logo {
+        max-height: 48px; /* Slightly reduced for a sleeker look */
+        width: auto;
+        vertical-align: middle;
+    }
+
+    /* Main Content Container */
+    .container {
+        max-width: 1280px; /* Common max-width for modern layouts */
+        margin: 0 auto;
+        padding: 2.5rem 2rem; /* 40px 32px */
+        flex-grow: 1; /* Allows container to expand and push footer down */
+        width: 100%;
+    }
+
+    /* Workbook Grid */
+    .workbook-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Slightly larger cards */
+        gap: 2rem; /* 32px */
+    }
+
+    /* Individual Workbook Link/Card */
+    .workbook-link {
+        display: block;
+        position: relative;
+        border-radius: 12px; /* Softer, more modern rounding */
+        overflow: hidden;
+        background-color: #ffffff; /* Card background */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+        transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+        text-decoration: none; /* Remove underline from link */
+    }
+
+    .workbook-link:hover,
+    .workbook-link:focus-visible { /* Added focus-visible for accessibility */
+        transform: translateY(-6px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    }
+
+    .workbook-cover {
+        width: 100%;
+        height: auto; /* Maintain aspect ratio */
+        aspect-ratio: 3 / 4; /* Common book cover aspect ratio, adjust if needed */
+        object-fit: cover; /* Ensures image covers the area without distortion */
+        display: block;
+        background-color: #e5e7eb; /* Placeholder color for images */
+    }
+
+    /* Workbook Overlay */
+    .workbook-overlay {
+        position: absolute;
+        inset: 0; /* top, right, bottom, left = 0 */
+        background: linear-gradient(to top, rgba(17, 24, 39, 0.85) 0%, rgba(17, 24, 39, 0.3) 60%, transparent 100%); /* Dark gradient overlay */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end; /* Align text to the bottom */
+        align-items: center; /* Center text horizontally */
+        opacity: 0;
+        transition: opacity 0.25s ease-in-out;
+        padding: 1.25rem 1rem; /* Padding for the text inside */
+        text-align: center;
+    }
+
+    .workbook-link:hover .workbook-overlay,
+    .workbook-link:focus-visible .workbook-overlay {
+        opacity: 1;
+    }
+
+    .workbook-overlay span {
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 1rem; /* Slightly larger for better readability on overlay */
+        line-height: 1.4;
+    }
+
+    /* Version Text (Footer-like) */
+    .version-text {
+        text-align: center;
+        color: #6b7280; /* Softer gray */
+        font-size: 0.875rem; /* 14px */
+        padding: 1.5rem 1rem; /* 24px 16px */
+        margin-top: 2rem; /* Space above version text */
+        border-top: 1px solid #e5e7eb; /* Subtle separator */
+        background-color: #ffffff; /* Match header background for consistency */
+    }
+
+    .no-collection-message {
+        text-align: center;
+        font-size: 1.125rem;
+        color: #4b5563;
+        padding: 3rem 1rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 1024px) {
+        .workbook-container {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+        .container {
+            padding: 2rem 1.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        html {
+            font-size: 15px; /* Slightly smaller base for smaller screens */
+        }
+        header {
+            padding: 1rem 1.5rem;
+        }
+        .logo {
+            max-height: 40px;
+        }
+        .container {
+            padding: 1.5rem 1rem;
+        }
+        .workbook-container {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+        .workbook-link {
+            border-radius: 10px;
+        }
+        .workbook-overlay span {
+            font-size: 0.95rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .workbook-container {
+            grid-template-columns: 1fr; /* Single column for very small screens */
+            gap: 1.5rem;
+        }
+        .workbook-overlay span {
+            font-size: 0.9rem;
+        }
+        .version-text {
+            font-size: 0.8rem;
+            padding: 1.25rem 1rem;
+        }
+        .container {
+            padding: 1.5rem 0.75rem;
+        }
+         header {
+            padding: 1rem;
+        }
+    }
+</style>
+
 </html>
