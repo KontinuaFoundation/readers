@@ -20,6 +20,7 @@ from core.serializers import (
     FeedbackSerializer,
 )
 
+
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -45,7 +46,7 @@ class CollectionViewSet(
             return CollectionListSerializer
         elif self.action == "retrieve":
             return CollectionRetrieveSerializer
-        #TODO: Consider just returning the entire collection rather than the list representation...
+        # TODO: Consider just returning the entire collection rather than the list representation...
         elif self.action == "latest":
             return CollectionListSerializer
         return None
@@ -104,9 +105,10 @@ class CollectionViewSet(
         return Response(
             {"message": "Collection un-released."}, status=status.HTTP_200_OK
         )
+
     @action(detail=False, methods=["get"])
     def latest(self, request):
-        #TODO: Lets make this return the collection retrieve serializer at some point.
+        # TODO: Lets make this return the collection retrieve serializer at some point.
         # More specifically, is there a reason to make the client two two requests to get the chapters for the latest collection?
         queryset = self.get_queryset()
 

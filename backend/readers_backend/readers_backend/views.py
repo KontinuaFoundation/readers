@@ -1,7 +1,23 @@
 from django.views.generic import TemplateView
+from core.models import Collection
+
 
 class IndexView(TemplateView):
     template_name = "index.html"
 
     def get_context_data(self, **kwargs):
-        return {}
+
+        try:
+            latest = (
+                Collection.objects.filter(is_released=True, localization="en-US")
+                .prefetch_related("workbooks")
+                .latest()
+            )
+        except Collection.DoesNotExist:
+            return {
+                "latest_us_collection": None,
+            }
+
+        return {
+            "latest_us_collection": latest,
+        }

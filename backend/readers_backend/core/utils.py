@@ -2,6 +2,7 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from django.template.loader import render_to_string
 
+
 def send_feedback_email(feedback):
     """
     Send feedback from a user to the app's own email address.

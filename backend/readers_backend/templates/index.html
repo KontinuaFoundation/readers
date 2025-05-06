@@ -2,18 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Site</title>
+    <title>Kontinua Foundation Readers</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    <h1>Welcome to My Site</h1>
-    <p>This is a basic HTML boilerplate.</p>
-
+    <h1>The Sequence</h1>
+    {% if latest_us_collection %}
+    <h2>Latest Collection: {{ latest_us_collection.major_version }}.{{ latest_us_collection.minor_version }}</h2>
+    {% for workbook in latest_us_collection.workbooks.all %}
     <ul>
-        <li>Example item 1</li>
-        <li>Example item 2</li>
-        <li>Example item 3</li>
+        <li><a target="_blank" rel="noopener noreferrer" href="{{workbook.pdf.url}}">{{ workbook.number }}</a></li>
     </ul>
+    {% endfor %}
+    {% endif %}
+
 
     <form method="post">
         <input type="text" name="example_input" placeholder="Type something...">
