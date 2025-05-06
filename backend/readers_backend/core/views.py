@@ -145,6 +145,10 @@ class WorkbookViewSet(
         return [IsAuthenticated()]
 
 
+# TODO:
+# Currently we use google app specific password to send emails which limits the number of emails we can send.
+# This endpoint also does not have a strict rate limit per request. 
+# This should be addressed in the future...
 class FeedbackView(APIView):
     """
     API endpoint that allows users to submit feedback.
