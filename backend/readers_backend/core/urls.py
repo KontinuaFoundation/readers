@@ -18,7 +18,12 @@ Including another URLconf
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
-from core.views import FeedbackView, DestroyAuthTokenView, CollectionViewSet, WorkbookViewSet
+from core.views import (
+    FeedbackView,
+    DestroyAuthTokenView,
+    CollectionViewSet,
+    WorkbookViewSet,
+)
 from django.contrib import admin
 
 from core.views import (
@@ -29,8 +34,8 @@ from core.views import (
 )
 
 router = DefaultRouter()
-router.register('api/collections', CollectionViewSet, basename='collection')
-router.register('api/workbooks', WorkbookViewSet, basename='workbook')
+router.register("api/collections", CollectionViewSet, basename="collection")
+router.register("api/workbooks", WorkbookViewSet, basename="workbook")
 
 urlpatterns = [
     path("api/token/", obtain_auth_token, name="token-obtain"),

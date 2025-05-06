@@ -3,9 +3,9 @@ from core.models import Collection
 
 
 class IndexView(TemplateView):
-    '''
+    """
     Renders a grid of the latest en-US collection's workbooks.
-    '''
+    """
 
     template_name = "index.html"
 
