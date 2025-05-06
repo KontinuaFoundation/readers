@@ -21,6 +21,16 @@ from core.serializers import (
 )
 
 
+# TODO:
+# Let's use an openapi schema/library like drf-yasg to generate the API documentation.
+# Then lets display that here.
+class RootAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"message": f"Readers API v{settings.API_VERSION}"})
+
+
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
 

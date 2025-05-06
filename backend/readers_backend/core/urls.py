@@ -22,6 +22,7 @@ from core.views import (
     FeedbackView,
     DestroyAuthTokenView,
     CollectionViewSet,
+    RootAPIView,
     WorkbookViewSet,
 )
 from django.contrib import admin
@@ -38,6 +39,7 @@ router.register("api/collections", CollectionViewSet, basename="collection")
 router.register("api/workbooks", WorkbookViewSet, basename="workbook")
 
 urlpatterns = [
+    path("api/", RootAPIView.as_view(), name="root"),
     path("api/token/", obtain_auth_token, name="token-obtain"),
     path("api/token/destroy/", DestroyAuthTokenView.as_view(), name="token-destroy"),
     path("api/feedback/", FeedbackView.as_view(), name="feedback"),

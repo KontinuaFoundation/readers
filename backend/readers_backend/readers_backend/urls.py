@@ -24,7 +24,6 @@ from readers_backend.views import IndexView
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
     path("", include("core.urls"), name="core"),
-    path("api/", include("core.urls"), name="core"),
 ]
 
 if settings.DEBUG:
