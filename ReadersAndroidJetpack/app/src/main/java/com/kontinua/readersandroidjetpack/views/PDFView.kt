@@ -1,4 +1,15 @@
 package com.kontinua.readersandroidjetpack.views
+
+//added
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -39,6 +50,10 @@ fun PDFViewer(
     val currentZoom = remember { mutableFloatStateOf(1f) }
     val zoomPoint = remember { mutableStateOf(Offset.Zero) }
     val panOffset = remember { mutableStateOf(Offset.Zero) }
+
+    //added
+    var isBookmarked by remember { mutableStateOf(false) }
+
     navbarManager.setCollection(collectionViewModel)
 
     LaunchedEffect(collectionViewModel) {
@@ -49,6 +64,7 @@ fun PDFViewer(
         // whenever workbook switches, force reload
         pdfFile = null
         lastLoadedFile = null
+        isBookmarked = false
     }
 
     // only fetch new file when workbook changes
@@ -58,7 +74,8 @@ fun PDFViewer(
         }?.also { pdfFile = it }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    //made this a lowercase m
+    Box(modifier = modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
@@ -122,6 +139,19 @@ fun PDFViewer(
                 context = context,
                 zoom = currentZoom.floatValue,
                 pan = panOffset.value
+            )
+        }
+        IconButton(
+            onClick = { isBookmarked = !isBookmarked },
+            modifier = Modifier
+                .align(Alignment.TopEnd) // Aligns to the top-right corner of the Box
+                .padding(16.dp)        // Adds some padding from the edges
+        ) {
+            Icon(
+                imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                contentDescription = if (isBookmarked) "Page Bookmarked" else "Bookmark Page"
+                // You might want to set a tint color for better visibility depending on your background
+                // tint = Color.White // Example
             )
         }
     }
