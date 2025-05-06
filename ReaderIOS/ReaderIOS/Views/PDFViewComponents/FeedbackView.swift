@@ -58,12 +58,12 @@ struct FeedbackButton: View {
             // Show feedback
             feedbackManager.showFeedback()
         }, label: {
-            Image(systemName: "message.fill")
-                .font(.system(size: 20))
+            Text("Submit Feedback")
                 .foregroundColor(.white)
-                .padding(8)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
                 .background(Color.blue)
-                .clipShape(Circle())
+                .cornerRadius(12)
                 .shadow(radius: 2)
         })
     }
@@ -180,9 +180,12 @@ struct FeedbackView: View {
                 switch result {
                 case .success:
                     showSuccessAlert = true
+                    showErrorAlert = false
                 case let .failure(error):
                     errorMessage = error.localizedDescription
                     showErrorAlert = true
+                    showSuccessAlert = false
+                    print("Feedback submission failed: \(error.localizedDescription)")
                 }
             }
         }

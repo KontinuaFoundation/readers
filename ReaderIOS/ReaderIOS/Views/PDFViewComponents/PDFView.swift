@@ -162,17 +162,19 @@ struct PDFView: View {
                                 }
                             }
                             ToolbarItemGroup(placement: .bottomBar) {
-                                HStack(spacing: 0) {
-                                    TimerProgressView(timerManager: timerManager)
-                                        .frame(maxWidth: .infinity)
-
-                                    FeedbackView.button(
-                                        feedbackManager: feedbackManager,
-                                        workbook: currentWorkbook,
-                                        currentPage: currentPage,
-                                        collection: collection
-                                    )
-                                    .padding(.leading, 4)
+                                VStack(spacing: 0) {
+                                    Spacer(minLength: 20)
+                                    HStack(spacing: 0) {
+                                        TimerProgressView(timerManager: timerManager)
+                                            .frame(maxWidth: .infinity)
+                                        FeedbackView.button(
+                                            feedbackManager: feedbackManager,
+                                            workbook: currentWorkbook,
+                                            currentPage: currentPage,
+                                            collection: collection
+                                        )
+                                        .padding(.leading, 5)
+                                    }
                                 }
                             }
                         }
