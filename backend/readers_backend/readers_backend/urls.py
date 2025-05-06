@@ -16,12 +16,14 @@ Including another URLconf
 """
 from django.urls import path
 from django.urls.conf import include
-
 from django.conf import settings
 from django.conf.urls.static import static
+from readers_backend.views import IndexView
 
 urlpatterns = [
+    path("", IndexView.as_view(), name="index"),
     path("", include("core.urls"), name="core"),
+    path("api/", include("core.urls"), name="core"),
 ]
 
 if settings.DEBUG:

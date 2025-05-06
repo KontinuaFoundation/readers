@@ -183,10 +183,12 @@ FEEDBACK_EMAIL = os.environ.get(
     "FEEDBACK_EMAIL", EMAIL_HOST_USER
 )  # Where feedback should be sent
 
+# The only template view is the index view.
+# Will display a basic page with the latest US collection.
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
