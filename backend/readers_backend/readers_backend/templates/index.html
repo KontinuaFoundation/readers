@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,19 +8,14 @@
 </head>
 <body>
     <h1>The Sequence</h1>
+
     {% if latest_us_collection %}
     <h2>Latest Collection: {{ latest_us_collection.major_version }}.{{ latest_us_collection.minor_version }}</h2>
     {% for workbook in latest_us_collection.workbooks.all %}
-    <ul>
-        <li><a target="_blank" rel="noopener noreferrer" href="{{workbook.pdf.url}}">{{ workbook.number }}</a></li>
-    </ul>
+    <a target="_blank" rel="noopener noreferrer" href="{{workbook.pdf.url}}">
+        <img src="{% static 'covers/' %}{{workbook.number}}.png" alt="My image">
+    </a>
     {% endfor %}
     {% endif %}
-
-
-    <form method="post">
-        <input type="text" name="example_input" placeholder="Type something...">
-        <button type="submit">Submit</button>
-    </form>
 </body>
 </html>
