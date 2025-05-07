@@ -38,15 +38,18 @@ import java.util.regex.Pattern
 
 // Helper function to extract YouTube video ID from diff URL formats
 // tbh got this function from chat so it could be bad but it's working at least
+// Helper function to extract YouTube video ID from various URL formats
 fun extractYouTubeVideoId(youtubeUrl: String?): String? {
     if (youtubeUrl.isNullOrBlank()) {
         return null
     }
-    // Pattern to cover various YouTube URL formats (watch, youtu.be, embed, shorts)
-    // idk much about regex stuff so this also could be bad
-    val pattern =
-        "(?<=watch\\?v=|/videos/|embed/|youtu.be/|/v/|/e/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu.be%2F|%2Fv%2F|e/|shorts/|live/)[^#&?\\n]*"
-    val compiledPattern = Pattern.compile(pattern)
+    // Pattern to cover various YouTube URL formats (watch, youtu.be, embed, shorts, live)
+    //stupid strategy to combat the linter saying the line was too long
+    val patternString =
+        "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|" +
+            "watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu.be%2F|" +
+            "%2Fv%2F|e\\/|shorts\\/|live\\/)[^#&?\\n]*"
+    val compiledPattern = Pattern.compile(patternString)
     val matcher = compiledPattern.matcher(youtubeUrl)
     return if (matcher.find()) {
         matcher.group()
@@ -83,7 +86,10 @@ fun getYouTubeEmbedHtml(videoId: String): String {
 // basically says do normal unless its a youtube video and then do the new thing
 sealed class WebViewLoadStrategy {
     data class LoadUrl(val url: String) : WebViewLoadStrategy()
-    data class LoadHtml(val htmlContent: String, val baseUrl: String = "https://www.youtube.com") : WebViewLoadStrategy()
+    data class LoadHtml(
+        val htmlContent: String,
+        val baseUrl: String = "https://www.youtube.com" // base url
+    ) : WebViewLoadStrategy()
     data object None : WebViewLoadStrategy()
 }
 
