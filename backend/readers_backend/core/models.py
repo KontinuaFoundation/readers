@@ -16,6 +16,9 @@ class Collection(models.Model):
         # That is, no negative sign (-) is required....
         get_latest_by = ["major_version", "minor_version", "localization"]
 
+    def __str__(self):
+        return f"{self.localization} {self.major_version}.{self.minor_version}"
+
 
 # Create your models here.
 class Workbook(models.Model):
@@ -29,6 +32,9 @@ class Workbook(models.Model):
     class Meta:
         unique_together = ("number", "collection")
         ordering = ["number", "collection"]
+    
+    def __str__(self):
+        return f"Workbook {self.number} of {self.collection}"
 
 
 # Feedback Model

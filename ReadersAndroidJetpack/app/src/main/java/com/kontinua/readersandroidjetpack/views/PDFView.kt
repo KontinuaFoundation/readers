@@ -1,63 +1,128 @@
 package com.kontinua.readersandroidjetpack.views
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
 import com.kontinua.readersandroidjetpack.util.APIManager
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
-//TODO: pages are recomposing as they change, making for messy swiping.
+// TODO: pages are recomposing as they change, making for messy swiping.
 
 @Composable
-fun PDFViewer(modifier: Modifier = Modifier, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
+fun PDFViewer(
+    modifier: Modifier = Modifier,
+    navbarManager: NavbarManager,
+    collectionViewModel: CollectionViewModel,
+    annotationManager: AnnotationManager
+) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
+    // file currently in the view
+    var lastLoadedFile by remember { mutableStateOf<File?>(null) }
     val workbook by collectionViewModel.workbookState.collectAsState()
+    val collectionViewModel: CollectionViewModel = viewModel()
+    val currentZoom = remember { mutableFloatStateOf(1f) }
+    val zoomPoint = remember { mutableStateOf(Offset.Zero) }
+    val panOffset = remember { mutableStateOf(Offset.Zero) }
     navbarManager.setCollection(collectionViewModel)
 
-    LaunchedEffect(workbook) {
-        val file = workbook?.let { APIManager.getPDFFromWorkbook(context, it) }
-        if (file != null) {
-            pdfFile = file
-        }
+    LaunchedEffect(collectionViewModel) {
+        navbarManager.setCollection(collectionViewModel)
     }
 
-    AndroidView(
-        modifier = modifier,
-        factory = { ctx ->
-            PDFView(ctx, null)
-        },
-        update = { pdfView ->
-            pdfFile?.let { file ->
-                pdfView.fromFile(file)
-                    .enableSwipe(true)
-                    .swipeHorizontal(true)
-                    .enableDoubletap(true)
-                    .defaultPage(navbarManager.pageNumber)
-                    .onPageChange{ page, pageCount ->
-                        navbarManager.setPage(page)
-                        navbarManager.setPageCountValue(pageCount)
+    LaunchedEffect(workbook) {
+        // whenever workbook switches, force reload
+        pdfFile = null
+        lastLoadedFile = null
+    }
+
+    // only fetch new file when workbook changes
+    LaunchedEffect(workbook) {
+        workbook?.let {
+            APIManager.getPDFFromWorkbook(context, it)
+        }?.also { pdfFile = it }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { ctx ->
+                // adds zoom overlay over pdfview in order to grab where the zoom is occurring at
+                val overlay = ZoomView(context)
+                val pdfView = PDFView(ctx, null)
+
+                overlay.addView(pdfView)
+
+                overlay.onGestureFocus = { pointF ->
+                    zoomPoint.value = Offset(pointF.x, pointF.y)
+                }
+
+                overlay.tag = pdfView
+                overlay
+            },
+            update = { viewGroup ->
+                val pdfView = viewGroup.tag as PDFView
+                // resets zoom to center when not zoomed
+                if (currentZoom.floatValue == 1f) {
+                    zoomPoint.value = Offset(pdfView.width / 2f, pdfView.height / 2f)
+                }
+                pdfFile?.let { file ->
+                    if (lastLoadedFile != file) {
+                        lastLoadedFile = file
+                        pdfView.fromFile(file)
+                            .enableSwipe(true)
+                            .swipeHorizontal(true)
+                            .enableDoubletap(true)
+                            .defaultPage(navbarManager.pageNumber)
+                            .pageFling(true)
+                            .pageSnap(true)
+                            .onPageChange { page, pageCount ->
+                                navbarManager.setPage(page)
+                                navbarManager.setPageCountValue(pageCount)
+                            }
+                            .onLoad { navbarManager.setPage(pdfView.currentPage) }
+                            .onPageScroll { page, offset ->
+                                currentZoom.floatValue = pdfView.zoom
+                                panOffset.value = Offset(
+                                    -pdfView.currentXOffset,
+                                    -pdfView.currentYOffset
+                                )
+                            }
+                            .load()
                     }
-                    .pageFling(true)
-                    .pageSnap(true)
-                    .onPageChange { page, pageCount ->
-                        navbarManager.setPage(page)
-                        navbarManager.setPageCountValue(pageCount)
+                    // only jump to the new page if it’s different
+                    val target = navbarManager.pageNumber
+                    if (pdfView.currentPage != target) {
+                        pdfView.jumpTo(target, true)
                     }
-                    .onLoad { navbarManager.setPage(pdfView.currentPage) }
-                    .load()
-                pdfView.jumpTo(navbarManager.pageNumber)
+                }
             }
+        )
+        if (pdfFile != null) {
+            val workbookId = "Workbook ${collectionViewModel.currentWorkbook.number}"
+            DrawingCanvas(
+                workbookId = workbookId,
+                page = navbarManager.pageNumber,
+                annotationManager = annotationManager,
+                context = context,
+                zoom = currentZoom.floatValue,
+                pan = panOffset.value
+            )
         }
-    )
-    pdfFile = null
+    }
 }

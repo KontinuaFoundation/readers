@@ -20,8 +20,8 @@ jobs:
       - name: Generate Android code hash
         id: android-hash
         run: |
-          if [ -d "ReaderAndroid" ]; then
-            find ReaderAndroid -type f | sort | xargs md5sum | md5sum | cut -d' ' -f1 > android_hash.txt
+          if [ -d "ReadersAndroidJetpack" ]; then
+            find ReadersAndroidJetpack -type f | sort | xargs md5sum | md5sum | cut -d' ' -f1 > android_hash.txt
             echo "hash=$(cat android_hash.txt)" >> $GITHUB_OUTPUT
           else
             echo "hash=no-android-files" >> $GITHUB_OUTPUT
@@ -44,21 +44,16 @@ jobs:
           distribution: "temurin"
           cache: gradle
 
-      #Step 5: Grant permissions
-      - name: Grant execute permission for gradlew
-        if: steps.cache-build.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
-        run: chmod +x gradlew
-        working-directory: ./ReaderAndroid
-
-      #Step 6: Build the project
+      #Step 5: Build the project
       - name: Build with Gradle
         if: steps.cache-build.outputs.cache-hit != 'true' && steps.android-hash.outputs.hash != 'no-android-files'
-        working-directory: ./ReaderAndroid
+        working-directory: ./ReadersAndroidJetpack
         run: |
           ./gradlew assembleDebug
           mkdir -p ../.cache/android-build
           echo "Build passed at $(date)" > ../.cache/android-build/result
 
-      #Step 7: Report success
+      #Step 6: Report success
       - name: Report build status
+        if: success()
         run: echo "Android build successful!"

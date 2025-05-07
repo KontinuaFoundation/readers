@@ -28,16 +28,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @Composable
-fun SidebarWithPDFViewer(navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
+fun SidebarWithPDFViewer(
+    navbarManager: NavbarManager,
+    collectionViewModel: CollectionViewModel,
+    annotationManager: AnnotationManager
+) {
     val density = LocalDensity.current
 
     val animatedChapterSidebarWidth by animateDpAsState(
@@ -47,10 +52,15 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager, collectionViewModel: Coll
 
     Box(modifier = Modifier.fillMaxSize()) {
         // PDF Viewer
-        //now passing down the collectionviewmodel which is made earlier
-        PDFViewer(modifier = Modifier.fillMaxSize(), navbarManager = navbarManager, collectionViewModel = collectionViewModel)
+        // now passing down the collectionviewmodel which is made earlier
+        PDFViewer(
+            modifier = Modifier.fillMaxSize(),
+            navbarManager = navbarManager,
+            collectionViewModel = collectionViewModel,
+            annotationManager = annotationManager
+        )
 
-        //Transparent clickable overlay.
+        // Transparent clickable overlay.
         if (navbarManager.isChapterVisible) {
             Box(
                 Modifier
@@ -65,7 +75,8 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager, collectionViewModel: Coll
                                 }
                             }
                         }
-                    })
+                    }
+            )
         }
 
         // Chapter Sidebar
@@ -89,8 +100,10 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager, collectionViewModel: Coll
             exit = slideOutHorizontally(targetOffsetX = { -it }), // Slide to left
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
-            WorkbookSidebar(onClose = { navbarManager.closeSidebar() },
-                navbarManager = navbarManager)
+            WorkbookSidebar(
+                onClose = { navbarManager.closeSidebar() },
+                navbarManager = navbarManager
+            )
         }
     }
 }
@@ -98,7 +111,7 @@ fun SidebarWithPDFViewer(navbarManager: NavbarManager, collectionViewModel: Coll
 @Composable
 fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager: NavbarManager) {
     val collectionVM = navbarManager.collectionVM
-    val chapters: List<Chapter> = collectionVM?.chapters ?: emptyList()
+    val chapters: List<Chapter> = collectionVM!!.chapters
     val scroll = rememberScrollState()
     Column(
         modifier = Modifier
@@ -109,20 +122,24 @@ fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager
             .verticalScroll(state = scroll)
             .clickable(
                 indication = null,
-                interactionSource = remember { MutableInteractionSource() }) { /* Prevent clicks from propagating */ },
+                interactionSource = remember { MutableInteractionSource() }
+            ) { /* Prevent clicks from propagating */ },
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         WorkbookButton(onClick = onButtonClick)
-        for (i in chapters.indices){
+        for (i in chapters.indices) {
             val chapter = chapters[i]
-            val bgColor = if(i == navbarManager.currentChapterIndex) Color.LightGray else Color.Transparent
-            Text(stringResource(id = R.string.chapter_info, chapter.chapNum, chapter.title), modifier = Modifier
-                .background(bgColor)
-                .clickable {
-                collectionVM?.setWorkbook(collectionVM.currentWorkbook)
-                navbarManager.setPage(chapter.startPage - 1)
-                onClose()
-            })
+            val bgColor = if (i == navbarManager.currentChapterIndex) Color.LightGray else Color.Transparent
+            Text(
+                stringResource(id = R.string.chapter_info, chapter.chapNum, chapter.title),
+                modifier = Modifier
+                    .background(bgColor)
+                    .clickable {
+                        collectionVM.setWorkbook(collectionVM.currentWorkbook)
+                        navbarManager.setPage(chapter.startPage - 1)
+                        onClose()
+                    }
+            )
         }
     }
 }
@@ -142,15 +159,19 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
             .verticalScroll(state = scroll)
             .clickable(
                 indication = null,
-                interactionSource = remember { MutableInteractionSource() }) { /* Prevent clicks from propagating */ },
+                interactionSource = remember { MutableInteractionSource() }
+            ) { /* Prevent clicks from propagating */ },
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         for (workbook in workbooks) {
-            Text("Workbook ${workbook.number}", modifier = Modifier.clickable {
-                collectionVM.setWorkbook(workbook)
-                navbarManager.setPage(0)
-                onClose()
-            })
+            Text(
+                "Workbook ${workbook.number}",
+                modifier = Modifier.clickable {
+                    collectionVM.setWorkbook(workbook)
+                    navbarManager.setPage(0)
+                    onClose()
+                }
+            )
         }
     }
 }

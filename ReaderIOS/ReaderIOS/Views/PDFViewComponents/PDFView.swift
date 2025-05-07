@@ -48,151 +48,145 @@ struct PDFView: View {
         GeometryReader { geometry in
             NavigationStack {
                 ZStack {
-                    VStack {
-                        if let pdfDoc = pdfDocument {
-                            ZStack {
-                                // PDF Document View
-                                DocumentView(
-                                    pdfDocument: pdfDoc,
-                                    currentPageIndex: $currentPage
-                                )
-                                .edgesIgnoringSafeArea(.all)
-                                .scaleEffect(zoomManager.newZoomLevel(),
-                                             anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
-                                .onChange(of: currentPage) { _, newValue in
-                                    loadPaths(for: newValue)
-                                }
+                    if let pdfDoc = pdfDocument {
+                        ZStack {
+                            DocumentView(
+                                pdfDocument: pdfDoc,
+                                currentPageIndex: $currentPage
+                            )
+                            .edgesIgnoringSafeArea(.all)
+                            .scaleEffect(zoomManager.newZoomLevel(),
+                                         anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
+                            .onChange(of: currentPage) { _, newValue in
+                                loadPaths(for: newValue)
+                            }
 
-                                // Annotations
-                                AnnotationsView(
-                                    pagePaths: $pagePaths,
-                                    highlightPaths: $highlightPaths,
+                            AnnotationsView(
+                                pagePaths: $pagePaths,
+                                highlightPaths: $highlightPaths,
+                                selectedScribbleTool: $selectedScribbleTool,
+                                textOpened: $textOpened,
+                                key: uniqueKey(for: currentPage),
+                                nextPage: { goToNextPage() },
+                                previousPage: { goToPreviousPage() },
+                                selectedColor: selectedPenColor,
+                                selectedHighlighterColor: selectedHighlighterColor,
+                                zoomedIn: zoomManager.getZoomedIn(),
+                                zoomManager: zoomManager,
+                                annotationManager: annotationStorageManager,
+                                textManager: textManager,
+                                textBoxes: $textBoxes
+                            )
+                            .scaleEffect(zoomManager.newZoomLevel(),
+                                         anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
+
+                            // Annotations Text Overlay
+                            TextView(
+                                textManager: textManager,
+                                textBoxes: $textBoxes,
+                                key: uniqueKey(for: currentPage),
+                                deleteTextBox: $deleteTextBox,
+                                currentTextBoxIndex: $currentTextBox,
+                                width: geometry.size.width,
+                                height: geometry.size.height,
+                                textOpened: $textOpened,
+                                isHidden: $isHidden
+                            )
+                            .scaleEffect(zoomManager.newZoomLevel(),
+                                         anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
+                            .alert("Are you sure you want to delete the text box?",
+                                   isPresented: $deleteTextBox)
+                            {
+                                Button("Delete", role: .destructive) {
+                                    textOpened = false
+                                    textManager.deleteText(
+                                        textBoxes: $textBoxes,
+                                        key: uniqueKey(for: currentPage),
+                                        index: currentTextBox
+                                    )
+                                    textManager.saveTextBoxes(textBoxes: textBoxes)
+                                    currentTextBox = -1
+                                }
+                                Button("Cancel", role: .cancel) {
+                                    currentTextBox = -1
+                                }
+                            }
+                        }
+                        .toolbar {
+                            ToolbarItemGroup(placement: .navigationBarLeading) {
+                                PageControlView(currentPage: $currentPage, totalPages: pdfDoc.pageCount)
+                                    .padding(.leading, 10)
+                            }
+
+                            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                                TimerControlsView(timerManager: timerManager)
+                                MarkupMenu(
                                     selectedScribbleTool: $selectedScribbleTool,
-                                    textOpened: $textOpened,
-                                    key: uniqueKey(for: currentPage),
-                                    nextPage: { goToNextPage() },
-                                    previousPage: { goToPreviousPage() },
-                                    selectedColor: selectedPenColor,
-                                    selectedHighlighterColor: selectedHighlighterColor,
-                                    zoomedIn: zoomManager.getZoomedIn(),
-                                    zoomManager: zoomManager,
+                                    exitNotSelected: $exitNotSelected,
+                                    showClearAlert: $showClearAlert,
+                                    selectedPenColor: $selectedPenColor,
+                                    selectedHighlighterColor: $selectedHighlighterColor,
+                                    isPenSubmenuVisible: $isPenSubmenuVisible,
+                                    textBoxes: $textBoxes,
                                     annotationManager: annotationStorageManager,
                                     textManager: textManager,
-                                    textBoxes: $textBoxes
+                                    pagePaths: pagePaths,
+                                    highlightPaths: highlightPaths
                                 )
-                                .scaleEffect(zoomManager.newZoomLevel(),
-                                             anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
 
-                                // Text Overlay
-                                TextView(
-                                    textManager: textManager,
-                                    textBoxes: $textBoxes,
-                                    key: uniqueKey(for: currentPage),
-                                    deleteTextBox: $deleteTextBox,
-                                    currentTextBoxIndex: $currentTextBox,
-                                    width: geometry.size.width,
-                                    height: geometry.size.height,
-                                    textOpened: $textOpened,
-                                    isHidden: $isHidden
-                                )
-                                .scaleEffect(zoomManager.newZoomLevel(),
-                                             anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
-                                .alert("Are you sure you want to delete the text box?",
-                                       isPresented: $deleteTextBox)
-                                {
-                                    Button("Delete", role: .destructive) {
-                                        textOpened = false
-                                        textManager.deleteText(
-                                            textBoxes: $textBoxes,
-                                            key: uniqueKey(for: currentPage),
-                                            index: currentTextBox
-                                        )
-                                        textManager.saveTextBoxes(textBoxes: textBoxes)
-                                        currentTextBox = -1
-                                    }
-                                    Button("Cancel", role: .cancel) {
-                                        currentTextBox = -1
+                                Button(action: { showDigitalResources = true }, label: {
+                                    Text("Digital Resources")
+                                        .padding(5)
+                                        .foregroundColor((covers?.isEmpty ?? true) ? .gray : .purple)
+                                        .cornerRadius(8)
+                                })
+                                .disabled(covers?.isEmpty ?? true)
+                                .fullScreenCover(isPresented: $showDigitalResources, content: {
+                                    DigitalResourcesView(covers: covers)
+                                })
+
+                                Button {
+                                    bookmarkManager.toggleBookmark(for: currentWorkbook, currentPage: currentPage)
+                                } label: {
+                                    Image(systemName: bookmarkManager.isBookmarked(
+                                        workbook: currentWorkbook,
+                                        currentPage: currentPage
+                                    ) ? "bookmark.fill" : "bookmark")
+                                        .foregroundColor(.yellow)
+                                }
+
+                                if zoomManager.getZoomedIn() {
+                                    Button("Reset Zoom") {
+                                        zoomManager.resetZoom()
                                     }
                                 }
                             }
-                            .toolbar {
-                                ToolbarItemGroup(placement: .navigationBarLeading) {
-                                    PageControlView(currentPage: $currentPage, totalPages: pdfDoc.pageCount)
-                                        .padding(.leading, 10)
-                                }
+                            ToolbarItemGroup(placement: .bottomBar) {
+                                HStack(spacing: 0) {
+                                    TimerProgressView(timerManager: timerManager)
+                                        .frame(maxWidth: .infinity)
 
-                                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                                    TimerControlsView(timerManager: timerManager)
-                                    MarkupMenu(
-                                        selectedScribbleTool: $selectedScribbleTool,
-                                        exitNotSelected: $exitNotSelected,
-                                        showClearAlert: $showClearAlert,
-                                        selectedPenColor: $selectedPenColor,
-                                        selectedHighlighterColor: $selectedHighlighterColor,
-                                        isPenSubmenuVisible: $isPenSubmenuVisible,
-                                        textBoxes: $textBoxes,
-                                        annotationManager: annotationStorageManager,
-                                        textManager: textManager,
-                                        pagePaths: pagePaths,
-                                        highlightPaths: highlightPaths
+                                    FeedbackView.button(
+                                        feedbackManager: feedbackManager,
+                                        workbook: currentWorkbook,
+                                        currentPage: currentPage,
+                                        collection: collection
                                     )
-
-                                    Button(action: { showDigitalResources = true }, label: {
-                                        Text("Digital Resources")
-                                            .padding(5)
-                                            .foregroundColor((covers?.isEmpty ?? true) ? .gray : .purple)
-                                            .cornerRadius(8)
-                                    })
-                                    .disabled(covers?.isEmpty ?? true)
-                                    .fullScreenCover(isPresented: $showDigitalResources, content: {
-                                        DigitalResourcesView(covers: covers)
-                                    })
-
-                                    Button {
-                                        bookmarkManager.toggleBookmark(for: currentWorkbook, currentPage: currentPage)
-                                    } label: {
-                                        Image(systemName: bookmarkManager.isBookmarked(
-                                            workbook: currentWorkbook,
-                                            currentPage: currentPage
-                                        ) ? "bookmark.fill" : "bookmark")
-                                            .foregroundColor(.yellow)
-                                    }
-
-                                    if zoomManager.getZoomedIn() {
-                                        Button("Reset Zoom") {
-                                            zoomManager.resetZoom()
-                                        }
-                                    }
-                                }
-                                ToolbarItemGroup(placement: .bottomBar) {
-                                    // Create a horizontal stack for the entire bottom toolbar
-                                    HStack(spacing: 0) {
-                                        // Timer controls and progress bar should fill available space
-                                        TimerProgressView(timerManager: timerManager)
-                                            .frame(maxWidth: .infinity)
-
-                                        // Feedback button with minimal spacing
-                                        FeedbackView.button(
-                                            feedbackManager: feedbackManager,
-                                            workbook: currentWorkbook,
-                                            currentPage: currentPage,
-                                            collection: collection
-                                        )
-                                        .padding(.leading, 4) // Minimal padding between progress bar and button
-                                    }
+                                    .padding(.leading, 4)
                                 }
                             }
-                        } else {
-                            ProgressView("Getting Workbook")
-                                .onAppear {
-                                    loadPDFDocument()
-                                    annotationStorageManager.loadAnnotations(pagePaths: &pagePaths,
-                                                                             highlightPaths: &highlightPaths)
-                                    textManager.loadTextBoxes(textBoxes: &textBoxes)
-                                }
                         }
+                    } else {
+                        ProgressView("Getting workbook...")
+                            .onAppear {
+                                loadPDFDocument()
+                                annotationStorageManager.loadAnnotations(pagePaths: &pagePaths,
+                                                                         highlightPaths: &highlightPaths)
+                                textManager.loadTextBoxes(textBoxes: &textBoxes)
+                            }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onDisappear {
                     textManager.saveTextBoxes(textBoxes: textBoxes)
                     annotationStorageManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)

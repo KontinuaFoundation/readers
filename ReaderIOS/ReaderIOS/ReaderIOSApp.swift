@@ -14,10 +14,12 @@ struct ReaderIOSApp: App {
     var body: some Scene {
         WindowGroup {
             if initManager.isInitialized {
-                SplitView(initialWorkbooks: initManager.workbooks,
-                          initialWorkbookID: initManager.workbookID,
-                          initialPDFDocument: initManager.pdfDocument,
-                          initialCollection: initManager.latestCollection)
+                SplitView(
+                    workbooks: initManager.workbooks,
+                    currentCollection: initManager.latestCollection,
+                    selectedWorkbookID: initManager.workbookID,
+                    currentWorkbook: initManager.workbook
+                )
             } else {
                 SplashView(initManager: initManager)
             }

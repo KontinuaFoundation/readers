@@ -3,17 +3,16 @@ package com.kontinua.readersandroidjetpack.views.bottombar
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
-import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 import com.kontinua.readersandroidjetpack.ui.theme.buttons.FeedbackButton
+import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerControls
-
 
 /**
  * Extensible bottom app bar component that can house various action buttons.
@@ -24,7 +23,6 @@ import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerControls
  * 2. Implement click handlers
  * 3. Create corresponding dialogs/screens if needed
  */
-
 
 @Composable
 fun BottomBarComponent(
@@ -70,7 +68,6 @@ fun BottomBarComponent(
                 onClick = { feedbackViewModel.showFeedbackForm() },
                 modifier = Modifier.padding(end = 16.dp)
             )
-
         }
     }
 }
