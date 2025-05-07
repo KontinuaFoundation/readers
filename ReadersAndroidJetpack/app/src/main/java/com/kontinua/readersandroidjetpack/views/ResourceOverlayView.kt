@@ -44,7 +44,7 @@ fun extractYouTubeVideoId(youtubeUrl: String?): String? {
         return null
     }
     // Pattern to cover various YouTube URL formats (watch, youtu.be, embed, shorts, live)
-    //stupid strategy to combat the linter saying the line was too long
+    // stupid strategy to combat the linter saying the line was too long
     val patternString =
         "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|" +
             "watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu.be%2F|" +
