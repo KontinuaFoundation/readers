@@ -37,13 +37,13 @@ import com.kontinua.readersandroidjetpack.serialization.Video
 import java.util.regex.Pattern
 
 // Helper function to extract YouTube video ID from diff URL formats
-//tbh got this function from chat so it could be bad but it's working at least
+// tbh got this function from chat so it could be bad but it's working at least
 fun extractYouTubeVideoId(youtubeUrl: String?): String? {
     if (youtubeUrl.isNullOrBlank()) {
         return null
     }
     // Pattern to cover various YouTube URL formats (watch, youtu.be, embed, shorts)
-    //idk much about regex stuff so this also could be bad
+    // idk much about regex stuff so this also could be bad
     val pattern =
         "(?<=watch\\?v=|/videos/|embed/|youtu.be/|/v/|/e/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu.be%2F|%2Fv%2F|e/|shorts/|live/)[^#&?\\n]*"
     val compiledPattern = Pattern.compile(pattern)
@@ -56,7 +56,7 @@ fun extractYouTubeVideoId(youtubeUrl: String?): String? {
 }
 
 // Helper function to generate embed HTML for a YouTube video
-//tbh got this function from chat too so it could also be bad but it's working at least
+// tbh got this function from chat too so it could also be bad but it's working at least
 fun getYouTubeEmbedHtml(videoId: String): String {
     return """
         <!DOCTYPE html>
@@ -80,13 +80,12 @@ fun getYouTubeEmbedHtml(videoId: String): String {
 }
 
 // Define a sealed class to represent the content loading strategy for the WebView
-//basically says do normal unless its a youtube video and then do the new thing
+// basically says do normal unless its a youtube video and then do the new thing
 sealed class WebViewLoadStrategy {
     data class LoadUrl(val url: String) : WebViewLoadStrategy()
     data class LoadHtml(val htmlContent: String, val baseUrl: String = "https://www.youtube.com") : WebViewLoadStrategy()
     data object None : WebViewLoadStrategy()
 }
-
 
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,20 +110,20 @@ fun ResourceOverlayView(
 
     // Determine the loading strategy based on the content type and URL
     val loadStrategy: WebViewLoadStrategy = remember(originalUrl, content) {
-        //this should not happen but just in case
+        // this should not happen but just in case
         if (originalUrl == null) {
             WebViewLoadStrategy.None
         } else if (content is Video) { // Only attempt embed for Video type
             val videoId = extractYouTubeVideoId(originalUrl)
             if (videoId != null) {
-                //if its a video, try and do the youtube thing
+                // if its a video, try and do the youtube thing
                 WebViewLoadStrategy.LoadHtml(getYouTubeEmbedHtml(videoId))
             } else {
-            //if not youtube, do regular load
-            WebViewLoadStrategy.LoadUrl(originalUrl)
+                // if not youtube, do regular load
+                WebViewLoadStrategy.LoadUrl(originalUrl)
             }
         } else {
-            //load regular if not video
+            // load regular if not video
             WebViewLoadStrategy.LoadUrl(originalUrl)
         }
     }
@@ -132,24 +131,24 @@ fun ResourceOverlayView(
 
     Box(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.6f))
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) { onDismissRequest() },
+        Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.6f))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onDismissRequest() },
         contentAlignment = Alignment.Center
     ) {
         Card(
             modifier =
-                Modifier
-                    .fillMaxWidth(0.9f)
-                    .fillMaxHeight(0.85f)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {}, // Prevent clicks on the card from propagating
+            Modifier
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(0.85f)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {}, // Prevent clicks on the card from propagating
             shape = MaterialTheme.shapes.large
         ) {
             Column {
@@ -167,9 +166,9 @@ fun ResourceOverlayView(
                         }
                     },
                     colors =
-                        TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 )
 
                 AndroidView(
@@ -184,10 +183,10 @@ fun ResourceOverlayView(
                                 )
                             webViewClient = object : WebViewClient() {
                             }
-                            webChromeClient = WebChromeClient() //fullscreen stuff
+                            webChromeClient = WebChromeClient() // fullscreen stuff
                             settings.javaScriptEnabled = true
 
-                            //do the load as we picked
+                            // do the load as we picked
                             when (loadStrategy) {
                                 is WebViewLoadStrategy.LoadUrl -> loadUrl(loadStrategy.url)
                                 is WebViewLoadStrategy.LoadHtml -> loadDataWithBaseURL(
@@ -202,7 +201,7 @@ fun ResourceOverlayView(
                         }
                     },
                     update = { webView ->
-                        //calls if the load strat changes
+                        // calls if the load strat changes
                         when (loadStrategy) {
                             is WebViewLoadStrategy.LoadUrl -> {
                                 if (webView.url != loadStrategy.url) {
