@@ -6,18 +6,21 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('core', '0006_alter_collection_options'),
+        ("core", "0006_alter_collection_options"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='workbook',
-            options={'ordering': ['number', 'collection']},
+            name="workbook",
+            options={"ordering": ["number", "collection"]},
         ),
         migrations.AlterField(
-            model_name='workbook',
-            name='collection',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='workbooks',
-                                    to='core.collection'),
+            model_name="workbook",
+            name="collection",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="workbooks",
+                to="core.collection",
+            ),
         ),
     ]

@@ -20,6 +20,17 @@ from core.serializers import (
     FeedbackSerializer,
 )
 
+
+# TODO:
+# Let's use an openapi schema/library like drf-yasg to generate the API documentation.
+# Then lets display that here.
+class RootAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"message": f"Readers API v{settings.API_VERSION}"})
+
+
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -45,7 +56,7 @@ class CollectionViewSet(
             return CollectionListSerializer
         elif self.action == "retrieve":
             return CollectionRetrieveSerializer
-        #TODO: Consider just returning the entire collection rather than the list representation...
+        # TODO: Consider just returning the entire collection rather than the list representation...
         elif self.action == "latest":
             return CollectionListSerializer
         return None
@@ -104,9 +115,10 @@ class CollectionViewSet(
         return Response(
             {"message": "Collection un-released."}, status=status.HTTP_200_OK
         )
+
     @action(detail=False, methods=["get"])
     def latest(self, request):
-        #TODO: Lets make this return the collection retrieve serializer at some point.
+        # TODO: Lets make this return the collection retrieve serializer at some point.
         # More specifically, is there a reason to make the client two two requests to get the chapters for the latest collection?
         queryset = self.get_queryset()
 
@@ -143,6 +155,10 @@ class WorkbookViewSet(
         return [IsAuthenticated()]
 
 
+# TODO:
+# Currently we use google app specific password to send emails which limits the number of emails we can send.
+# This endpoint also does not have a strict rate limit per request.
+# This should be addressed in the future...
 class FeedbackView(APIView):
     """
     API endpoint that allows users to submit feedback.

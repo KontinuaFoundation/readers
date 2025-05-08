@@ -28,6 +28,8 @@ def get_required_env_var(key):
 
 load_dotenv()
 
+API_VERSION = "1.0"
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -149,6 +151,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "readers_backend/static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -173,20 +177,24 @@ REST_FRAMEWORK = {
 
 # Email Configuration for production
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com") # Gmail's SMTP server
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587)) # Gmail's SMTP port
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True" # TLS is required for Gmail 
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")  # Gmail's SMTP server
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))  # Gmail's SMTP port
+EMAIL_USE_TLS = (
+    os.environ.get("EMAIL_USE_TLS", "True") == "True"
+)  # TLS is required for Gmail
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")  # App's email address
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") # App's email password
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # App's email password
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 FEEDBACK_EMAIL = os.environ.get(
     "FEEDBACK_EMAIL", EMAIL_HOST_USER
 )  # Where feedback should be sent
 
+# The only template view is the index view.
+# Will display a basic page with the latest US collection.
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "readers_backend/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

@@ -5,12 +5,12 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('core', '0005_alter_collection_options'),
+        ("core", "0005_alter_collection_options"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='collection',
-            options={'ordering': ['-major_version', '-minor_version', 'localization']},
+            name="collection",
+            options={"ordering": ["-major_version", "-minor_version", "localization"]},
         ),
     ]

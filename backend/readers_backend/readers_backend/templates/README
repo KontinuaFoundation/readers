@@ -1,0 +1,5 @@
+This directory contains our index.html template which will be used for rendering readers.kontinua.org/
+
+This is the only page that will use django templating.
+
+The rest of the app is exposed as a django rest framework api at readers.kontinua.org/api/   
