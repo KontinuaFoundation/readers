@@ -10,13 +10,16 @@ CHAPTERS_DIR = "development_data/chapters"
 PDFS_DIR = "development_data/pdfs"
 NUM_WORKBOOKS = 36
 
+
 class Command(BaseCommand):
     help = f"Seeds the database with initial data useful for development. Creates {NUM_WORKBOOKS} workbooks under collection en-US v1.0."
 
     def handle(self, *args, **options):
 
         if Collection.objects.exists():
-            self.stdout.write(self.style.WARNING("Database is not empty. Skipping seeding."))
+            self.stdout.write(
+                self.style.WARNING("Database is not empty. Skipping seeding.")
+            )
             return
 
         collection = {
@@ -53,9 +56,15 @@ class Command(BaseCommand):
                 workbook_serializer = WorkbookCreateSerializer(data=workbook)
                 if workbook_serializer.is_valid():
                     workbook_serializer.save()
-                    self.stdout.write(self.style.SUCCESS(f"Successfully created workbook {i}"))
+                    self.stdout.write(
+                        self.style.SUCCESS(f"Successfully created workbook {i}")
+                    )
                 else:
-                    self.stdout.write(self.style.ERROR(f"Error creating workbook {i}\n: {workbook_serializer.errors}"))
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Error creating workbook {i}\n: {workbook_serializer.errors}"
+                        )
+                    )
                     return
 
         collection_obj.is_released = True

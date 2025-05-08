@@ -7,4 +7,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         Collection.objects.all().delete()
-        self.stdout.write(self.style.SUCCESS('Successfully deleted all collections'))
+        self.stdout.write(self.style.SUCCESS("Successfully deleted all collections"))

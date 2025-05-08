@@ -6,12 +6,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0009_alter_feedback_chapter_number_and_more'),
+        ("core", "0009_alter_feedback_chapter_number_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='collection',
-            options={'get_latest_by': ['major_version', 'minor_version', 'localization'], 'ordering': ['-major_version', '-minor_version', 'localization']},
+            name="collection",
+            options={
+                "get_latest_by": ["major_version", "minor_version", "localization"],
+                "ordering": ["-major_version", "-minor_version", "localization"],
+            },
         ),
     ]

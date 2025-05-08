@@ -151,6 +151,16 @@ class CollectionRetrieveSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+# For validation query params when retrieving a collection.
+class CollectionRetrieveQueryParamsSerializer(serializers.Serializer):
+    major_version = serializers.IntegerField(required=False)
+    minor_version = serializers.IntegerField(required=False)
+    localization = serializers.CharField(required=False)
+    is_released = serializers.BooleanField(
+        required=False, default=None, allow_null=True
+    )
+
+
 class FeedbackSerializer(serializers.ModelSerializer):
 
     # Validate the fields in the feedback object

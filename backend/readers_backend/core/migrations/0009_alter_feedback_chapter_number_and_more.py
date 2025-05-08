@@ -6,43 +6,43 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0008_feedback_chapter_number_feedback_created_at_and_more'),
+        ("core", "0008_feedback_chapter_number_feedback_created_at_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='feedback',
-            name='chapter_number',
+            model_name="feedback",
+            name="chapter_number",
             field=models.IntegerField(),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='description',
+            model_name="feedback",
+            name="description",
             field=models.TextField(),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='localization',
+            model_name="feedback",
+            name="localization",
             field=models.CharField(max_length=5),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='major_version',
+            model_name="feedback",
+            name="major_version",
             field=models.IntegerField(),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='minor_version',
+            model_name="feedback",
+            name="minor_version",
             field=models.IntegerField(),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='page_number',
+            model_name="feedback",
+            name="page_number",
             field=models.IntegerField(),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='user_email',
+            model_name="feedback",
+            name="user_email",
             field=models.EmailField(max_length=254),
         ),
     ]
