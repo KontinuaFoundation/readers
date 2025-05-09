@@ -4,20 +4,15 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.kontinua.readersandroidjetpack.data.BookmarkRepository
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
- import com.kontinua.readersandroidjetpack.serialization.Workbook
 import kotlinx.coroutines.flow.asStateFlow
 
 class BookmarkViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = BookmarkRepository(application.applicationContext)
 
-    // Internal mutable state flow, initialized from repository
     private val _bookmarkLookup = MutableStateFlow<Map<Int, Set<Int>>>(emptyMap())
     val bookmarkLookup: StateFlow<Map<Int, Set<Int>>> = _bookmarkLookup.asStateFlow()
 
@@ -30,9 +25,9 @@ class BookmarkViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun isBookmarked(workbookId: Int, currentPage: Int): Boolean {
-        return _bookmarkLookup.value[workbookId]?.contains(currentPage) ?: false
-    }
+//    fun isBookmarked(workbookId: Int, currentPage: Int): Boolean {
+//        return _bookmarkLookup.value[workbookId]?.contains(currentPage) ?: false
+//    }
 
     fun toggleBookmark(workbookId: Int, currentPage: Int) {
         _bookmarkLookup.update { currentLookup ->
@@ -50,7 +45,7 @@ class BookmarkViewModel(application: Application) : AndroidViewModel(application
             } else {
                 mutableLookup[workbookId] = pagesForWorkbook.toSet()
             }
-            mutableLookup.toMap() // Return the new immutable map
+            mutableLookup.toMap()
         }
         // Save to DataStore after every toggle
         viewModelScope.launch {

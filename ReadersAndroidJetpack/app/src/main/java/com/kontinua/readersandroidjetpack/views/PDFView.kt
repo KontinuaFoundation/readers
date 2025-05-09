@@ -47,7 +47,6 @@ fun PDFViewer(
     val currentZoom = remember { mutableFloatStateOf(1f) }
     val zoomPoint = remember { mutableStateOf(Offset.Zero) }
     val panOffset = remember { mutableStateOf(Offset.Zero) }
-
     val allBookmarks by bookmarkViewModel.bookmarkLookup.collectAsState()
     val isPageBookmarked = workbook?.id?.let { wbId ->
         allBookmarks[wbId]?.contains(navbarManager.pageNumber)
