@@ -1,6 +1,5 @@
 package com.kontinua.readersandroidjetpack.views
 
-//added
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -9,9 +8,9 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,16 +29,16 @@ import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
+import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import java.io.File
-
-// TODO: pages are recomposing as they change, making for messy swiping.
 
 @Composable
 fun PDFViewer(
     modifier: Modifier = Modifier,
     navbarManager: NavbarManager,
     collectionViewModel: CollectionViewModel,
-    annotationManager: AnnotationManager
+    annotationManager: AnnotationManager,
+    bookmarkViewModel: BookmarkViewModel = viewModel()
 ) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
@@ -51,8 +50,11 @@ fun PDFViewer(
     val zoomPoint = remember { mutableStateOf(Offset.Zero) }
     val panOffset = remember { mutableStateOf(Offset.Zero) }
 
-    //added
-    var isBookmarked by remember { mutableStateOf(false) }
+    val allBookmarks by bookmarkViewModel.bookmarkLookup.collectAsState()
+    val isPageBookmarked = workbook?.id?.let { wbId ->
+        allBookmarks[wbId]?.contains(navbarManager.pageNumber)
+    } ?: false
+
 
     navbarManager.setCollection(collectionViewModel)
 
@@ -64,7 +66,6 @@ fun PDFViewer(
         // whenever workbook switches, force reload
         pdfFile = null
         lastLoadedFile = null
-        isBookmarked = false
     }
 
     // only fetch new file when workbook changes
@@ -74,7 +75,7 @@ fun PDFViewer(
         }?.also { pdfFile = it }
     }
 
-    //made this a lowercase m
+    // made this a lowercase m
     Box(modifier = modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
@@ -142,16 +143,18 @@ fun PDFViewer(
             )
         }
         IconButton(
-            onClick = { isBookmarked = !isBookmarked },
+            onClick = {
+                workbook?.id?.let { wbId -> // Use .id (or .number if that's your Int ID)
+                    bookmarkViewModel.toggleBookmark(wbId, navbarManager.pageNumber)
+                }
+            },
             modifier = Modifier
-                .align(Alignment.TopEnd) // Aligns to the top-right corner of the Box
-                .padding(16.dp)        // Adds some padding from the edges
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
         ) {
             Icon(
-                imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                contentDescription = if (isBookmarked) "Page Bookmarked" else "Bookmark Page"
-                // You might want to set a tint color for better visibility depending on your background
-                // tint = Color.White // Example
+                imageVector = if (isPageBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                contentDescription = if (isPageBookmarked) "Remove Bookmark" else "Add Bookmark",
             )
         }
     }
