@@ -5,12 +5,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,7 +41,6 @@ fun PDFViewer(
 ) {
     val context = LocalContext.current
     var pdfFile by remember { mutableStateOf<File?>(null) }
-    // file currently in the view
     var lastLoadedFile by remember { mutableStateOf<File?>(null) }
     val workbook by collectionViewModel.workbookState.collectAsState()
     val collectionViewModel: CollectionViewModel = viewModel()
@@ -54,7 +52,6 @@ fun PDFViewer(
     val isPageBookmarked = workbook?.id?.let { wbId ->
         allBookmarks[wbId]?.contains(navbarManager.pageNumber)
     } ?: false
-
 
     navbarManager.setCollection(collectionViewModel)
 
@@ -75,7 +72,6 @@ fun PDFViewer(
         }?.also { pdfFile = it }
     }
 
-    // made this a lowercase m
     Box(modifier = modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
@@ -144,7 +140,7 @@ fun PDFViewer(
         }
         IconButton(
             onClick = {
-                workbook?.id?.let { wbId -> // Use .id (or .number if that's your Int ID)
+                workbook?.id?.let { wbId ->
                     bookmarkViewModel.toggleBookmark(wbId, navbarManager.pageNumber)
                 }
             },
