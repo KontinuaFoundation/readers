@@ -3,6 +3,7 @@ package com.kontinua.readersandroidjetpack.util
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 
 class AnnotationManager {
     var scribbleEnabled by mutableStateOf(false)
@@ -15,6 +16,9 @@ class AnnotationManager {
         private set
 
     var eraseEnabled by mutableStateOf(false)
+        private set
+
+    var currentPenColor by mutableStateOf(Color.Black)
         private set
 
     init {
@@ -38,6 +42,15 @@ class AnnotationManager {
         eraseEnabled = false
         highlightEnabled = false
     }
+
+    fun setPenColor(color: Color) {
+        currentPenColor = color
+        penEnabled = true
+        highlightEnabled = false
+        eraseEnabled = false
+        scribbleEnabled = true
+    }
+
 
     fun toggleHighlight(boolean: Boolean) {
         highlightEnabled = boolean

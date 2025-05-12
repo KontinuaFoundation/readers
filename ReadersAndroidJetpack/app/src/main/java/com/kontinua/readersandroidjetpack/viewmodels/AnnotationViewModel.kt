@@ -7,19 +7,26 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class AnnotationViewModel : androidx.lifecycle.ViewModel() {
-    data class DrawingPath(val points: List<Offset>, val isHighlight: Boolean = false)
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 
-    @OptIn(kotlinx.serialization.InternalSerializationApi::class)
+class AnnotationViewModel : androidx.lifecycle.ViewModel() {
+    // made default black
+    data class DrawingPath(val points: List<Offset>,
+                           val isHighlight: Boolean = false,
+                           val color: Color = Color.Black)
+
+//    @OptIn(kotlinx.serialization.InternalSerializationApi::class)
     @Serializable
     data class OffsetSerializable(val x: Float, val y: Float)
 
-    @OptIn(kotlinx.serialization.InternalSerializationApi::class)
+//    @OptIn(kotlinx.serialization.InternalSerializationApi::class)
     @Serializable
     data class DrawingPathSerializable(
         val points: List<OffsetSerializable>,
-        val isHighlight: Boolean = false
-    )
+        val isHighlight: Boolean = false,
+        val colorValue: Long = Color.Black.toArgb().toLong()
+)
 
     object DrawingStore {
         private const val DIR_NAME = "annotations"
@@ -32,7 +39,8 @@ class AnnotationViewModel : androidx.lifecycle.ViewModel() {
                     drawingPath.points.map { offset ->
                         OffsetSerializable(offset.x, offset.y)
                     },
-                    drawingPath.isHighlight
+                    drawingPath.isHighlight,
+                    colorValue = drawingPath.color.toArgb().toLong()
                 )
             }
             savePaths(context, workbookId, page, serializableList)
@@ -44,7 +52,10 @@ class AnnotationViewModel : androidx.lifecycle.ViewModel() {
                 if (!file.exists()) return emptyList()
                 val json = file.readText()
                 Json.decodeFromString<List<DrawingPathSerializable>>(json)
-                    .map { DrawingPath(it.points.map { pt -> Offset(pt.x, pt.y) }, isHighlight = it.isHighlight) }
+                    .map { DrawingPath(it.points.map { pt -> Offset(pt.x, pt.y) },
+                        isHighlight = it.isHighlight,
+                        color = Color(it.colorValue.toInt()))
+                    }
             } catch (e: Exception) {
                 e.printStackTrace()
                 emptyList()

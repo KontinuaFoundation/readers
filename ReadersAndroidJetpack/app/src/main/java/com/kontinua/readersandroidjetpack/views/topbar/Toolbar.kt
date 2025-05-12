@@ -9,6 +9,17 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -21,6 +32,7 @@ import com.kontinua.readersandroidjetpack.serialization.Video
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
+import androidx.compose.foundation.layout.width
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +47,7 @@ fun Toolbar(
 
 ) {
     var showMarkupMenu by remember { mutableStateOf(false) }
+    var showPenColorMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
 
@@ -80,77 +93,143 @@ fun Toolbar(
                     showTimerMenu = false
                 })
             }
-            // Markup Button (Text Button)
-            TextButton(onClick = { showMarkupMenu = true }) {
-                Text("Markup")
-            }
+//            // Markup Button (Text Button)
+//            TextButton(onClick = { showMarkupMenu = true }) {
+//                Text("Markup")
+//            }
+//            DropdownMenu(
+//                expanded = showMarkupMenu,
+//                onDismissRequest = { showMarkupMenu = false }
+//            ) {
+//                DropdownMenuItem(text = { Text("Pen") }, onClick = {
+//                    annotationManager.toggleScribble(true)
+//                    annotationManager.togglePen(true)
+//                    showMarkupMenu = false
+//                })
+//                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
+//                    annotationManager.toggleScribble(true)
+//                    annotationManager.toggleHighlight(true)
+//                    showMarkupMenu = false
+//                })
+//                DropdownMenuItem(text = { Text("Eraser") }, onClick = {
+//                    annotationManager.toggleScribble(true)
+//                    annotationManager.toggleErase(true)
+//                    showMarkupMenu = false
+//                })
+//                DropdownMenuItem(text = { Text("Exit") }, onClick = {
+//                    annotationManager.toggleScribble(false)
+//                    showMarkupMenu = false
+//                })
+//            }
+            TextButton(onClick = { showMarkupMenu = true }) { Text("Markup") }
             DropdownMenu(
                 expanded = showMarkupMenu,
                 onDismissRequest = { showMarkupMenu = false }
             ) {
-                DropdownMenuItem(text = { Text("Pen") }, onClick = {
-                    annotationManager.toggleScribble(true)
-                    annotationManager.togglePen(true)
-                    showMarkupMenu = false
-                })
-                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
-                    annotationManager.toggleScribble(true)
-                    annotationManager.toggleHighlight(true)
-                    showMarkupMenu = false
-                })
-                DropdownMenuItem(text = { Text("Eraser") }, onClick = {
-                    annotationManager.toggleScribble(true)
-                    annotationManager.toggleErase(true)
-                    showMarkupMenu = false
-                })
-                DropdownMenuItem(text = { Text("Exit") }, onClick = {
-                    annotationManager.toggleScribble(false)
-                    showMarkupMenu = false
-                })
-            }
-
-            // Resources Button (Text Button)
-            TextButton(
-                onClick = {
-                    showResourcesMenu = true
-                },
-                // only on if there are resources
-                enabled = hasResources
-            ) {
-                Text("Digital Resources")
-            }
-            DropdownMenu(
-                expanded = showResourcesMenu,
-                onDismissRequest = { showResourcesMenu = false }
-            ) {
-                // if there are no resources. should not dropdown, but if it does for some reason then it will just say no resources
-                if (videos.isEmpty() && references.isEmpty()) {
+                Box {
                     DropdownMenuItem(
-                        text = { Text("No resources for this chapter") },
-                        onClick = { showResourcesMenu = false },
-                        enabled = false
+                        text = { Text("Pen") },
+                        onClick = {
+                            if (!annotationManager.penEnabled) {
+                                annotationManager.setPenColor(annotationManager.currentPenColor) // Activate pen with current/default color
+                            }
+                            showPenColorMenu = true
+                            // Keep showMarkupMenu = true so the submenu is anchored correctly
+                        },
+                        trailingIcon = { Text("▼") } // Visual cue for submenu
                     )
-                } else {
-                    videos.forEach { video ->
-                        DropdownMenuItem(
-                            text = { Text(video.title) },
-                            onClick = {
-                                onVideoClick(video)
-                                showResourcesMenu = false
-                            }
+                    // Nested DropdownMenu for Pen Colors
+                    DropdownMenu(
+                        expanded = showPenColorMenu,
+                        onDismissRequest = { showPenColorMenu = false }
+                    ) {
+                        val penColors = listOf(
+                            "Black" to Color.Black,
+                            "Red" to Color.Red,
+                            "Green" to Color.Green,
+                            "Blue" to Color.Blue
                         )
-                    }
-                    references.forEach { reference ->
-                        DropdownMenuItem(
-                            text = { Text(reference.title) },
-                            onClick = {
-                                onReferenceClick(reference)
-                                showResourcesMenu = false
-                            }
-                        )
-                    }
+                        penColors.forEach { (name, color) ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .clip(CircleShape)
+                                                .background(color)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(name)
+                                    }
+                                },
+                                onClick = {
+                                    annotationManager.setPenColor(color)
+                                    showPenColorMenu = false
+                                    showMarkupMenu = false
+                                }
+                            )
+                        }
                 }
             }
+            DropdownMenuItem(text = { Text("Highlight") }, onClick = {
+                annotationManager.toggleScribble(true)
+                annotationManager.toggleHighlight(true)
+                showMarkupMenu = false
+            })
+            DropdownMenuItem(text = { Text("Eraser") }, onClick = {
+                annotationManager.toggleScribble(true)
+                annotationManager.toggleErase(true)
+                showMarkupMenu = false
+            })
+            DropdownMenuItem(text = { Text("Exit") }, onClick = {
+                annotationManager.toggleScribble(false)
+                showMarkupMenu = false
+            })
+        }
+
+                // Resources Button (Text Button)
+                TextButton(
+                    onClick = {
+                        showResourcesMenu = true
+                    },
+                    // only on if there are resources
+                    enabled = hasResources
+                ) {
+                    Text("Digital Resources")
+                }
+                DropdownMenu(
+                    expanded = showResourcesMenu,
+                    onDismissRequest = { showResourcesMenu = false }
+                ) {
+                    // if there are no resources. should not dropdown, but if it does for some reason then it will just say no resources
+                    if (videos.isEmpty() && references.isEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text("No resources for this chapter") },
+                            onClick = { showResourcesMenu = false },
+                            enabled = false
+                        )
+                    } else {
+                        videos.forEach { video ->
+                            DropdownMenuItem(
+                                text = { Text(video.title) },
+                                onClick = {
+                                    onVideoClick(video)
+                                    showResourcesMenu = false
+                                }
+                            )
+                        }
+                        references.forEach { reference ->
+                            DropdownMenuItem(
+                                text = { Text(reference.title) },
+                                onClick = {
+                                    onReferenceClick(reference)
+                                    showResourcesMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
         }
     )
 }
