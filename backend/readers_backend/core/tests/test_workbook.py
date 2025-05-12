@@ -141,7 +141,7 @@ class WorkbookTestCase(APITestCase):
                          f"Workbook should not be created with malformed JSON: Current count is {Workbook.objects.count()}, expected 0.")
 
     def test_delete_workbook(self):
-        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US", is_released=True)
         workbook = Workbook.objects.create(number=1, collection=collection, chapters={}, pdf=None)
         url = reverse('workbook-detail', args=[workbook.id])
 
@@ -182,7 +182,8 @@ class WorkbookTestCase(APITestCase):
         collection = Collection.objects.create(
             major_version=1,
             minor_version=0,
-            localization="en-US"
+            localization="en-US",
+            is_released=True
         )
 
         chapters_data = [
@@ -628,3 +629,27 @@ class WorkbookTestCase(APITestCase):
                          f"Expected 400 Bad Request, got {response.status_code}.")
         self.assertTrue("chapters" in response.json(),
                         f"Expected 'chapters' field in response error but got {response.json()}")
+        
+    def test_retrieve_unreleased_workbook_returns_404(self):
+        self.client.credentials()
+
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US")
+        collection.is_released = False
+        collection.save()
+
+        workbook = Workbook.objects.create(number=1, collection=collection, chapters={}, pdf=None)
+        url = reverse('workbook-detail', args=[workbook.id])
+
+        response = self.client.get(url)
+        self.assertEqual(404, response.status_code,
+                         f"Expected 404 Not Found for unreleased workbook, got {response.status_code}.")
+    
+    def test_retrieve_unreleased_workbook_as_admin_returns_200(self):
+        collection = Collection.objects.create(major_version=1, minor_version=0, localization="en-US", is_released=False)
+
+        workbook = Workbook.objects.create(number=1, collection=collection, chapters={}, pdf=None)
+        url = reverse('workbook-detail', args=[workbook.id])
+
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code,
+                         f"Expected 200 OK for unreleased workbook, got {response.status_code}.")
