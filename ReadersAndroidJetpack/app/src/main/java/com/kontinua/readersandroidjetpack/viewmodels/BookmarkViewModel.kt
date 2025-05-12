@@ -18,34 +18,24 @@ class BookmarkViewModel(application: Application) : AndroidViewModel(application
 
     init {
         viewModelScope.launch {
-            // Load initial bookmarks from DataStore and keep observing
+            // Load initial bookmarks from DataStore and observe
             repository.bookmarkLookupFlow.collect { loadedBookmarks ->
                 _bookmarkLookup.value = loadedBookmarks
             }
         }
     }
 
-//    fun isBookmarked(workbookId: Int, currentPage: Int): Boolean {
-//        return _bookmarkLookup.value[workbookId]?.contains(currentPage) ?: false
-//    }
-
     fun toggleBookmark(workbookId: Int, currentPage: Int) {
         _bookmarkLookup.update { currentLookup ->
-            val mutableLookup = currentLookup.toMutableMap()
-            val pagesForWorkbook = mutableLookup[workbookId]?.toMutableSet() ?: mutableSetOf()
-
-            if (pagesForWorkbook.contains(currentPage)) {
-                pagesForWorkbook.remove(currentPage)
-            } else {
-                pagesForWorkbook.add(currentPage)
+            currentLookup.toMutableMap().apply {
+                val pagesForWorkbook = getOrPut(workbookId) { mutableSetOf() }.toMutableSet()
+                pagesForWorkbook.toggle(currentPage)
+                if (pagesForWorkbook.isEmpty()) {
+                    remove(workbookId)
+                } else {
+                    put(workbookId, pagesForWorkbook.toSet())
+                }
             }
-
-            if (pagesForWorkbook.isEmpty()) {
-                mutableLookup.remove(workbookId)
-            } else {
-                mutableLookup[workbookId] = pagesForWorkbook.toSet()
-            }
-            mutableLookup.toMap()
         }
         // Save to DataStore after every toggle
         viewModelScope.launch {
@@ -53,3 +43,6 @@ class BookmarkViewModel(application: Application) : AndroidViewModel(application
         }
     }
 }
+
+// jeremy requested change
+private fun <T> MutableSet<T>.toggle(v: T) = this.add(v) || this.remove(v)
