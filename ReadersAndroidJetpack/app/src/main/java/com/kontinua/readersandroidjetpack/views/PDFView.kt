@@ -116,6 +116,30 @@ fun PDFViewer(
                                     -pdfView.currentYOffset
                                 )
                             }
+                            .onTap { event ->
+                                // if we’re zoomed or in annotation mode, don’t consume
+                                if (annotationManager.annotationsEnabled || pdfView.zoom != 1f) {
+                                    false
+                                } else {
+                                    val x = event.x
+                                    val w = pdfView.width.toFloat()
+                                    val cur = pdfView.currentPage
+                                    val cnt = pdfView.pageCount
+
+                                    if (x > w * 0.85f) {
+                                        // right 15% → next page
+                                        if (cur < cnt - 1) {
+                                            navbarManager.goToNextPage()
+                                        }
+                                    } else {
+                                        // left 85% → previous page
+                                        if (cur > 0) {
+                                            navbarManager.goToPreviousPage()
+                                        }
+                                    }
+                                    true
+                                }
+                            }
                             .load()
                     }
                     // only jump to the new page if it’s different
