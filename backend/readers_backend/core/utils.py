@@ -1,6 +1,7 @@
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.template.loader import render_to_string
+import json
 
 
 def send_feedback_email(feedback):
