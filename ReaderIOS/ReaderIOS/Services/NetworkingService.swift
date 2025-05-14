@@ -56,24 +56,35 @@ final class NetworkingService: ObservableObject {
         guard let url = URL(string: ApplicationConstants.API.baseURLString + ApplicationConstants.APIEndpoints
             .collections + "latest" + "?localization=en-US")
         else {
+            Logger.error("Invalid URL for latest collection", category: "Network")
             completion(.failure(NetworkError.invalidURL))
             return
         }
-
+        Logger.Network.request(url.absoluteString)
         startLoading()
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
-        let task = session.dataTask(with: request) { data, _, error in
+        let task = session.dataTask(with: request) { data, response, error in
             // Ensure stopLoading is called when this closure exits.
             defer { self.stopLoading() }
 
             if let error = error {
+                Logger.Network.error(error, url: url.absoluteString)
                 DispatchQueue.main.async { completion(.failure(error)) }
                 return
             }
 
+            guard let httpResponse = response as? HTTPURLResponse else {
+                Logger.error("Invalid response type", category: "Network")
+                DispatchQueue.main.async { completion(.failure(NetworkError.noData)) }
+                return
+            }
+
+            Logger.Network.response(url.absoluteString, statusCode: httpResponse.statusCode)
+
             guard let data = data else {
+                Logger.error("No data received", category: "Network")
                 DispatchQueue.main.async { completion(.failure(NetworkError.noData)) }
                 return
             }
@@ -85,8 +96,12 @@ final class NetworkingService: ObservableObject {
 
                 let latestCollection = collection
 
+                Logger.info("Successfully decoded collection: \(collection.id)", category: "Network")
+
                 DispatchQueue.main.async { completion(.success(latestCollection)) }
             } catch {
+                Logger.error("Failed to decode collection: \(error)", category: "Network")
+
                 DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
@@ -95,34 +110,51 @@ final class NetworkingService: ObservableObject {
     }
 
     func fetchWorkbooks(collection: Collection, completion: @escaping (Result<[WorkbookPreview], Error>) -> Void) {
+        Logger.info("Fetching workbooks for collection: \(collection.id)", category: "Network")
+
         guard let url = URL(string: ApplicationConstants.API.baseURLString + ApplicationConstants.APIEndpoints
             .collections + "\(collection.id)/")
         else {
+            Logger.error("Invalid URL for collection: \(collection.id)", category: "Network")
             completion(.failure(NetworkError.invalidURL))
             return
         }
 
+        Logger.Network.request(url.absoluteString)
         startLoading()
 
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
-        let task = session.dataTask(with: request) { data, _, error in
+        let task = session.dataTask(with: request) { data, response, error in
             defer { self.stopLoading() }
 
             if let error = error {
+                Logger.Network.error(error, url: url.absoluteString)
                 DispatchQueue.main.async { completion(.failure(error)) }
                 return
             }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                Logger.error("Invalid response type", category: "Network")
+                DispatchQueue.main.async { completion(.failure(NetworkError.noData)) }
+                return
+            }
+
+            Logger.Network.response(url.absoluteString, statusCode: httpResponse.statusCode)
+
             guard let data = data else {
+                Logger.error("No data received", category: "Network")
                 DispatchQueue.main.async { completion(.failure(NetworkError.noData)) }
                 return
             }
             do {
                 let decoder = JSONDecoder()
                 let detailedCollection = try decoder.decode(DetailedCollection.self, from: data)
+                Logger.info("Successfully decoded \(detailedCollection.workbooks.count) workbooks", category: "Network")
                 DispatchQueue.main.async { completion(.success(detailedCollection.workbooks)) }
             } catch {
+                Logger.error("Failed to decode workbooks: \(error)", category: "Network")
                 DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
@@ -130,32 +162,47 @@ final class NetworkingService: ObservableObject {
     }
 
     func fetchWorkbook(id: Int, completion: @escaping (Result<Workbook, Error>) -> Void) {
+        Logger.info("Fetching workbook with ID: \(id)", category: "Network")
+
         guard let url = URL(string: ApplicationConstants.API.baseURLString + ApplicationConstants.APIEndpoints
             .workbooks + "\(id)/")
         else {
+            Logger.error("Invalid URL for workbook: \(id)", category: "Network")
             completion(.failure(NetworkError.invalidURL))
             return
         }
+        Logger.Network.request(url.absoluteString)
         startLoading()
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
-        let task = session.dataTask(with: request) { data, _, error in
+        let task = session.dataTask(with: request) { data, response, error in
             defer { self.stopLoading() }
 
             if let error = error {
+                Logger.Network.error(error, url: url.absoluteString)
                 DispatchQueue.main.async { completion(.failure(error)) }
                 return
             }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                Logger.error("Invalid response type", category: "Network")
+                DispatchQueue.main.async { completion(.failure(NetworkError.noData)) }
+                return
+            }
+            Logger.Network.response(url.absoluteString, statusCode: httpResponse.statusCode)
+
             guard let data = data else {
+                Logger.error("No data received", category: "Network")
                 DispatchQueue.main.async { completion(.failure(NetworkError.noData)) }
                 return
             }
             do {
                 let decoder = JSONDecoder()
                 let workbook = try decoder.decode(Workbook.self, from: data)
+                Logger.info("Successfully decoded workbook: \(workbook.id)", category: "Network")
                 DispatchQueue.main.async { completion(.success(workbook)) }
             } catch {
+                Logger.error("Failed to decode workbook: \(error)", category: "Network")
                 DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
@@ -163,25 +210,32 @@ final class NetworkingService: ObservableObject {
     }
 
     func fetchPDF(workbook: Workbook, completion: @escaping (Result<PDFDocument, Error>) -> Void) {
+        Logger.error("Invalid PDF URL for workbook: \(workbook.id)", category: "Network")
         guard let url = URL(string: workbook.pdf) else {
             completion(.failure(NetworkError.invalidURL))
             return
         }
-
-        print("Downloading the pdf from \(url)")
+        Logger.info("Downloading PDF for workbook: \(workbook.id)", category: "Network")
+        Logger.Network.request(url.absoluteString)
         startLoading()
 
-        let task = session.dataTask(with: url) { data, _, error in
+        let task = session.dataTask(with: url) { data, response, error in
             defer { self.stopLoading() }
 
             if let error = error {
+                Logger.Network.error(error, url: url.absoluteString)
                 DispatchQueue.main.async { completion(.failure(error)) }
                 return
             }
+            if let httpResponse = response as? HTTPURLResponse {
+                Logger.Network.response(url.absoluteString, statusCode: httpResponse.statusCode)
+            }
             guard let data = data, let document = PDFDocument(data: data) else {
+                Logger.error("Failed to create PDF document from data", category: "Network")
                 DispatchQueue.main.async { completion(.failure(NetworkError.noData)) }
                 return
             }
+            Logger.info("Successfully loaded PDF for workbook: \(workbook.id)", category: "Network")
             DispatchQueue.main.async { completion(.success(document)) }
         }
         task.resume()

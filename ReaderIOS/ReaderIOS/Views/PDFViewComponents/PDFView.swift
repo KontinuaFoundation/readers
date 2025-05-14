@@ -59,6 +59,9 @@ struct PDFView: View {
                                          anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
                             .onChange(of: currentPage) { _, newValue in
                                 loadPaths(for: newValue)
+                                if let workbookId = currentWorkbook?.id {
+                                    Logger.PDF.pageChanged(to: newValue, workbook: workbookId)
+                                }
                             }
 
                             AnnotationsView(
@@ -213,14 +216,23 @@ struct PDFView: View {
     // MARK: - Helper Methods
 
     private func loadPDFDocument() {
-        guard let currentWorkbook = currentWorkbook else { return }
+        guard let currentWorkbook = currentWorkbook else {
+            Logger.warning("No workbook available to load PDF", category: "PDF")
+            return
+        }
+
+        Logger.PDF.documentLoaded(currentWorkbook.id)
 
         NetworkingService.shared.fetchPDF(workbook: currentWorkbook) { result in
             switch result {
             case let .success(document):
                 pdfDocument = document
+                Logger.info("PDF loaded successfully for workbook: \(currentWorkbook.id)", category: "PDF")
             case let .failure(error):
-                print("Error fetching PDF: \(error.localizedDescription)")
+                Logger.error(
+                    "Error fetching PDF for workbook \(currentWorkbook.id): \(error.localizedDescription)",
+                    category: "PDF"
+                )
             }
         }
     }

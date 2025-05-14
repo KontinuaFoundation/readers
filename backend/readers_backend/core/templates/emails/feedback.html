@@ -46,6 +46,43 @@
         border-radius: 5px;
         margin-bottom: 15px;
       }
+      .logs-section {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      .logs-summary {
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 3px;
+        margin-bottom: 10px;
+      }
+      .log-entry {
+        font-family: monospace;
+        font-size: 12px;
+        line-height: 1.4;
+        margin: 2px 0;
+      }
+      .log-level-error {
+        color: #d32f2f;
+      }
+      .log-level-warning {
+        color: #f57c00;
+      }
+      .log-level-info {
+        color: #1976d2;
+      }
+      .log-level-debug {
+        color: #388e3c;
+      }
+      pre {
+        background-color: #f3f3f3;
+        padding: 10px;
+        border-radius: 3px;
+        overflow-x: auto;
+        font-size: 12px;
+      }
     </style>
   </head>
   <body>
@@ -83,6 +120,89 @@
           <span class="label">Feedback:</span>
           <div class="description">{{ description|linebreaks }}</div>
         </div>
+      </div>
+
+      {% if logs %}
+        <div class="logs-section">
+          <h3>Application Logs</h3>
+          
+          {% if logs.device %}
+          <div class="logs-summary">
+            <h4>Device Information</h4>
+            <p>
+              <strong>Model:</strong> {{ logs.device.model }}<br>
+              <strong>OS:</strong> {{ logs.device.systemName }} {{ logs.device.systemVersion }}<br>
+              <strong>App Version:</strong> {{ logs.device.appVersion }} ({{ logs.device.buildNumber }})<br>
+              <strong>Device Name:</strong> {{ logs.device.deviceName }}
+            </p>
+          </div>
+          {% endif %}
+          
+          {% if logs.summary %}
+          <div class="logs-summary">
+            <h4>Log Summary</h4>
+            <p>
+              <strong>Total Logs:</strong> {{ logs.summary.totalLogs }}<br>
+              <strong>Errors:</strong> {{ logs.summary.errorCount }}<br>
+              <strong>Warnings:</strong> {{ logs.summary.warningCount }}<br>
+              <strong>Critical:</strong> {{ logs.summary.criticalCount }}<br>
+              <strong>Time Range:</strong> {{ logs.summary.timeRange }}
+            </p>
+          </div> }
+      .logs-section {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      .logs-summary {
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 3px;
+        margin-bottom: 10px;
+      }
+      .log-entry {
+        font-family: monospace;
+        font-size: 12px;
+        line-height: 1.4;
+        margin: 2px 0;
+      }
+      .log-level-error {
+        color: #d32f2f;
+      }
+      .log-level-warning {
+        color: #f57c00;
+      }
+      .log-level-info {
+        color: #1976d2;
+      }
+      .log-level-debug {
+        color: #388e3c;
+      }
+      pre {
+        background-color: #f3f3f3;
+        padding: 10px;
+        border-radius: 3px;
+        overflow-x: auto;
+        font-size: 12px;
+      }
+          
+          {% if logs.logs %}
+          <div class="logs-summary">
+            <h4>Recent Logs</h4>
+            <pre>{% for log in logs.logs %}
+            <span class="log-entry log-level-{{ log.level|lower }}">{{ log.timestamp }} [{{ log.level }}] {{ log.category }}: {{ log.message }}</span>{% endfor %}</pre>
+          </div>
+          {% endif %}
+          
+          {% if logs.raw %}
+          <div class="logs-summary">
+            <h4>Raw Logs</h4>
+            <pre>{{ logs.raw }}</pre>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
       </div>
 
       <div class="footer">

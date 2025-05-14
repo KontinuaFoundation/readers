@@ -2,6 +2,7 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from django.template.loader import render_to_string
 
+
 def send_feedback_email(feedback):
     """
     Send feedback from a user to the app's own email address.
@@ -28,6 +29,19 @@ def send_feedback_email(feedback):
         "user_email": feedback.user_email,
         "date_submitted": feedback.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
+
+    # Handle logs - iOS sends JSON as a string, Django stores it as JSON
+    if feedback.logs:
+        try:
+            # If logs is a string (from iOS), parse it
+            if isinstance(feedback.logs, str):
+                context["logs"] = json.loads(feedback.logs)
+            else:
+                # If it's already a dict/list (stored as JSONField)
+                context["logs"] = feedback.logs
+        except json.JSONDecodeError:
+            # If parsing fails, treat as plain text
+            context["logs"] = {"raw": str(feedback.logs)}
 
     # Create email body
     html_message = render_to_string("emails/feedback.html", context)
