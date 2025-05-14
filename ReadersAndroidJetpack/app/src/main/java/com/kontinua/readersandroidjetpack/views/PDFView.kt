@@ -111,7 +111,7 @@ fun PDFViewer(
                                 navbarManager.setPageCountValue(pageCount)
                             }
                             .onLoad { navbarManager.setPage(pdfView.currentPage) }
-                            .onPageScroll { page, offset ->
+                            .onPageScroll { _, _ ->
                                 currentZoom.floatValue = pdfView.zoom
                                 panOffset.value = Offset(
                                     -pdfView.currentXOffset,
