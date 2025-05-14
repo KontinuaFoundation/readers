@@ -31,6 +31,8 @@ import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
+private const val NEXT_PAGE_TAP_RATIO = 0.85f
+
 @Composable
 fun PDFViewer(
     modifier: Modifier = Modifier,
@@ -123,19 +125,13 @@ fun PDFViewer(
                                 } else {
                                     val x = event.x
                                     val w = pdfView.width.toFloat()
-                                    val cur = pdfView.currentPage
-                                    val cnt = pdfView.pageCount
 
-                                    if (x > w * 0.85f) {
+                                    if (x > w * NEXT_PAGE_TAP_RATIO) {
                                         // right 15% → next page
-                                        if (cur < cnt - 1) {
-                                            navbarManager.goToNextPage()
-                                        }
+                                        navbarManager.goToNextPage()
                                     } else {
                                         // left 85% → previous page
-                                        if (cur > 0) {
-                                            navbarManager.goToPreviousPage()
-                                        }
+                                        navbarManager.goToPreviousPage()
                                     }
                                     true
                                 }
