@@ -156,6 +156,7 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
         modifier = Modifier
             .width(200.dp)
             .background(Color.White)
+            .border(1.dp, Color.DarkGray)
             .fillMaxHeight()
             .padding(48.dp)
             .verticalScroll(state = scroll)
