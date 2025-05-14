@@ -121,7 +121,7 @@ fun PDFViewer(
                     // only jump to the new page if it’s different
                     val target = navbarManager.pageNumber
                     if (pdfView.currentPage != target) {
-                        pdfView.jumpTo(target, true)
+                        pdfView.jumpTo(target, false)
                     }
                 }
             }
