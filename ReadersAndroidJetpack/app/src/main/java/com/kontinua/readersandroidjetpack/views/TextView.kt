@@ -46,7 +46,6 @@ fun MovableTextBox(
     onDelete: () -> Unit,
     onResize: (Offset) -> Unit
 ) {
-
     val position = Offset(annotation.position.x, annotation.position.y)
     val x = position.x * canvasSize.width * zoom + pan.x
     val y = position.y * canvasSize.height * zoom + pan.y

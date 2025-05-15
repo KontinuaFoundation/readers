@@ -31,7 +31,6 @@ import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.Drawing
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.OffsetSerializable
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.TextAnnotation
 
-
 @Composable
 fun DrawingCanvas(
     workbookId: String,
@@ -60,14 +59,16 @@ fun DrawingCanvas(
 
     val gestureModifier = if (annotationManager.scribbleEnabled) {
         Modifier.pointerInput(
-            workbookId, page,
+            workbookId,
+            page,
             annotationManager.textEnabled,
             annotationManager.penEnabled,
             annotationManager.highlightEnabled,
             annotationManager.eraseEnabled,
             annotationManager.clearEnabled,
-            annotationManager.textAnnotations) {
-            if (annotationManager.textEnabled){
+            annotationManager.textAnnotations
+        ) {
+            if (annotationManager.textEnabled) {
                 detectTapGestures(
                     onTap = { offset ->
                         val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
@@ -78,7 +79,9 @@ fun DrawingCanvas(
                         )
                         annotationManager.addTextAnnotation(newAnnotation)
                         DrawingStore.saveTextAnnotations(
-                            context, workbookId, page,
+                            context,
+                            workbookId,
+                            page,
                             annotationManager.textAnnotations
                         )
                     }
@@ -169,7 +172,9 @@ fun DrawingCanvas(
                     newPos = OffsetSerializable(newPos.x, newPos.y)
                 )
                 DrawingStore.saveTextAnnotations(
-                    context, workbookId, page,
+                    context,
+                    workbookId,
+                    page,
                     annotationManager.textAnnotations
                 )
             },
@@ -187,7 +192,7 @@ fun DrawingCanvas(
             }
         )
     }
-    if (deleteText && textToDelete.value != null){
+    if (deleteText && textToDelete.value != null) {
         ConfirmDeleteDialog(
             onConfirm = {
                 annotationManager.removeText(textToDelete.value!!.id)
@@ -201,7 +206,7 @@ fun DrawingCanvas(
             }
         )
     }
-    if (annotationManager.clearEnabled){
+    if (annotationManager.clearEnabled) {
         ConfirmClearDialog(
             onConfirm = {
                 savedPaths.clear()

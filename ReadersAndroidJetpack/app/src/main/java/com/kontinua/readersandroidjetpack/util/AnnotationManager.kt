@@ -78,7 +78,7 @@ class AnnotationManager {
         eraseEnabled = false
     }
 
-    fun toggleClear(boolean: Boolean){
+    fun toggleClear(boolean: Boolean) {
         clearEnabled = boolean
     }
 
@@ -107,7 +107,7 @@ class AnnotationManager {
         textAnnotations.removeAll { it.id == id }
     }
 
-    fun getText(context: Context, workbookId: String, page: Int){
+    fun getText(context: Context, workbookId: String, page: Int) {
         textAnnotations = DrawingStore.getTextAnnotations(context, workbookId, page).toMutableStateList()
     }
 }
