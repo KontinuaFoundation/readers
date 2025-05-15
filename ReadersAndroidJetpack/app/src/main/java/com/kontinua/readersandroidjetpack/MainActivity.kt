@@ -110,9 +110,10 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 content = { innerPadding ->
-                    Box(Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
                     ) {
                         PDFViewer(
                             navbarManager = navbarManager,
@@ -136,4 +137,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-

@@ -7,9 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,16 +48,13 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
-import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
-import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @Composable
 fun UnifiedSidebar(
@@ -73,7 +68,6 @@ fun UnifiedSidebar(
     )
 
     Box(Modifier.fillMaxSize()) {
-
         AnimatedVisibility(
             visible = navbarManager.isChapterVisible,
             enter = fadeIn(),
@@ -196,8 +190,11 @@ fun ChapterSidebar(
         // ← Each chapter + divider
         chapters.forEachIndexed { i, chapter ->
             val bgColor =
-                if (i == navbarManager.currentChapterIndex) Color.LightGray
-                else Color.Transparent
+                if (i == navbarManager.currentChapterIndex) {
+                    Color.LightGray
+                } else {
+                    Color.Transparent
+                }
 
             Column(
                 modifier = Modifier
@@ -228,7 +225,7 @@ fun ChapterSidebar(
 }
 
 @Composable
-fun ListingDivider(){
+fun ListingDivider() {
     Divider(
         modifier = Modifier
             .fillMaxWidth(0.95f)
@@ -252,9 +249,9 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
                 drawContent()
                 val stroke = with(density) { 1.dp.toPx() }
                 drawLine(
-                    color     = Color.LightGray,
-                    start     = Offset(size.width - stroke/2, 0f),
-                    end       = Offset(size.width - stroke/2, size.height),
+                    color = Color.LightGray,
+                    start = Offset(size.width - stroke / 2, 0f),
+                    end = Offset(size.width - stroke / 2, size.height),
                     strokeWidth = stroke
                 )
             }
@@ -274,8 +271,11 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
     ) {
         for (workbook in workbooks) {
             val bgColor =
-                if (workbook == collectionVM.currentWorkbook) Color.LightGray
-                else Color.Transparent
+                if (workbook == collectionVM.currentWorkbook) {
+                    Color.LightGray
+                } else {
+                    Color.Transparent
+                }
             Text(
                 "Workbook ${workbook.number}",
                 modifier = Modifier
