@@ -31,6 +31,8 @@ import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
+private const val PREV_PAGE_TAP_RATIO = 0.25f
+
 @Composable
 fun PDFViewer(
     modifier: Modifier = Modifier,
@@ -109,19 +111,33 @@ fun PDFViewer(
                                 navbarManager.setPageCountValue(pageCount)
                             }
                             .onLoad { navbarManager.setPage(pdfView.currentPage) }
-                            .onPageScroll { page, offset ->
+                            .onPageScroll { _, _ ->
                                 currentZoom.floatValue = pdfView.zoom
                                 panOffset.value = Offset(
                                     -pdfView.currentXOffset,
                                     -pdfView.currentYOffset
                                 )
                             }
+                            .onTap { event ->
+                                // if we’re zoomed or in annotation mode, don’t consume
+                                if (annotationManager.annotationsEnabled || pdfView.zoom != 1f) {
+                                    false
+                                } else {
+                                    if (event.x > pdfView.width.toFloat() * PREV_PAGE_TAP_RATIO) {
+                                        navbarManager.goToNextPage()
+                                    } else {
+                                        navbarManager.goToPreviousPage()
+                                    }
+                                    // consume if page was changed
+                                    true
+                                }
+                            }
                             .load()
                     }
                     // only jump to the new page if it’s different
                     val target = navbarManager.pageNumber
                     if (pdfView.currentPage != target) {
-                        pdfView.jumpTo(target, true)
+                        pdfView.jumpTo(target, false)
                     }
                 }
             }
