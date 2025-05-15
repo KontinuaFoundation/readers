@@ -80,22 +80,12 @@ class FeedbackManager: ObservableObject {
         }
 
         // Get logs if requested (default is true)
-        let applicationLogs: String?
+        let applicationLogs: [String: Any]?
 
         if includeLogs {
-            // Get the JSON logs
-            let logsJSON = Logger.getLogsForFeedbackJSON()
-
-            // Convert JSON to pretty-printed string
-            do {
-                let jsonData = try JSONSerialization.data(withJSONObject: logsJSON, options: .prettyPrinted)
-                applicationLogs = String(data: jsonData, encoding: .utf8)
-                Logger.info("Including structured logs in feedback", category: "Feedback")
-            } catch {
-                Logger.error("Failed to serialize logs to JSON: \(error)", category: "Feedback")
-                // Fallback to plain text logs
-                applicationLogs = Logger.getLogsForFeedback()
-            }
+            // Get the JSON logs directly - don't convert to string
+            applicationLogs = Logger.getLogsForFeedbackJSON()
+            Logger.info("Including structured logs in feedback", category: "Feedback")
         } else {
             applicationLogs = nil
             Logger.info("Submitting feedback without logs", category: "Feedback")
@@ -105,17 +95,22 @@ class FeedbackManager: ObservableObject {
         let collectionValues = getRequiredCollectionValues()
         let chapterNumber = getCurrentChapterNumber()
 
-        let submission = FeedbackSubmission(
-            userEmail: email,
-            description: feedbackBody,
-            workbookId: currentWorkbook?.id,
-            chapterNumber: chapterNumber,
-            pageNumber: currentPage + 1, // Convert from 0-based index
-            majorVersion: collectionValues.majorVersion,
-            minorVersion: collectionValues.minorVersion,
-            localization: collectionValues.localization,
-            logs: applicationLogs
-        )
+        // Create the submission data as a dictionary first
+        var submissionData: [String: Any] = [
+            "user_email": email,
+            "description": feedbackBody,
+            "workbook_id": currentWorkbook?.id ?? NSNull(),
+            "chapter_number": chapterNumber,
+            "page_number": currentPage + 1, // Convert from 0-based index
+            "major_version": collectionValues.majorVersion,
+            "minor_version": collectionValues.minorVersion,
+            "localization": collectionValues.localization
+        ]
+
+        // Add logs if available
+        if let logs = applicationLogs {
+            submissionData["logs"] = logs
+        }
 
         // Log submission details (without sensitive data)
         Logger.info(
@@ -124,7 +119,7 @@ class FeedbackManager: ObservableObject {
         )
 
         // Submit to API
-        submitToAPI(submission: submission) { result in
+        submitToAPI(submissionData: submissionData) { result in
             switch result {
             case .success:
                 Logger.info("Feedback submitted successfully", category: "Feedback")
@@ -201,7 +196,7 @@ class FeedbackManager: ObservableObject {
 
     /// Submits feedback data to the API
     private func submitToAPI(
-        submission: FeedbackSubmission,
+        submissionData: [String: Any],
         completion: @escaping (Result<Void, FeedbackError>) -> Void
     ) {
         // Prepare the request
@@ -215,7 +210,7 @@ class FeedbackManager: ObservableObject {
         }
 
         // Prepare the JSON data
-        guard let jsonData = try? JSONEncoder().encode(submission) else {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: submissionData, options: []) else {
             completion(.failure(.dataPreparationError))
             return
         }

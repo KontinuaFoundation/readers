@@ -83,7 +83,7 @@ final class ApplicationLogger: LoggerProtocol {
 
     // Add new method for JSON output
     func getLogsForFeedbackJSON() -> [String: Any] {
-        let recentLogs = getRecentLogs(count: 100)
+        let recentLogs = getRecentLogs(count: 200)
 
         // Group logs by level
         let groupedLogs = Dictionary(grouping: recentLogs) { $0.level }
