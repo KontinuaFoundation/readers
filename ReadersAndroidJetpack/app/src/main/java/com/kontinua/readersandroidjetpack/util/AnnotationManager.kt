@@ -6,10 +6,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.graphics.Color
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingStore
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.OffsetSerializable
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.TextAnnotation
-import androidx.compose.ui.graphics.Color
 
 class AnnotationManager {
     var scribbleEnabled by mutableStateOf(false)
@@ -30,6 +30,9 @@ class AnnotationManager {
     var clearEnabled by mutableStateOf(false)
         private set
 
+    var isFocused by mutableStateOf(false)
+        private set
+
     var textAnnotations = mutableStateListOf<TextAnnotation>()
 
     val annotationsEnabled: Boolean
@@ -40,7 +43,7 @@ class AnnotationManager {
 
     var currentPenColor by mutableStateOf(Color.Black)
         private set
-  
+
     init {
         scribbleEnabled = false
         penEnabled = false
@@ -48,6 +51,7 @@ class AnnotationManager {
         highlightEnabled = false
         textEnabled = false
         clearEnabled = false
+        isFocused = false
     }
 
     fun toggleScribble(boolean: Boolean) {
@@ -98,6 +102,10 @@ class AnnotationManager {
 
     fun toggleClear(boolean: Boolean) {
         clearEnabled = boolean
+    }
+
+    fun toggleFocus(boolean: Boolean) {
+        isFocused = boolean
     }
 
     fun addTextAnnotation(annotation: TextAnnotation) {

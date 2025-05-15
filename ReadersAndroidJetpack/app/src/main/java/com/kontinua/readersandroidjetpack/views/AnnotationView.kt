@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.IntOffset
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPath
@@ -50,6 +51,7 @@ fun DrawingCanvas(
     var deleteText by remember { mutableStateOf(false) }
     val canvasSize = remember { mutableStateOf(Size.Zero) }
     val textToDelete = remember { mutableStateOf<TextAnnotation?>(null) }
+    val focusManager = LocalFocusManager.current
 
     // Load drawing paths
     LaunchedEffect(workbookId, page) {
@@ -67,9 +69,13 @@ fun DrawingCanvas(
             annotationManager.highlightEnabled,
             annotationManager.eraseEnabled,
             annotationManager.clearEnabled,
-            annotationManager.textAnnotations
+            annotationManager.textAnnotations,
+            annotationManager.isFocused
         ) {
-            if (annotationManager.textEnabled) {
+            if (annotationManager.isFocused) {
+                focusManager.clearFocus()
+                annotationManager.toggleFocus(false)
+            } else if (annotationManager.textEnabled) {
                 detectTapGestures(
                     onTap = { offset ->
                         val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
@@ -102,13 +108,16 @@ fun DrawingCanvas(
                             val touch = normalized
                             val removed = savedPaths.removeAll { path ->
                                 path.points.any { pt -> (pt - touch).getDistance() < eraseThreshold }
-                        if (removed) {
-                            val serializableList = savedPaths.map { path ->
-                                DrawingPathSerializable(
-                                    points = path.points.map { pt -> OffsetSerializable(pt.x, pt.y) },
-                                    isHighlight = path.isHighlight,
-                                    colorValue = path.color.toArgb().toLong()
-                                )
+                            }
+                            if (removed) {
+                                val serializableList = savedPaths.map { path ->
+                                    DrawingPathSerializable(
+                                        points = path.points.map { pt -> OffsetSerializable(pt.x, pt.y) },
+                                        isHighlight = path.isHighlight,
+                                        colorValue = path.color.toArgb().toLong()
+                                    )
+                                }
+                                DrawingStore.savePaths(context, workbookId, page, serializableList)
                             }
                             if (removed) {
                                 val serializableList = savedPaths.map { path ->
@@ -125,32 +134,27 @@ fun DrawingCanvas(
                     },
                     onDragEnd = {
                         if (!annotationManager.eraseEnabled && currentPath.isNotEmpty()) {
-                            val newPath = DrawingPath(currentPath, isHighlight = annotationManager.highlightEnabled)
+                            val newPath = DrawingPath(
+                                currentPath,
+                                isHighlight = annotationManager.highlightEnabled,
+                                color = if (annotationManager.highlightEnabled) {
+                                    Color.Yellow
+                                } else {
+                                    annotationManager.currentPenColor
+                                }
+                            )
                             savedPaths.add(newPath)
                             DrawingStore.addPath(context, workbookId, page, newPath)
                             currentPath = emptyList()
                         }
-                    } else {
-                        currentPath += normalized
-                    }
-                },
-                onDragEnd = {
-                    if (!annotationManager.eraseEnabled && currentPath.isNotEmpty()) {
-                        val newPath = DrawingPath(
-                            currentPath,
-                            isHighlight = annotationManager.highlightEnabled,
-                            color = if (annotationManager.highlightEnabled) {
-                                Color.Yellow
-                            } else {
-                                annotationManager.currentPenColor
-                            }
-                        )
-                        savedPaths.add(newPath)
-                        DrawingStore.addPath(context, workbookId, page, newPath)
-                        currentPath = emptyList()
                     }
                 )
             }
+        }
+    } else if (annotationManager.isFocused) {
+        Modifier.pointerInput(annotationManager.isFocused) {
+            focusManager.clearFocus()
+            annotationManager.toggleFocus(false)
         }
     } else {
         // allows gestures to pass through when annotations are disabled
@@ -219,6 +223,9 @@ fun DrawingCanvas(
             onDelete = {
                 textToDelete.value = annotation
                 deleteText = true
+            },
+            onFocusChange = { isFocused ->
+                annotationManager.toggleFocus(true)
             }
         )
     }
