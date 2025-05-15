@@ -1,6 +1,10 @@
 import PDFKit
 import SwiftUI
 
+enum TapConstants {
+    static let nextPageTapRatio = 0.75
+}
+
 struct AnnotationsView: View {
     // MARK: - Bindings
 
@@ -130,12 +134,9 @@ struct AnnotationsView: View {
                 // Only do the tap‐to‐turn‐pages if you’re *not* in a drawing tool:
                 guard selectedScribbleTool.isEmpty else { return }
                 if(!zoomManager.getZoomedIn()){
-                    let w = geometry.size.width
-                    if location.x > w * 0.8 {
-                        // tapped on right 20%
+                    if location.x > geometry.size.width * TapConstants.nextPageTapRatio {
                         nextPage?()
                     } else {
-                        // tapped on left 80%
                         previousPage?()
                     }
                 }
