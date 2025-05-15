@@ -113,6 +113,7 @@ struct AnnotationsView: View {
                 zoomManager.newZoomPoint(newPoint: location,
                                          width: geometry.size.width,
                                          height: geometry.size.height)
+                
                 if !textOpened, selectedScribbleTool == "Text" {
                     textOpened = true
                     textManager.addText(textBoxes: $textBoxes,
@@ -120,9 +121,25 @@ struct AnnotationsView: View {
                                         width: geometry.size.width,
                                         height: geometry.size.height)
                     textManager.saveTextBoxes(textBoxes: textBoxes)
-                } else {
-                    textOpened = false
+                    return
                 }
+                //else
+                textOpened = false
+                
+                // ——— PAGE TURNS ———
+                // Only do the tap‐to‐turn‐pages if you’re *not* in a drawing tool:
+                guard selectedScribbleTool.isEmpty else { return }
+                if(!zoomManager.getZoomedIn()){
+                    let w = geometry.size.width
+                    if location.x > w * 0.8 {
+                        // tapped on right 20%
+                        nextPage?()
+                    } else {
+                        // tapped on left 80%
+                        previousPage?()
+                    }
+                }
+                
             }
         }
         .onAppear {
