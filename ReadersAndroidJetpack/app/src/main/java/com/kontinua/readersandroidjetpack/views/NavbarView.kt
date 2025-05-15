@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -49,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -178,7 +180,7 @@ fun ChapterSidebar(
         // ← back‐to‐workbooks button
         WorkbookButton(
             onClick = onButtonClick,
-            modifier = Modifier.align(Alignment.Start)
+            isWorkbookVisible = navbarManager.isWorkbookVisible
         )
 
         // ← search bar
@@ -325,8 +327,15 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
 @Composable
 fun WorkbookButton(
     onClick: () -> Unit,
+    isWorkbookVisible: Boolean,
     modifier: Modifier = Modifier
 ) {
+    // animate between 0° (closed) and 180° (open)
+    val rotation by animateFloatAsState(
+        targetValue = if (isWorkbookVisible) 180f else 0f,
+        animationSpec = tween(durationMillis = 250)
+    )
+
     TextButton(
         onClick = onClick,
         modifier = modifier
@@ -337,9 +346,11 @@ fun WorkbookButton(
     ) {
         Icon(
             imageVector = Icons.Filled.ArrowForwardIos,
-            contentDescription = "Back to Workbooks"
+            contentDescription = "Toggle workbooks",
+            modifier = Modifier.rotate(rotation)
         )
         Spacer(Modifier.width(8.dp))
         Text("Workbooks")
     }
 }
+
