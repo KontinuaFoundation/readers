@@ -17,6 +17,12 @@ class AnnotationManager {
     var eraseEnabled by mutableStateOf(false)
         private set
 
+    val annotationsEnabled: Boolean
+        get() = scribbleEnabled ||
+            penEnabled ||
+            highlightEnabled ||
+            eraseEnabled
+
     var currentPenColor by mutableStateOf(Color.Black)
         private set
 
