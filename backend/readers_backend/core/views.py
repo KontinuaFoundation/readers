@@ -23,6 +23,16 @@ from core.serializers import (
 )
 
 
+# TODO:
+# Let's use an openapi schema/library like drf-yasg to generate the API documentation.
+# Then lets display that here.
+class RootAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"message": f"Readers API v{settings.API_VERSION}"})
+
+
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -163,6 +173,10 @@ class WorkbookViewSet(
         return [IsAuthenticated()]
 
 
+# TODO:
+# Currently we use google app specific password to send emails which limits the number of emails we can send.
+# This endpoint also does not have a strict rate limit per request.
+# This should be addressed in the future...
 class FeedbackView(APIView):
     """
     API endpoint that allows users to submit feedback.
