@@ -13,7 +13,7 @@ class IndexView(TemplateView):
 
         try:
             latest = (
-                Collection.objects.filter(is_released=True, localization="en-US")
+                Collection.objects.filter(is_released=True, localization="en_US")
                 .prefetch_related("workbooks")
                 .latest()
             )
