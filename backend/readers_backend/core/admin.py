@@ -7,6 +7,7 @@ admin.site.site_header = "Kontinua Readers Management"
 admin.site.site_title = "Kontinua Readers Management"
 admin.site.index_title = "Kontinua Readers Management"
 
+
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     ordering = (
@@ -14,15 +15,16 @@ class CollectionAdmin(admin.ModelAdmin):
         "-minor_version",
         "localization",
     )
-    list_filter    = (
+    list_filter = (
         "is_released",
         "localization",
     )
 
+
 @admin.register(Workbook)
 class WorkbookAdmin(admin.ModelAdmin):
     list_filter = (
-        "collection",          
+        "collection",
         "number",
     )
     ordering = (
@@ -32,12 +34,19 @@ class WorkbookAdmin(admin.ModelAdmin):
         "number",
     )
 
+
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ("workbook", "page_number", "chapter_number", "user_email", "created_at")
+    list_display = (
+        "workbook",
+        "page_number",
+        "chapter_number",
+        "user_email",
+        "created_at",
+    )
     list_filter = (
         "workbook__collection",
-        "major_version", 
+        "major_version",
         "minor_version",
         "localization",
         "created_at",
