@@ -31,7 +31,7 @@ import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 
-private const val NEXT_PAGE_TAP_RATIO = 0.80f
+private const val NEXT_PAGE_TAP_RATIO = 0.75f
 
 @Composable
 fun PDFViewer(
