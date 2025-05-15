@@ -46,6 +46,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
@@ -71,7 +73,7 @@ fun UnifiedSidebar(
     )
 
     Box(Modifier.fillMaxSize()) {
-        
+
         AnimatedVisibility(
             visible = navbarManager.isChapterVisible,
             enter = fadeIn(),
@@ -135,7 +137,6 @@ fun ChapterSidebar(
         modifier = Modifier
             .width(350.dp)
             .background(Color.White)
-            .border(1.dp, Color.DarkGray)
             .fillMaxHeight()
             .padding(
                 start = 16.dp,
@@ -247,11 +248,20 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
         modifier = Modifier
             .width(200.dp)
             .background(Color.White)
-            .border(1.dp, Color.DarkGray)
+            .drawWithContent {
+                drawContent()
+                val stroke = with(density) { 1.dp.toPx() }
+                drawLine(
+                    color     = Color.LightGray,
+                    start     = Offset(size.width - stroke/2, 0f),
+                    end       = Offset(size.width - stroke/2, size.height),
+                    strokeWidth = stroke
+                )
+            }
             .fillMaxHeight()
             .padding(
                 start = 16.dp,
-                top = 82.dp,
+                top = 86.dp,
                 end = 10.dp,
                 bottom = 10.dp
             )
