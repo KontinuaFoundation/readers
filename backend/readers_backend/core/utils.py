@@ -1,6 +1,8 @@
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.template.loader import render_to_string
+import json
+
 
 
 def send_feedback_email(feedback):
@@ -29,6 +31,51 @@ def send_feedback_email(feedback):
         "user_email": feedback.user_email,
         "date_submitted": feedback.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
+
+    # Handle logs - iOS sends JSON as a string, Django stores it as JSON
+    if feedback.logs:
+        try:
+            # If logs is a string (from iOS), parse it
+            if isinstance(feedback.logs, str):
+                logs_data = json.loads(feedback.logs)
+            else:
+                # If it's already a dict/list (stored as JSONField)
+                logs_data = feedback.logs
+
+            # Ensure all expected nested properties exist
+            if isinstance(logs_data, dict):
+                # Check device properties
+                if "device" in logs_data and isinstance(logs_data["device"], dict):
+                    device = logs_data["device"]
+                    # Ensure all device properties exist
+                    device.setdefault("model", "Unknown")
+                    device.setdefault("systemName", "Unknown")
+                    device.setdefault("systemVersion", "Unknown")
+                    device.setdefault("appVersion", "Unknown")
+                    device.setdefault("buildNumber", "Unknown")
+                    device.setdefault("deviceName", "Unknown")
+
+                # Check summary properties
+                if "summary" in logs_data and isinstance(logs_data["summary"], dict):
+                    summary = logs_data["summary"]
+                    summary.setdefault("totalLogs", 0)
+                    summary.setdefault("errorCount", 0)
+                    summary.setdefault("warningCount", 0)
+                    summary.setdefault("criticalCount", 0)
+                    summary.setdefault("timeRange", "N/A")
+
+                context["logs"] = logs_data
+            else:
+                # If logs is not a dict, wrap it
+                context["logs"] = {"raw": str(logs_data)}
+
+        except json.JSONDecodeError:
+            # If parsing fails, treat as plain text
+            context["logs"] = {"raw": str(feedback.logs)}
+        except Exception as e:
+            # Catch any other errors
+            print(f"Error processing logs: {e}")
+            context["logs"] = {"raw": str(feedback.logs)}
 
     # Create email body
     html_message = render_to_string("emails/feedback.html", context)

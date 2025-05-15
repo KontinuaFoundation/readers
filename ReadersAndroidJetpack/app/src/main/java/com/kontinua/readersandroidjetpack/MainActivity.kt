@@ -29,10 +29,10 @@ import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModelFactory
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
+import com.kontinua.readersandroidjetpack.views.PDFViewer
 import com.kontinua.readersandroidjetpack.views.ResourceOverlayView
-import com.kontinua.readersandroidjetpack.views.SidebarWithPDFViewer
+import com.kontinua.readersandroidjetpack.views.UnifiedSidebar
 import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
-import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
@@ -57,15 +57,8 @@ class MainActivity : ComponentActivity() {
         val timerViewModel: TimerViewModel = viewModel()
         val navbarManager = remember { NavbarManager() }
         val annotationManager = remember { AnnotationManager() }
-        val feedbackViewModel: FeedbackViewModel =
-            viewModel(
-                factory = FeedbackViewModelFactory(navbarManager)
-            )
-
+        val feedbackViewModel: FeedbackViewModel = viewModel(factory = FeedbackViewModelFactory(navbarManager))
         val collectionViewModel: CollectionViewModel = viewModel()
-        LaunchedEffect(collectionViewModel) {
-            navbarManager.setCollection(collectionViewModel)
-        }
         val chapterContentManager =
             remember(navbarManager) {
                 ChapterContentManager(
@@ -91,11 +84,13 @@ class MainActivity : ComponentActivity() {
             overlayContent = video
         }
 
-        // --- Callback to dismiss the overlay ---
-        val dismissOverlay: () -> Unit = {
-            overlayContent = null
+        LaunchedEffect(collectionViewModel) {
+            navbarManager.setCollection(collectionViewModel)
         }
-        Box(modifier = Modifier.fillMaxSize()) {
+
+        val dismissOverlay: () -> Unit = { overlayContent = null }
+
+        Box(Modifier.fillMaxSize()) {
             Scaffold(
                 topBar = {
                     Toolbar(
@@ -110,33 +105,34 @@ class MainActivity : ComponentActivity() {
                 },
                 bottomBar = {
                     Column {
-                        // Timer progress indicator above the bottom bar
-                        TimerProgressIndicator(timerViewModel = timerViewModel)
-
-                        // Unified bottom bar with timer controls and feedback button
-                        BottomBarComponent(
-                            feedbackViewModel = feedbackViewModel,
-                            timerViewModel = timerViewModel
-                        )
+                        TimerProgressIndicator(timerViewModel)
+                        BottomBarComponent(feedbackViewModel, timerViewModel)
                     }
                 },
-                modifier = Modifier.fillMaxSize()
-            ) { innerPadding ->
-                Column(modifier = Modifier.padding(innerPadding)) {
-                    // need to pass collectionview down to sidebar with pdf
-                    SidebarWithPDFViewer(
-                        navbarManager = navbarManager,
-                        collectionViewModel = collectionViewModel,
-                        annotationManager = annotationManager
-                    )
+                content = { innerPadding ->
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        PDFViewer(
+                            navbarManager = navbarManager,
+                            collectionViewModel = collectionViewModel,
+                            annotationManager = annotationManager
+                        )
+                    }
                 }
-                FeedbackForm(viewModel = feedbackViewModel)
-            }
+            )
         }
+
+        UnifiedSidebar(
+            navbarManager = navbarManager
+        )
+
         if (overlayContent != null) {
             ResourceOverlayView(
                 content = overlayContent,
-                onDismissRequest = dismissOverlay // Pass the dismiss function
+                onDismissRequest = dismissOverlay
             )
         }
     }

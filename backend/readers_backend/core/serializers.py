@@ -163,6 +163,8 @@ class CollectionRetrieveQueryParamsSerializer(serializers.Serializer):
 
 class FeedbackSerializer(serializers.ModelSerializer):
 
+    logs = serializers.JSONField(required=False, allow_null=True)
+
     # Validate the fields in the feedback object
     class Meta:
         model = Feedback
@@ -175,6 +177,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "major_version",
             "minor_version",
             "localization",
+            "logs",
         ]
 
     # Validate that the workbook_id exists
