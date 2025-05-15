@@ -819,3 +819,28 @@ class CollectionTestCase(APITestCase):
         self.assertEqual(response.status_code, 404)
 
         self.assertEqual(response.data["message"], "No collections found.")
+
+    def test_retrieve_latest_collection_with_major_version_not_int(self):
+        url = reverse("collection-latest")
+        response = self.client.get(f"{url}?major_version=not_int")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data["major_version"], ["A valid integer is required."]
+        )
+
+    def test_retrieve_latest_collection_with_minor_version_not_int(self):
+        url = reverse("collection-latest")
+        response = self.client.get(f"{url}?minor_version=not_int")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data["minor_version"], ["A valid integer is required."]
+        )
+
+    def test_retrieve_collection_with_is_released_not_bool(self):
+        url = reverse("collection-latest")
+        response = self.client.get(f"{url}?is_released=not_bool")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["is_released"], ["Must be a valid boolean."])
