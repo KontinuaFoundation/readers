@@ -1,5 +1,4 @@
 package com.kontinua.readersandroidjetpack.util
-
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -50,7 +49,6 @@ class AnnotationManager {
         eraseEnabled = false
         scribbleEnabled = true
     }
-
 
     fun toggleHighlight(boolean: Boolean) {
         highlightEnabled = boolean

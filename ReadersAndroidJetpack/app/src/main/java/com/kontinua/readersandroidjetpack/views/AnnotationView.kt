@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
@@ -27,7 +28,6 @@ import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.Drawing
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPathSerializable
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingStore
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.OffsetSerializable
-import androidx.compose.ui.graphics.toArgb
 
 @Composable
 fun DrawingCanvas(
@@ -84,9 +84,14 @@ fun DrawingCanvas(
                 },
                 onDragEnd = {
                     if (!annotationManager.eraseEnabled && currentPath.isNotEmpty()) {
-                        val newPath = DrawingPath(currentPath,
+                        val newPath = DrawingPath(
+                            currentPath,
                             isHighlight = annotationManager.highlightEnabled,
-                            color = if (annotationManager.highlightEnabled) Color.Yellow else annotationManager.currentPenColor
+                            color = if (annotationManager.highlightEnabled) {
+                                Color.Yellow
+                            } else {
+                                annotationManager.currentPenColor
+                            }
                         )
                         savedPaths.add(newPath)
                         DrawingStore.addPath(context, workbookId, page, newPath)
@@ -121,7 +126,8 @@ fun DrawingCanvas(
             drawPathLine(it, pageWidth, pageHeight, zoom)
         }
         drawPathLine(
-            DrawingPath(currentPath,
+            DrawingPath(
+                currentPath,
                 isHighlight = annotationManager.highlightEnabled,
                 color = if (annotationManager.highlightEnabled) Color.Yellow else annotationManager.currentPenColor
             ),

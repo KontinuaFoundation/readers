@@ -1,4 +1,11 @@
 package com.kontinua.readersandroidjetpack.views.topbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DropdownMenu
@@ -9,17 +16,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -27,12 +23,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
-import androidx.compose.foundation.layout.width
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -170,66 +170,66 @@ fun Toolbar(
                                 }
                             )
                         }
-                }
-            }
-            DropdownMenuItem(text = { Text("Highlight") }, onClick = {
-                annotationManager.toggleScribble(true)
-                annotationManager.toggleHighlight(true)
-                showMarkupMenu = false
-            })
-            DropdownMenuItem(text = { Text("Eraser") }, onClick = {
-                annotationManager.toggleScribble(true)
-                annotationManager.toggleErase(true)
-                showMarkupMenu = false
-            })
-            DropdownMenuItem(text = { Text("Exit") }, onClick = {
-                annotationManager.toggleScribble(false)
-                showMarkupMenu = false
-            })
-        }
-
-                // Resources Button (Text Button)
-                TextButton(
-                    onClick = {
-                        showResourcesMenu = true
-                    },
-                    // only on if there are resources
-                    enabled = hasResources
-                ) {
-                    Text("Digital Resources")
-                }
-                DropdownMenu(
-                    expanded = showResourcesMenu,
-                    onDismissRequest = { showResourcesMenu = false }
-                ) {
-                    // if there are no resources. should not dropdown, but if it does for some reason then it will just say no resources
-                    if (videos.isEmpty() && references.isEmpty()) {
-                        DropdownMenuItem(
-                            text = { Text("No resources for this chapter") },
-                            onClick = { showResourcesMenu = false },
-                            enabled = false
-                        )
-                    } else {
-                        videos.forEach { video ->
-                            DropdownMenuItem(
-                                text = { Text(video.title) },
-                                onClick = {
-                                    onVideoClick(video)
-                                    showResourcesMenu = false
-                                }
-                            )
-                        }
-                        references.forEach { reference ->
-                            DropdownMenuItem(
-                                text = { Text(reference.title) },
-                                onClick = {
-                                    onReferenceClick(reference)
-                                    showResourcesMenu = false
-                                }
-                            )
-                        }
                     }
                 }
+                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    annotationManager.toggleHighlight(true)
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Eraser") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    annotationManager.toggleErase(true)
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Exit") }, onClick = {
+                    annotationManager.toggleScribble(false)
+                    showMarkupMenu = false
+                })
+            }
+
+            // Resources Button (Text Button)
+            TextButton(
+                onClick = {
+                    showResourcesMenu = true
+                },
+                // only on if there are resources
+                enabled = hasResources
+            ) {
+                Text("Digital Resources")
+            }
+            DropdownMenu(
+                expanded = showResourcesMenu,
+                onDismissRequest = { showResourcesMenu = false }
+            ) {
+                // if there are no resources. should not dropdown, but if it does for some reason then it will just say no resources
+                if (videos.isEmpty() && references.isEmpty()) {
+                    DropdownMenuItem(
+                        text = { Text("No resources for this chapter") },
+                        onClick = { showResourcesMenu = false },
+                        enabled = false
+                    )
+                } else {
+                    videos.forEach { video ->
+                        DropdownMenuItem(
+                            text = { Text(video.title) },
+                            onClick = {
+                                onVideoClick(video)
+                                showResourcesMenu = false
+                            }
+                        )
+                    }
+                    references.forEach { reference ->
+                        DropdownMenuItem(
+                            text = { Text(reference.title) },
+                            onClick = {
+                                onReferenceClick(reference)
+                                showResourcesMenu = false
+                            }
+                        )
+                    }
+                }
+            }
         }
     )
 }
