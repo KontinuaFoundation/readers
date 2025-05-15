@@ -23,8 +23,9 @@ struct LogEntry: Codable {
         let filename = URL(fileURLWithPath: file).lastPathComponent
 
         return "\(dateFormatter.string(from: timestamp)) \(level.emoji) " +
-        "[\(category)] \(filename):\(line) - " +
-        "\(function) - \(message)"    }
+            "[\(category)] \(filename):\(line) - " +
+            "\(function) - \(message)"
+    }
 
     var emailFormattedMessage: String {
         let dateFormatter = DateFormatter()
