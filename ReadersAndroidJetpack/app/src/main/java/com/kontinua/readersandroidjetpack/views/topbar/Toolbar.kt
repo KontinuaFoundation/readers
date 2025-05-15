@@ -93,83 +93,48 @@ fun Toolbar(
                     showTimerMenu = false
                 })
             }
-//            // Markup Button (Text Button)
-//            TextButton(onClick = { showMarkupMenu = true }) {
-//                Text("Markup")
-//            }
-//            DropdownMenu(
-//                expanded = showMarkupMenu,
-//                onDismissRequest = { showMarkupMenu = false }
-//            ) {
-//                DropdownMenuItem(text = { Text("Pen") }, onClick = {
-//                    annotationManager.toggleScribble(true)
-//                    annotationManager.togglePen(true)
-//                    showMarkupMenu = false
-//                })
-//                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
-//                    annotationManager.toggleScribble(true)
-//                    annotationManager.toggleHighlight(true)
-//                    showMarkupMenu = false
-//                })
-//                DropdownMenuItem(text = { Text("Eraser") }, onClick = {
-//                    annotationManager.toggleScribble(true)
-//                    annotationManager.toggleErase(true)
-//                    showMarkupMenu = false
-//                })
-//                DropdownMenuItem(text = { Text("Exit") }, onClick = {
-//                    annotationManager.toggleScribble(false)
-//                    showMarkupMenu = false
-//                })
-//            }
             TextButton(onClick = { showMarkupMenu = true }) { Text("Markup") }
             DropdownMenu(
                 expanded = showMarkupMenu,
                 onDismissRequest = { showMarkupMenu = false }
             ) {
-                Box {
-                    DropdownMenuItem(
-                        text = { Text("Pen") },
-                        onClick = {
-                            if (!annotationManager.penEnabled) {
-                                annotationManager.setPenColor(annotationManager.currentPenColor) // Activate pen with current/default color
-                            }
-                            showPenColorMenu = true
-                            // Keep showMarkupMenu = true so the submenu is anchored correctly
-                        },
-                        trailingIcon = { Text("▼") } // Visual cue for submenu
+                // Pen dropdown with embedded color options
+                DropdownMenuItem(
+                    text = { Text("Pen") },
+                    onClick = {
+                        showPenColorMenu = !showPenColorMenu
+                    },
+                    trailingIcon = { Text("▼") }
+                )
+
+                if (showPenColorMenu) {
+                    val penColors = listOf(
+                        "Black" to Color.Black,
+                        "Red" to Color.Red,
+                        "Green" to Color.Green,
+                        "Blue" to Color.Blue
                     )
-                    // Nested DropdownMenu for Pen Colors
-                    DropdownMenu(
-                        expanded = showPenColorMenu,
-                        onDismissRequest = { showPenColorMenu = false }
-                    ) {
-                        val penColors = listOf(
-                            "Black" to Color.Black,
-                            "Red" to Color.Red,
-                            "Green" to Color.Green,
-                            "Blue" to Color.Blue
-                        )
-                        penColors.forEach { (name, color) ->
-                            DropdownMenuItem(
-                                text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(16.dp)
-                                                .clip(CircleShape)
-                                                .background(color)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(name)
-                                    }
-                                },
-                                onClick = {
-                                    annotationManager.setPenColor(color)
-                                    showPenColorMenu = false
-                                    showMarkupMenu = false
+                    penColors.forEach { (name, color) ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .clip(CircleShape)
+                                            .background(color)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(name)
                                 }
-                            )
-                        }
+                            },
+                            onClick = {
+                                annotationManager.setPenColor(color)
+                                annotationManager.togglePen(true)
+                                showPenColorMenu = false
+                                showMarkupMenu = false
+                            }
+                        )
                     }
                 }
                 DropdownMenuItem(text = { Text("Highlight") }, onClick = {
