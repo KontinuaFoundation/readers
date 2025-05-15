@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -64,7 +65,7 @@ fun SidebarWithPDFViewer(
         label = "chapterSidebarWidthAnimation"
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize()) {
 
         // Transparent clickable overlay.
         if (navbarManager.isChapterVisible) {
@@ -90,7 +91,9 @@ fun SidebarWithPDFViewer(
             visible = navbarManager.isChapterVisible,
             enter = slideInHorizontally(initialOffsetX = { -it }),
             exit = slideOutHorizontally(targetOffsetX = { -it }),
-            modifier = Modifier.align(Alignment.CenterStart).padding(start = animatedChapterSidebarWidth)
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = animatedChapterSidebarWidth)
         ) {
             ChapterSidebar(
                 onClose = { navbarManager.closeSidebar() },
@@ -114,7 +117,6 @@ fun SidebarWithPDFViewer(
     }
 }
 
-
 @Composable
 fun ChapterSidebar(
     onClose: () -> Unit,
@@ -133,7 +135,7 @@ fun ChapterSidebar(
             .fillMaxHeight()
             .padding(
                 start = 16.dp,
-                top = 10.dp,
+                top = 32.dp,
                 end = 10.dp,
                 bottom = 10.dp
             )

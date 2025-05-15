@@ -116,7 +116,6 @@ class MainActivity : ComponentActivity() {
                         .padding(innerPadding)
                     ) {
                         PDFViewer(
-                            modifier = Modifier.fillMaxSize(),
                             navbarManager = navbarManager,
                             collectionViewModel = collectionViewModel,
                             annotationManager = annotationManager
