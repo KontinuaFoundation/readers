@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -23,7 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -114,41 +117,91 @@ fun SidebarWithPDFViewer(
     }
 }
 
+
 @Composable
-fun ChapterSidebar(onClose: () -> Unit, onButtonClick: () -> Unit, navbarManager: NavbarManager) {
-    val collectionVM = navbarManager.collectionVM
-    val chapters: List<Chapter> = collectionVM!!.chapters
+fun ChapterSidebar(
+    onClose: () -> Unit,
+    onButtonClick: () -> Unit,
+    navbarManager: NavbarManager
+) {
+    val collectionVM = navbarManager.collectionVM!!
+    val chapters = collectionVM.chapters
     val scroll = rememberScrollState()
+
     Column(
         modifier = Modifier
-            .width(250.dp)
+            .width(350.dp)
             .background(Color.White)
             .border(1.dp, Color.DarkGray)
             .fillMaxHeight()
-            .padding(48.dp)
-            .verticalScroll(state = scroll)
-            .clickable(
+            .padding(10.dp)
+            .verticalScroll(scroll)
+            .clickable( // consume clicks
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
-            ) { /* Prevent clicks from propagating */ },
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) { /* no-op */ },
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.Start
     ) {
-        WorkbookButton(onClick = onButtonClick)
-        for (i in chapters.indices) {
-            val chapter = chapters[i]
-            val bgColor = if (i == navbarManager.currentChapterIndex) Color.LightGray else Color.Transparent
-            Text(
-                stringResource(id = R.string.chapter_info, chapter.chapNum, chapter.title),
+        // ← back‐to‐workbooks button
+        WorkbookButton(
+            onClick = onButtonClick,
+            modifier = Modifier.fillMaxWidth(0.9f)
+        )
+
+        // ← “Chapters” heading
+        Text(
+            text = stringResource(R.string.chapter_heading),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .padding(top = 8.dp, bottom = 4.dp)
+        )
+
+        ListingDivider()
+
+        // ← Each chapter + divider
+        chapters.forEachIndexed { i, chapter ->
+            val bgColor =
+                if (i == navbarManager.currentChapterIndex) Color.LightGray
+                else Color.Transparent
+
+            Column(
                 modifier = Modifier
+                    .fillMaxWidth(0.95f)
                     .background(bgColor)
                     .clickable {
                         collectionVM.setWorkbook(collectionVM.currentWorkbook)
                         navbarManager.setPage(chapter.startPage - 1)
                         onClose()
                     }
-            )
+                    .padding(vertical = 3.dp, horizontal = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.chapter_num, chapter.chapNum),
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Text(
+                    text = stringResource(R.string.chapter_title, chapter.title),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            ListingDivider()
         }
     }
+}
+
+@Composable
+fun ListingDivider(){
+    Divider(
+        modifier = Modifier
+            .fillMaxWidth(0.95f)
+            .padding(vertical = 1.dp),
+        color = Color.LightGray,
+        thickness = 1.dp
+    )
 }
 
 @Composable
@@ -185,11 +238,17 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
 }
 
 @Composable
-fun WorkbookButton(onClick: () -> Unit) {
-    Button(onClick = onClick) {
+fun WorkbookButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier      // <-- allow caller to control width / alignment
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+    ) {
         Icon(
             imageVector = Icons.Filled.ArrowBackIosNew,
-            contentDescription = "Back to Workbooks" // for accessibility
+            contentDescription = "Back to Workbooks"
         )
         Spacer(Modifier.width(8.dp))
         Text("Workbooks")
