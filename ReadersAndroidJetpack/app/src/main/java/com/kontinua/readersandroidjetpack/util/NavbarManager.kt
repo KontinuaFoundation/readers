@@ -6,6 +6,9 @@ import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
+// TODO: if i am on page 6 of workbook x and then i switch to workbook y,
+// it opens up to page 6 on workbook y
+
 class NavbarManager {
     var isChapterVisible by mutableStateOf(false)
         private set
