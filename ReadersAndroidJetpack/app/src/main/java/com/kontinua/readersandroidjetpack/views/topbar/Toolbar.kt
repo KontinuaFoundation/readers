@@ -32,7 +32,6 @@ fun Toolbar(
     currentChapterVideos: Any,
     onReferenceClick: (Reference) -> Unit,
     onVideoClick: (Video) -> Unit
-
 ) {
     var showMarkupMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }

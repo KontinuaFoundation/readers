@@ -18,22 +18,29 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -122,6 +129,7 @@ fun ChapterSidebar(
     val collectionVM = navbarManager.collectionVM!!
     val chapters = collectionVM.chapters
     val scroll = rememberScrollState()
+    var searchQuery by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -139,7 +147,7 @@ fun ChapterSidebar(
             .clickable( // consume clicks
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
-            ) { /* no-op */ },
+            ) { /* no-op, prevents clicks from propagating */ },
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.Start
     ) {
@@ -147,6 +155,30 @@ fun ChapterSidebar(
         WorkbookButton(
             onClick = onButtonClick,
             modifier = Modifier.align(Alignment.Start)
+        )
+
+        // ← search bar
+        TextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search icon"
+                )
+            },
+            placeholder = {
+                Text("Search chapters and words")
+            },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = Color(0xFFF0F0F0),
+                focusedContainerColor = Color(0xFFF0F0F0)
+            ),
+            shape = RoundedCornerShape(8.dp)
         )
 
         // ← “Chapters” heading
@@ -218,7 +250,7 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
             .fillMaxHeight()
             .padding(
                 start = 16.dp,
-                top = 56.dp,
+                top = 64.dp,
                 end = 10.dp,
                 bottom = 10.dp
             )
