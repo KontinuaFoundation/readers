@@ -140,6 +140,15 @@ class WorkbookViewSet(
 ):
     queryset = Workbook.objects.all()
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Only users can access unreleased workbooks.
+        if not self.request.user.is_authenticated:
+            queryset = queryset.filter(collection__is_released=True)
+
+        return queryset
+
     def get_serializer_class(self):
         if self.action == "create":
             return WorkbookCreateSerializer
