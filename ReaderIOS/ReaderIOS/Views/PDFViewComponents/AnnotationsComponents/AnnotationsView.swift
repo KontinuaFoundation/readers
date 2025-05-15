@@ -2,7 +2,7 @@ import PDFKit
 import SwiftUI
 
 enum TapConstants {
-    static let nextPageTapRatio = 0.75
+    static let prevPageTapRatio = 0.25
 }
 
 struct AnnotationsView: View {
@@ -133,7 +133,7 @@ struct AnnotationsView: View {
                 // ——— PAGE TURNS ———
                 guard selectedScribbleTool.isEmpty else { return }
                 if !zoomManager.getZoomedIn() {
-                    if location.x > geometry.size.width * TapConstants.nextPageTapRatio {
+                    if location.x > geometry.size.width * TapConstants.prevPageTapRatio {
                         nextPage?()
                     } else {
                         previousPage?()
