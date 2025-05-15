@@ -1,7 +1,10 @@
 package com.kontinua.readersandroidjetpack.views
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -26,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -50,24 +54,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 
+
 @Composable
-fun UnifiedSidebar(
-    navbarManager: NavbarManager
-) {
-    val density = LocalDensity.current
+fun UnifiedSidebar(navbarManager: NavbarManager) {
+    // common duration + easing
+    val duration = 300
+    val easing = FastOutSlowInEasing
+
+    // Dp-based spec for padding animation
+    val sidebarSpecDp: FiniteAnimationSpec<Dp> =
+        tween(durationMillis = duration, easing = easing)
+
+    // IntOffset-based spec for slideIn/slideOut
+    val sidebarSpecOffset: FiniteAnimationSpec<IntOffset> =
+        tween(durationMillis = duration, easing = easing)
 
     val animatedChapterSidebarWidth by animateDpAsState(
         targetValue = if (navbarManager.isWorkbookVisible) 200.dp else 0.dp,
-        label = "chapterSidebarWidthAnimation"
+        animationSpec = sidebarSpecDp,
+        label = "chapterSidebarWidth"
     )
 
     Box(Modifier.fillMaxSize()) {
+        // dimmer
         AnimatedVisibility(
             visible = navbarManager.isChapterVisible,
             enter = fadeIn(),
@@ -78,8 +95,8 @@ fun UnifiedSidebar(
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.5f))
                     .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
                     ) { navbarManager.closeSidebar() }
                     .zIndex(1f)
             )
@@ -88,8 +105,14 @@ fun UnifiedSidebar(
         // Chapter Sidebar
         AnimatedVisibility(
             visible = navbarManager.isChapterVisible,
-            enter = slideInHorizontally(initialOffsetX = { -it }),
-            exit = slideOutHorizontally(targetOffsetX = { -it }),
+            enter = slideInHorizontally(
+                initialOffsetX = { -it },
+                animationSpec = sidebarSpecOffset
+            ),
+            exit = slideOutHorizontally(
+                targetOffsetX = { -it },
+                animationSpec = sidebarSpecOffset
+            ),
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(start = animatedChapterSidebarWidth)
@@ -104,8 +127,14 @@ fun UnifiedSidebar(
         // Workbook Sidebar
         AnimatedVisibility(
             visible = navbarManager.isWorkbookVisible,
-            enter = slideInHorizontally(initialOffsetX = { -it }), // Slide from left
-            exit = slideOutHorizontally(targetOffsetX = { -it }), // Slide to left
+            enter = slideInHorizontally(
+                initialOffsetX = { -it },
+                animationSpec = sidebarSpecOffset
+            ),
+            exit = slideOutHorizontally(
+                targetOffsetX = { -it },
+                animationSpec = sidebarSpecOffset
+            ),
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
             WorkbookSidebar(
@@ -307,7 +336,7 @@ fun WorkbookButton(
         colors = ButtonDefaults.textButtonColors()
     ) {
         Icon(
-            imageVector = Icons.Filled.ArrowBackIosNew,
+            imageVector = Icons.Filled.ArrowForwardIos,
             contentDescription = "Back to Workbooks"
         )
         Spacer(Modifier.width(8.dp))
