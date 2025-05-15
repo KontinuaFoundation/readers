@@ -2,6 +2,8 @@ package com.kontinua.readersandroidjetpack.views
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
@@ -50,6 +52,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
@@ -68,23 +71,21 @@ fun UnifiedSidebar(
     )
 
     Box(Modifier.fillMaxSize()) {
-
-        // Transparent clickable overlay.
-        if (navbarManager.isChapterVisible) {
+        
+        AnimatedVisibility(
+            visible = navbarManager.isChapterVisible,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .pointerInput(navbarManager.isChapterVisible) {
-                        detectTapGestures { offset ->
-                            if (navbarManager.isChapterVisible) {
-                                val sidebarWidthPx = with(density) { animatedChapterSidebarWidth.toPx() }
-                                // Check if tap is outside the sidebar
-                                if (offset.x > sidebarWidthPx) {
-                                    navbarManager.closeSidebar()
-                                }
-                            }
-                        }
-                    }
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { navbarManager.closeSidebar() }
+                    .zIndex(1f)
             )
         }
 
