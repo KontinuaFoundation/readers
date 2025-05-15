@@ -12,7 +12,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,10 +26,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -134,7 +139,12 @@ fun ChapterSidebar(
             .background(Color.White)
             .border(1.dp, Color.DarkGray)
             .fillMaxHeight()
-            .padding(10.dp)
+            .padding(
+                start = 16.dp,
+                top = 10.dp,
+                end = 10.dp,
+                bottom = 10.dp
+            )
             .verticalScroll(scroll)
             .clickable( // consume clicks
                 indication = null,
@@ -146,7 +156,7 @@ fun ChapterSidebar(
         // ← back‐to‐workbooks button
         WorkbookButton(
             onClick = onButtonClick,
-            modifier = Modifier.fillMaxWidth(0.9f)
+            modifier = Modifier.align(Alignment.Start)
         )
 
         // ← “Chapters” heading
@@ -240,11 +250,18 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
 @Composable
 fun WorkbookButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier      // <-- allow caller to control width / alignment
+    modifier: Modifier = Modifier
 ) {
-    Button(
+    TextButton(
         onClick = onClick,
         modifier = modifier
+            // 1) allow it to shrink to exactly its content
+            .defaultMinSize(minWidth = 0.dp, minHeight = 0.dp),
+        // 2) remove all inset padding
+        contentPadding = PaddingValues(0.dp),
+        // 3) ditch the rounded shape so the ripple isn’t clipped like an oval
+        shape = RectangleShape,
+        colors = ButtonDefaults.textButtonColors() // still gives you ripple & disabled styles
     ) {
         Icon(
             imageVector = Icons.Filled.ArrowBackIosNew,
