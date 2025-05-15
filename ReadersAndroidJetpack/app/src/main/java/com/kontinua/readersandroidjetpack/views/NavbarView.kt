@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
@@ -57,9 +58,7 @@ import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @Composable
 fun UnifiedSidebar(
-    navbarManager: NavbarManager,
-    collectionViewModel: CollectionViewModel,
-    annotationManager: AnnotationManager
+    navbarManager: NavbarManager
 ) {
     val density = LocalDensity.current
 
@@ -201,6 +200,7 @@ fun ChapterSidebar(
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.95f)
+                    .clip(RoundedCornerShape(6.dp))
                     .background(bgColor)
                     .clickable {
                         collectionVM.setWorkbook(collectionVM.currentWorkbook)
@@ -250,7 +250,7 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
             .fillMaxHeight()
             .padding(
                 start = 16.dp,
-                top = 64.dp,
+                top = 82.dp,
                 end = 10.dp,
                 bottom = 10.dp
             )
@@ -262,13 +262,21 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         for (workbook in workbooks) {
+            val bgColor =
+                if (workbook == collectionVM.currentWorkbook) Color.LightGray
+                else Color.Transparent
             Text(
                 "Workbook ${workbook.number}",
-                modifier = Modifier.clickable {
-                    collectionVM.setWorkbook(workbook)
-                    navbarManager.setPage(0)
-                    onClose()
-                }.padding(vertical = 6.dp)
+                modifier = Modifier
+                    .clickable {
+                        collectionVM.setWorkbook(workbook)
+                        navbarManager.setPage(0)
+                        onClose()
+                    }
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(bgColor)
             )
         }
     }

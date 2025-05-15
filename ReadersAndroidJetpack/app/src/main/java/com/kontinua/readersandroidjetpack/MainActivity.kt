@@ -125,9 +125,7 @@ class MainActivity : ComponentActivity() {
         }
 
         UnifiedSidebar(
-            navbarManager = navbarManager,
-            collectionViewModel = collectionViewModel,
-            annotationManager = annotationManager
+            navbarManager = navbarManager
         )
 
         if (overlayContent != null) {
