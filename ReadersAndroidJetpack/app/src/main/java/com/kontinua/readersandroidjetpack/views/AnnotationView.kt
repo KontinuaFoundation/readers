@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
@@ -71,7 +72,8 @@ fun DrawingCanvas(
                             val serializableList = savedPaths.map { path ->
                                 DrawingPathSerializable(
                                     points = path.points.map { pt -> OffsetSerializable(pt.x, pt.y) },
-                                    isHighlight = path.isHighlight
+                                    isHighlight = path.isHighlight,
+                                    colorValue = path.color.toArgb().toLong()
                                 )
                             }
                             DrawingStore.savePaths(context, workbookId, page, serializableList)
@@ -82,7 +84,15 @@ fun DrawingCanvas(
                 },
                 onDragEnd = {
                     if (!annotationManager.eraseEnabled && currentPath.isNotEmpty()) {
-                        val newPath = DrawingPath(currentPath, isHighlight = annotationManager.highlightEnabled)
+                        val newPath = DrawingPath(
+                            currentPath,
+                            isHighlight = annotationManager.highlightEnabled,
+                            color = if (annotationManager.highlightEnabled) {
+                                Color.Yellow
+                            } else {
+                                annotationManager.currentPenColor
+                            }
+                        )
                         savedPaths.add(newPath)
                         DrawingStore.addPath(context, workbookId, page, newPath)
                         currentPath = emptyList()
@@ -116,7 +126,11 @@ fun DrawingCanvas(
             drawPathLine(it, pageWidth, pageHeight, zoom)
         }
         drawPathLine(
-            DrawingPath(currentPath, isHighlight = annotationManager.highlightEnabled),
+            DrawingPath(
+                currentPath,
+                isHighlight = annotationManager.highlightEnabled,
+                color = if (annotationManager.highlightEnabled) Color.Yellow else annotationManager.currentPenColor
+            ),
             pageWidth,
             pageHeight,
             zoom
@@ -132,6 +146,7 @@ private fun DrawScope.drawPathLine(
 ) {
     val points = path.points
     val highlight = path.isHighlight
+    val pathColor = if (path.isHighlight) Color.Yellow.copy(alpha = 0.4f) else path.color
     if (points.size < 2) return
     val path = Path().apply {
         moveTo(
@@ -147,7 +162,7 @@ private fun DrawScope.drawPathLine(
     }
     drawPath(
         path = path,
-        color = if (highlight) Color.Yellow.copy(alpha = 0.4f) else Color.Black,
+        color = pathColor,
         style = Stroke(
             width = if (highlight) 20f * zoom else 5f * zoom,
             cap = StrokeCap.Round,
