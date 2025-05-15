@@ -1,9 +1,9 @@
 #
-//  ci_post_clone.sh
-//  ReaderIOS
-//
-//  Created by Jonas Schiessl on 2/1/25.
-//
+#  ci_post_clone.sh
+#  ReaderIOS
+#
+#  Created by Jonas Schiessl on 2/1/25.
+#
 
 #!/bin/sh
 

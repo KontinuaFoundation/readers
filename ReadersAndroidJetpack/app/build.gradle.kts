@@ -82,4 +82,9 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // for saving bookmarks
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.kotlinx.serialization.json.v160)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 }
