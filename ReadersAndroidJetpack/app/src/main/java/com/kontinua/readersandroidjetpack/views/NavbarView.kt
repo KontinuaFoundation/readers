@@ -65,14 +65,6 @@ fun SidebarWithPDFViewer(
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // PDF Viewer
-        // now passing down the collectionviewmodel which is made earlier
-        PDFViewer(
-            modifier = Modifier.fillMaxSize(),
-            navbarManager = navbarManager,
-            collectionViewModel = collectionViewModel,
-            annotationManager = annotationManager
-        )
 
         // Transparent clickable overlay.
         if (navbarManager.isChapterVisible) {
