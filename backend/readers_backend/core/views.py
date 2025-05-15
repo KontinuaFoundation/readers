@@ -9,10 +9,12 @@ from .utils import send_feedback_email
 from rest_framework.viewsets import GenericViewSet
 from django.utils import timezone
 from django.conf import settings
+from rest_framework.exceptions import ValidationError
 
 from core.models import Collection, Workbook, Feedback
 from core.serializers import (
     CollectionListSerializer,
+    CollectionRetrieveQueryParamsSerializer,
     WorkbookCreateSerializer,
     CollectionCreateSerializer,
     CollectionRetrieveSerializer,
@@ -69,10 +71,19 @@ class CollectionViewSet(
 
         params = self.request.query_params
 
-        major_version = params.get("major_version")
-        minor_version = params.get("minor_version")
-        localization = params.get("localization")
-        is_released = params.get("is_released")
+        query_params_serializer = CollectionRetrieveQueryParamsSerializer(data=params)
+
+        if not query_params_serializer.is_valid():
+            raise ValidationError(query_params_serializer.errors)
+
+        major_version = query_params_serializer.validated_data.get(
+            "major_version", None
+        )
+        minor_version = query_params_serializer.validated_data.get(
+            "minor_version", None
+        )
+        localization = query_params_serializer.validated_data.get("localization", None)
+        is_released = query_params_serializer.validated_data.get("is_released", None)
 
         if major_version is not None:
             queryset = queryset.filter(major_version=major_version)
@@ -83,10 +94,8 @@ class CollectionViewSet(
         if localization:
             queryset = queryset.filter(localization=localization)
 
-        # We've already filtered for released collections if the user is not authenticated so doesn't matter if we apply this here.
         if is_released is not None:
-            is_released_bool = is_released.lower() == "true"
-            queryset = queryset.filter(is_released=is_released_bool)
+            queryset = queryset.filter(is_released=is_released)
 
         return queryset
 

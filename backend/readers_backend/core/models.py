@@ -48,6 +48,7 @@ class Feedback(models.Model):
     major_version = models.IntegerField(blank=False, null=False)
     minor_version = models.IntegerField(blank=False, null=False)
     localization = models.CharField(max_length=5, blank=False, null=False)
+    logs = models.JSONField(blank=True, null=True)
 
     def __str__(self):
         return f"Feedback on Workbook {self.workbook.number} v{self.major_version}.{self.minor_version} - Chapter {self.chapter_number} - Page {self.page_number}"
