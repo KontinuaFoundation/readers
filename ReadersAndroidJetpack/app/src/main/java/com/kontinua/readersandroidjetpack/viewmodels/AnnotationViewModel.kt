@@ -2,10 +2,11 @@ package com.kontinua.readersandroidjetpack.viewmodels
 
 import android.content.Context
 import androidx.compose.ui.geometry.Offset
-import java.io.File
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.File
+import java.util.UUID
 
 class AnnotationViewModel : androidx.lifecycle.ViewModel() {
     data class DrawingPath(val points: List<Offset>, val isHighlight: Boolean = false)
@@ -19,6 +20,17 @@ class AnnotationViewModel : androidx.lifecycle.ViewModel() {
     data class DrawingPathSerializable(
         val points: List<OffsetSerializable>,
         val isHighlight: Boolean = false
+    )
+
+    @OptIn(kotlinx.serialization.InternalSerializationApi::class)
+    @Serializable
+    data class TextAnnotation(
+        val id: String = UUID.randomUUID().toString(), // uniquely identify each textbox
+        val text: String,
+        val position: OffsetSerializable,
+        val size: OffsetSerializable,
+        val fontSize: Float = 16f,
+        val colorHex: String = "#000000"
     )
 
     object DrawingStore {
@@ -66,6 +78,20 @@ class AnnotationViewModel : androidx.lifecycle.ViewModel() {
         private fun getFile(context: Context, workbookId: String, page: Int): File {
             val dir = File(context.filesDir, DIR_NAME)
             return File(dir, "${workbookId}_page_$page.json")
+        }
+
+        fun saveTextAnnotations(context: Context, workbookId: String, page: Int, annotations: List<TextAnnotation>) {
+            val file = File(context.filesDir, "text-$workbookId-$page.json")
+            file.writeText(Json.encodeToString(annotations))
+        }
+
+        fun getTextAnnotations(context: Context, workbookId: String, page: Int): List<TextAnnotation> {
+            val file = File(context.filesDir, "text-$workbookId-$page.json")
+            return if (file.exists()) {
+                Json.decodeFromString(file.readText())
+            } else {
+                emptyList()
+            }
         }
     }
 }

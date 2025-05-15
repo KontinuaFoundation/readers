@@ -103,6 +103,14 @@ fun Toolbar(
                     annotationManager.toggleErase(true)
                     showMarkupMenu = false
                 })
+                DropdownMenuItem(text = { Text("Text") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    annotationManager.toggleText(true)
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Clear Screen") }, onClick = {
+                    showMarkupMenu = false
+                })
                 DropdownMenuItem(text = { Text("Exit") }, onClick = {
                     annotationManager.toggleScribble(false)
                     showMarkupMenu = false
