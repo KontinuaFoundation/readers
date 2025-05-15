@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.OpenWith
@@ -17,6 +18,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -24,6 +29,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,15 +42,18 @@ fun MovableTextBox(
     pan: Offset,
     canvasSize: Size,
     onMove: (Offset) -> Unit,
-    onEdit: () -> Unit,
+    onEdit: (String) -> Unit,
     onDelete: () -> Unit,
     onResize: (Offset) -> Unit
 ) {
-    val x = annotation.position.x * canvasSize.width * zoom + pan.x
-    val y = annotation.position.y * canvasSize.height * zoom + pan.y
+
+    val position = Offset(annotation.position.x, annotation.position.y)
+    val x = position.x * canvasSize.width * zoom + pan.x
+    val y = position.y * canvasSize.height * zoom + pan.y
     val width = annotation.size.x * canvasSize.width * zoom
     val height = annotation.size.y * canvasSize.height * zoom
     val localDensity = LocalDensity.current
+    var editingText by remember { mutableStateOf(annotation.text) }
 
     Box(
         modifier = Modifier
@@ -56,17 +65,18 @@ fun MovableTextBox(
         // Move handle (top-left)
         Box(
             modifier = Modifier
-                .size(24.dp)
+                .size(30.dp)
                 .align(Alignment.TopStart)
                 .pointerInput(annotation.id) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
-                        val newX = annotation.position.x + (dragAmount.x / (canvasSize.width * zoom))
-                        val newY = annotation.position.y + (dragAmount.y / (canvasSize.height * zoom))
+                        val newX = position.x + (dragAmount.x / (canvasSize.width * zoom))
+                        val newY = position.y + (dragAmount.y / (canvasSize.height * zoom))
                         onMove(Offset(newX, newY))
                     }
                 }
-                .background(Color.Gray.copy(alpha = 0.6f)),
+                .offset((-20).dp, (-20).dp)
+                .background(Color.DarkGray.copy(alpha = 0.6f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(Icons.Default.OpenWith, contentDescription = "Move", tint = Color.White)
@@ -75,7 +85,7 @@ fun MovableTextBox(
         // Resize handle (bottom-right)
         Box(
             modifier = Modifier
-                .size(24.dp)
+                .size(30.dp)
                 .align(Alignment.BottomEnd)
                 .pointerInput(annotation.id + "-resize") {
                     detectDragGestures { change, dragAmount ->
@@ -85,6 +95,7 @@ fun MovableTextBox(
                         onResize(Offset(newWidth.coerceAtLeast(0.05f), newHeight.coerceAtLeast(0.02f)))
                     }
                 }
+                .offset(20.dp, 20.dp)
                 .background(Color.DarkGray.copy(alpha = 0.6f)),
             contentAlignment = Alignment.Center
         ) {
@@ -95,21 +106,26 @@ fun MovableTextBox(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 24.dp, end = 24.dp)
+                .padding(top = 6.dp, end = 6.dp, start = 6.dp, bottom = 6.dp)
                 .pointerInput(annotation.id + "-tap") {
                     detectTapGestures(
-                        onDoubleTap = { onDelete() },
-                        onTap = { onEdit() }
+                        onDoubleTap = {
+                            onDelete()
+                        }
                     )
                 }
         ) {
-            Text(
-                text = annotation.text,
-                fontSize = annotation.fontSize.sp,
-                modifier = Modifier
-                    .padding(4.dp)
-                    .fillMaxSize(),
-                color = Color.Black
+            BasicTextField(
+                value = editingText,
+                onValueChange = {
+                    editingText = it
+                    onEdit(it)
+                },
+                textStyle = TextStyle.Default.copy(
+                    fontSize = annotation.fontSize.sp * zoom,
+                    color = Color.Black
+                ),
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
@@ -124,6 +140,30 @@ fun ConfirmDeleteDialog(
         onDismissRequest = onDismiss,
         title = { Text("Delete Textbox?") },
         text = { Text("Are you sure you want to delete this textbox?") },
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm()
+            }) {
+                Text("Delete", color = Color.Red)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun ConfirmClearDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Clear Screen?") },
+        text = { Text("Are you sure you want to clear your screen?") },
         confirmButton = {
             TextButton(onClick = {
                 onConfirm()

@@ -26,6 +26,9 @@ class AnnotationManager {
     var textEnabled by mutableStateOf(false)
         private set
 
+    var clearEnabled by mutableStateOf(false)
+        private set
+
     var textAnnotations = mutableStateListOf<TextAnnotation>()
 
     init {
@@ -34,6 +37,7 @@ class AnnotationManager {
         eraseEnabled = false
         highlightEnabled = false
         textEnabled = false
+        clearEnabled = false
     }
 
     fun toggleScribble(boolean: Boolean) {
@@ -74,18 +78,27 @@ class AnnotationManager {
         eraseEnabled = false
     }
 
+    fun toggleClear(boolean: Boolean){
+        clearEnabled = boolean
+    }
+
     fun addTextAnnotation(annotation: TextAnnotation) {
         textAnnotations.add(annotation)
     }
 
-    fun updateText(id: String, newPos: OffsetSerializable? = null, newSize: OffsetSerializable? = null, newText: String? = null) {
+    fun updateText(
+        id: String,
+        newPos: OffsetSerializable? = null,
+        newSize: OffsetSerializable? = null,
+        newText: String? = null
+    ) {
         val index = textAnnotations.indexOfFirst { it.id == id }
         if (index != -1) {
             val old = textAnnotations[index]
             textAnnotations[index] = old.copy(
-                position = newPos ?: textAnnotations[index].position,
-                size = newSize ?: textAnnotations[index].size,
-                text = newText ?: textAnnotations[index].text
+                position = newPos ?: old.position,
+                size = newSize ?: old.size,
+                text = newText ?: old.text
             )
         }
     }

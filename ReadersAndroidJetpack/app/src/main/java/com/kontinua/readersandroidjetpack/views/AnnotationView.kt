@@ -6,10 +6,6 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,10 +47,8 @@ fun DrawingCanvas(
     var currentPath by remember(workbookId, page) {
         mutableStateOf<List<Offset>>(emptyList())
     }
-    var showTextDialog by remember { mutableStateOf(false) }
     var deleteText by remember { mutableStateOf(false) }
     val canvasSize = remember { mutableStateOf(Size.Zero) }
-    val textToEdit = remember { mutableStateOf<TextAnnotation?>(null) }
     val textToDelete = remember { mutableStateOf<TextAnnotation?>(null) }
 
     // Load drawing paths
@@ -70,15 +64,17 @@ fun DrawingCanvas(
             annotationManager.textEnabled,
             annotationManager.penEnabled,
             annotationManager.highlightEnabled,
-            annotationManager.eraseEnabled) {
+            annotationManager.eraseEnabled,
+            annotationManager.clearEnabled,
+            annotationManager.textAnnotations) {
             if (annotationManager.textEnabled){
                 detectTapGestures(
                     onTap = { offset ->
                         val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
                         val newAnnotation = TextAnnotation(
-                            text = "Edit Text",
+                            text = "",
                             position = normalized,
-                            size = OffsetSerializable(0.3f, 0.075f)
+                            size = OffsetSerializable(0.3f, 0.1f)
                         )
                         annotationManager.addTextAnnotation(newAnnotation)
                         DrawingStore.saveTextAnnotations(
@@ -160,7 +156,8 @@ fun DrawingCanvas(
             zoom
         )
     }
-    annotationManager.textAnnotations.toList().forEach { annotation ->
+    for (i in annotationManager.textAnnotations.indices) {
+        val annotation = annotationManager.textAnnotations[i]
         MovableTextBox(
             annotation = annotation,
             zoom = zoom,
@@ -176,55 +173,17 @@ fun DrawingCanvas(
                     annotationManager.textAnnotations
                 )
             },
-            onEdit = {
-                textToEdit.value = annotation
-                showTextDialog = true
+            onEdit = { newText ->
+                annotationManager.updateText(annotation.id, newText = newText)
+                DrawingStore.saveTextAnnotations(context, workbookId, page, annotationManager.textAnnotations)
             },
-            onResize = { newSize -> /* update size */ },
+            onResize = { newSize ->
+                annotationManager.updateText(annotation.id, newSize = OffsetSerializable(newSize.x, newSize.y))
+                DrawingStore.saveTextAnnotations(context, workbookId, page, annotationManager.textAnnotations)
+            },
             onDelete = {
                 textToDelete.value = annotation
                 deleteText = true
-            }
-        )
-    }
-    if (showTextDialog && textToEdit.value != null) {
-        var text by remember { mutableStateOf(textToEdit.value!!.text) }
-
-        AlertDialog(
-            onDismissRequest = {
-                showTextDialog = false
-                textToEdit.value = null
-            },
-            title = { Text("Edit Text") },
-            text = {
-                TextField(
-                    value = text,
-                    onValueChange = { text = it }
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    annotationManager.updateText(
-                        textToEdit.value!!.id,
-                        newText = text
-                    )
-                    DrawingStore.saveTextAnnotations(
-                        context, workbookId, page,
-                        annotationManager.textAnnotations
-                    )
-                    showTextDialog = false
-                    textToEdit.value = null
-                }) {
-                    Text("Save")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showTextDialog = false
-                    textToEdit.value = null
-                }) {
-                    Text("Cancel")
-                }
             }
         )
     }
@@ -239,6 +198,26 @@ fun DrawingCanvas(
             onDismiss = {
                 deleteText = false
                 textToDelete.value = null
+            }
+        )
+    }
+    if (annotationManager.clearEnabled){
+        ConfirmClearDialog(
+            onConfirm = {
+                savedPaths.clear()
+                annotationManager.textAnnotations.clear()
+                val serializableList = savedPaths.map { path ->
+                    DrawingPathSerializable(
+                        points = path.points.map { pt -> OffsetSerializable(pt.x, pt.y) },
+                        isHighlight = path.isHighlight
+                    )
+                }
+                DrawingStore.savePaths(context, workbookId, page, serializableList)
+                DrawingStore.saveTextAnnotations(context, workbookId, page, annotationManager.textAnnotations)
+                annotationManager.toggleClear(false)
+            },
+            onDismiss = {
+                annotationManager.toggleClear(false)
             }
         )
     }
