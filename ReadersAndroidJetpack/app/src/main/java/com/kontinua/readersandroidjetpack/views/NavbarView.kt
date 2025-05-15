@@ -18,15 +18,12 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -46,14 +43,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.R
-import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @Composable
-fun SidebarWithPDFViewer(
+fun UnifiedSidebar(
     navbarManager: NavbarManager,
     collectionViewModel: CollectionViewModel,
     annotationManager: AnnotationManager
@@ -220,7 +216,12 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
             .background(Color.White)
             .border(1.dp, Color.DarkGray)
             .fillMaxHeight()
-            .padding(48.dp)
+            .padding(
+                start = 16.dp,
+                top = 56.dp,
+                end = 10.dp,
+                bottom = 10.dp
+            )
             .verticalScroll(state = scroll)
             .clickable(
                 indication = null,
@@ -235,7 +236,7 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
                     collectionVM.setWorkbook(workbook)
                     navbarManager.setPage(0)
                     onClose()
-                }
+                }.padding(vertical = 6.dp)
             )
         }
     }
@@ -249,13 +250,10 @@ fun WorkbookButton(
     TextButton(
         onClick = onClick,
         modifier = modifier
-            // 1) allow it to shrink to exactly its content
             .defaultMinSize(minWidth = 0.dp, minHeight = 0.dp),
-        // 2) remove all inset padding
         contentPadding = PaddingValues(0.dp),
-        // 3) ditch the rounded shape so the ripple isn’t clipped like an oval
         shape = RectangleShape,
-        colors = ButtonDefaults.textButtonColors() // still gives you ripple & disabled styles
+        colors = ButtonDefaults.textButtonColors()
     ) {
         Icon(
             imageVector = Icons.Filled.ArrowBackIosNew,

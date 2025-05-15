@@ -31,9 +31,8 @@ import com.kontinua.readersandroidjetpack.viewmodels.FeedbackViewModelFactory
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 import com.kontinua.readersandroidjetpack.views.PDFViewer
 import com.kontinua.readersandroidjetpack.views.ResourceOverlayView
-import com.kontinua.readersandroidjetpack.views.SidebarWithPDFViewer
+import com.kontinua.readersandroidjetpack.views.UnifiedSidebar
 import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
-import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
@@ -125,7 +124,7 @@ class MainActivity : ComponentActivity() {
             )
         }
 
-        SidebarWithPDFViewer(
+        UnifiedSidebar(
             navbarManager = navbarManager,
             collectionViewModel = collectionViewModel,
             annotationManager = annotationManager
