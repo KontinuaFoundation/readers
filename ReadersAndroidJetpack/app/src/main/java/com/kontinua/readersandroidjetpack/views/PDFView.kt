@@ -128,7 +128,7 @@ fun PDFViewer(
                                     } else {
                                         navbarManager.goToPreviousPage()
                                     }
-                                    //consume if page was changed
+                                    // consume if page was changed
                                     true
                                 }
                             }

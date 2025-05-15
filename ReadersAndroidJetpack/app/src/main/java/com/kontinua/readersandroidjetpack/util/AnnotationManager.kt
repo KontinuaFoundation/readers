@@ -18,10 +18,10 @@ class AnnotationManager {
         private set
 
     val annotationsEnabled: Boolean
-        get() = scribbleEnabled
-            || penEnabled
-            || highlightEnabled
-            || eraseEnabled
+        get() = scribbleEnabled ||
+            penEnabled ||
+            highlightEnabled ||
+            eraseEnabled
 
     init {
         scribbleEnabled = false
