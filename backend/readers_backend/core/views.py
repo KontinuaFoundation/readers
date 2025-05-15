@@ -9,16 +9,19 @@ from .utils import send_feedback_email
 from rest_framework.viewsets import GenericViewSet
 from django.utils import timezone
 from django.conf import settings
+from rest_framework.exceptions import ValidationError
 
 from core.models import Collection, Workbook, Feedback
 from core.serializers import (
     CollectionListSerializer,
+    CollectionRetrieveQueryParamsSerializer,
     WorkbookCreateSerializer,
     CollectionCreateSerializer,
     CollectionRetrieveSerializer,
     WorkbookRetrieveSerializer,
     FeedbackSerializer,
 )
+
 
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
@@ -45,7 +48,7 @@ class CollectionViewSet(
             return CollectionListSerializer
         elif self.action == "retrieve":
             return CollectionRetrieveSerializer
-        #TODO: Consider just returning the entire collection rather than the list representation...
+        # TODO: Consider just returning the entire collection rather than the list representation...
         elif self.action == "latest":
             return CollectionListSerializer
         return None
@@ -68,10 +71,19 @@ class CollectionViewSet(
 
         params = self.request.query_params
 
-        major_version = params.get("major_version")
-        minor_version = params.get("minor_version")
-        localization = params.get("localization")
-        is_released = params.get("is_released")
+        query_params_serializer = CollectionRetrieveQueryParamsSerializer(data=params)
+
+        if not query_params_serializer.is_valid():
+            raise ValidationError(query_params_serializer.errors)
+
+        major_version = query_params_serializer.validated_data.get(
+            "major_version", None
+        )
+        minor_version = query_params_serializer.validated_data.get(
+            "minor_version", None
+        )
+        localization = query_params_serializer.validated_data.get("localization", None)
+        is_released = query_params_serializer.validated_data.get("is_released", None)
 
         if major_version is not None:
             queryset = queryset.filter(major_version=major_version)
@@ -82,10 +94,8 @@ class CollectionViewSet(
         if localization:
             queryset = queryset.filter(localization=localization)
 
-        # We've already filtered for released collections if the user is not authenticated so doesn't matter if we apply this here.
         if is_released is not None:
-            is_released_bool = is_released.lower() == "true"
-            queryset = queryset.filter(is_released=is_released_bool)
+            queryset = queryset.filter(is_released=is_released)
 
         return queryset
 
@@ -104,9 +114,10 @@ class CollectionViewSet(
         return Response(
             {"message": "Collection un-released."}, status=status.HTTP_200_OK
         )
+
     @action(detail=False, methods=["get"])
     def latest(self, request):
-        #TODO: Lets make this return the collection retrieve serializer at some point.
+        # TODO: Lets make this return the collection retrieve serializer at some point.
         # More specifically, is there a reason to make the client two two requests to get the chapters for the latest collection?
         queryset = self.get_queryset()
 
@@ -128,6 +139,15 @@ class WorkbookViewSet(
     mixins.RetrieveModelMixin,
 ):
     queryset = Workbook.objects.all()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Only users can access unreleased workbooks.
+        if not self.request.user.is_authenticated:
+            queryset = queryset.filter(collection__is_released=True)
+
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "create":

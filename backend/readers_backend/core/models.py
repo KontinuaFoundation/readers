@@ -32,7 +32,7 @@ class Workbook(models.Model):
     class Meta:
         unique_together = ("number", "collection")
         ordering = ["number", "collection"]
-    
+
     def __str__(self):
         return f"Workbook {self.number} of {self.collection}"
 
