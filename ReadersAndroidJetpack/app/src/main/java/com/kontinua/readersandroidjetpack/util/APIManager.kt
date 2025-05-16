@@ -29,7 +29,7 @@ object APIManager {
     private val MOSHI = Moshi.Builder().build()
 
     suspend fun getCollections(
-        localization: String = "en-US",
+        localization: String = "en_US",
         dispatcher: CoroutineDispatcher = Dispatchers.IO
     ): List<CollectionPreview>? {
         /*
@@ -71,7 +71,7 @@ object APIManager {
     }
 
     private suspend fun getLatestCollectionPreview(
-        localization: String = "en-US",
+        localization: String = "en_US",
         dispatcher: CoroutineDispatcher = Dispatchers.IO
     ): CollectionPreview? {
         /*
@@ -90,7 +90,7 @@ object APIManager {
     }
 
     suspend fun getLatestCollection(
-        localization: String = "en-US",
+        localization: String = "en_US",
         dispatcher: CoroutineDispatcher = Dispatchers.IO
     ): Collection? {
         val latestCollectionPreview = getLatestCollectionPreview(localization) ?: return null
