@@ -128,7 +128,11 @@ fun DrawingCanvas(
             DrawingPath(
                 currentPath,
                 isHighlight = annotationManager.highlightEnabled,
-                color = if (annotationManager.highlightEnabled) annotationManager.currentHighlightColor else annotationManager.currentPenColor
+                color = if (annotationManager.highlightEnabled) {
+                    annotationManager.currentHighlightColor
+                } else {
+                    annotationManager.currentPenColor
+                }
             ),
             pageWidth,
             pageHeight,
