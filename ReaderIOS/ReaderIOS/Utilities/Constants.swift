@@ -9,7 +9,7 @@ import Foundation
 
 enum ApplicationConstants {
     enum API {
-        static let baseURLString = "http://192.168.1.181:8000/api/"
+        static let baseURLString = "https://readers.kontinua.org/api/"
     }
 
     enum APIEndpoints {

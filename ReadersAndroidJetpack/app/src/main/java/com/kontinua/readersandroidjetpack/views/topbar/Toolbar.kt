@@ -1,4 +1,11 @@
 package com.kontinua.readersandroidjetpack.views.topbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DropdownMenu
@@ -16,8 +23,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
+import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 
@@ -26,13 +39,14 @@ import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 fun Toolbar(
     timerViewModel: TimerViewModel,
     navbarManager: NavbarManager,
+    annotationManager: AnnotationManager,
     currentChapterReferences: Any,
     currentChapterVideos: Any,
     onReferenceClick: (Reference) -> Unit,
     onVideoClick: (Video) -> Unit
-
 ) {
     var showMarkupMenu by remember { mutableStateOf(false) }
+    var showPenColorMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
 
@@ -78,17 +92,64 @@ fun Toolbar(
                     showTimerMenu = false
                 })
             }
-            // Markup Button (Text Button)
-            TextButton(onClick = { showMarkupMenu = true }) {
-                Text("Markup")
-            }
+            TextButton(onClick = { showMarkupMenu = true }) { Text("Markup") }
             DropdownMenu(
                 expanded = showMarkupMenu,
                 onDismissRequest = { showMarkupMenu = false }
             ) {
-                DropdownMenuItem(text = { Text("Pen") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Highlight") }, onClick = { /* TODO */ })
-                DropdownMenuItem(text = { Text("Eraser") }, onClick = { /* TODO */ })
+                // Pen dropdown with embedded color options
+                DropdownMenuItem(
+                    text = { Text("Pen") },
+                    onClick = {
+                        showPenColorMenu = !showPenColorMenu
+                    },
+                    trailingIcon = { Text("▼") }
+                )
+
+                if (showPenColorMenu) {
+                    val penColors = listOf(
+                        "Black" to Color.Black,
+                        "Red" to Color.Red,
+                        "Green" to Color.Green,
+                        "Blue" to Color.Blue
+                    )
+                    penColors.forEach { (name, color) ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .clip(CircleShape)
+                                            .background(color)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(name)
+                                }
+                            },
+                            onClick = {
+                                annotationManager.setPenColor(color)
+                                annotationManager.togglePen(true)
+                                showPenColorMenu = false
+                                showMarkupMenu = false
+                            }
+                        )
+                    }
+                }
+                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    annotationManager.toggleHighlight(true)
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Eraser") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    annotationManager.toggleErase(true)
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Exit") }, onClick = {
+                    annotationManager.toggleScribble(false)
+                    showMarkupMenu = false
+                })
             }
 
             // Resources Button (Text Button)

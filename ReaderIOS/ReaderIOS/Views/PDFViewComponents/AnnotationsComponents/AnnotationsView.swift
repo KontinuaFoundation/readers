@@ -1,6 +1,10 @@
 import PDFKit
 import SwiftUI
 
+enum TapConstants {
+    static let prevPageTapRatio = 0.25
+}
+
 struct AnnotationsView: View {
     // MARK: - Bindings
 
@@ -111,6 +115,7 @@ struct AnnotationsView: View {
                 zoomManager.newZoomPoint(newPoint: location,
                                          width: geometry.size.width,
                                          height: geometry.size.height)
+
                 if !textOpened, selectedScribbleTool == "Text" {
                     textOpened = true
                     textManager.addText(textBoxes: $textBoxes,
@@ -118,8 +123,19 @@ struct AnnotationsView: View {
                                         width: geometry.size.width,
                                         height: geometry.size.height)
                     textManager.saveTextBoxes(textBoxes: textBoxes)
-                } else {
-                    textOpened = false
+                    return
+                }
+                // else
+                textOpened = false
+
+                // ——— PAGE TURNS ———
+                guard selectedScribbleTool.isEmpty else { return }
+                if !zoomManager.getZoomedIn() {
+                    if location.x > geometry.size.width * TapConstants.prevPageTapRatio {
+                        nextPage?()
+                    } else {
+                        previousPage?()
+                    }
                 }
             }
         }
