@@ -146,8 +146,8 @@ private fun DrawScope.drawPathLine(
 ) {
     val points = path.points
     val highlight = path.isHighlight
-    val pathColor = path.color
-//    val pathColor = if (path.isHighlight) Color.Yellow.copy(alpha = 0.4f) else path.color
+//    val pathColor = path.color
+    val pathColor = if (path.isHighlight) path.color.copy(alpha = 0.4f) else path.color
     if (points.size < 2) return
     val path = Path().apply {
         moveTo(
