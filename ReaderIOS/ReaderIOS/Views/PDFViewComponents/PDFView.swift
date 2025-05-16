@@ -65,25 +65,25 @@ struct PDFView: View {
                                 }
                             }
 
-                                // Annotations
-                                AnnotationsView(
-                                    pagePaths: $pagePaths,
-                                    highlightPaths: $highlightPaths,
-                                    selectedScribbleTool: $selectedScribbleTool,
-                                    textOpened: $textOpened,
-                                    key: uniqueKey(for: currentPage),
-                                    nextPage: { goToNextPage() },
-                                    previousPage: { goToPreviousPage() },
-                                    selectedColor: $selectedPenColor,
-                                    selectedHighlighterColor: $selectedHighlighterColor,
-                                    zoomedIn: zoomManager.getZoomedIn(),
-                                    zoomManager: zoomManager,
-                                    annotationManager: annotationStorageManager,
-                                    textManager: textManager,
-                                    textBoxes: $textBoxes
-                                )
-                                .scaleEffect(zoomManager.newZoomLevel(),
-                                             anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
+                            // Annotations
+                            AnnotationsView(
+                                pagePaths: $pagePaths,
+                                highlightPaths: $highlightPaths,
+                                selectedScribbleTool: $selectedScribbleTool,
+                                textOpened: $textOpened,
+                                key: uniqueKey(for: currentPage),
+                                nextPage: { goToNextPage() },
+                                previousPage: { goToPreviousPage() },
+                                selectedColor: $selectedPenColor,
+                                selectedHighlighterColor: $selectedHighlighterColor,
+                                zoomedIn: zoomManager.getZoomedIn(),
+                                zoomManager: zoomManager,
+                                annotationManager: annotationStorageManager,
+                                textManager: textManager,
+                                textBoxes: $textBoxes
+                            )
+                            .scaleEffect(zoomManager.newZoomLevel(),
+                                         anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
 
                             // Annotations Text Overlay
                             TextView(
