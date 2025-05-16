@@ -8,62 +8,6 @@
 import Combine
 import SwiftUI
 
-/// Model for feedback data to be submitted to the API
-struct FeedbackSubmission: Encodable {
-    let userEmail: String
-    let description: String
-    let workbookID: Int?
-    let chapterNumber: Int
-    let pageNumber: Int
-    let majorVersion: Int
-    let minorVersion: Int
-    let localization: String
-
-    enum CodingKeys: String, CodingKey {
-        case userEmail = "user_email"
-        case description
-        case workbookID = "workbook_id"
-        case chapterNumber = "chapter_number"
-        case pageNumber = "page_number"
-        case majorVersion = "major_version"
-        case minorVersion = "minor_version"
-        case localization
-    }
-}
-
-/// Defines possible errors when submitting feedback
-enum FeedbackError: Error, LocalizedError {
-    case emptyEmail
-    case invalidEmail
-    case emptyDescription
-    case invalidURL
-    case dataPreparationError
-    case networkError(Error)
-    case serverError(Int, String?)
-    case parseError(Error)
-
-    var errorDescription: String? {
-        switch self {
-        case .emptyEmail:
-            "Email is required"
-        case .invalidEmail:
-            "Please enter a valid email address"
-        case .emptyDescription:
-            "Feedback description is required"
-        case .invalidURL:
-            "Invalid URL configuration"
-        case .dataPreparationError:
-            "Error preparing feedback data"
-        case let .networkError(error):
-            "Network error: \(error.localizedDescription)"
-        case let .serverError(code, message):
-            message ?? "Server error (code: \(code))"
-        case let .parseError(error):
-            "Error parsing server response: \(error.localizedDescription)"
-        }
-    }
-}
-
 class FeedbackManager: ObservableObject {
     // MARK: - Published Properties
 
@@ -116,63 +60,78 @@ class FeedbackManager: ObservableObject {
     func submitFeedback(
         email: String,
         feedbackBody: String,
+        includeLogs: Bool = true,
         completion: @escaping (Result<Void, FeedbackError>) -> Void
     ) {
+        Logger.info("Attempting to submit feedback", category: "Feedback")
+        Logger.UserAction.featureUsed("Feedback Submission")
+
         // Validate inputs
         do {
             try validateFeedbackInput(email: email, description: feedbackBody)
         } catch let error as FeedbackError {
+            Logger.error("Feedback validation failed: \(error.localizedDescription)", category: "Feedback")
             completion(.failure(error))
             return
         } catch {
+            Logger.error("Unexpected validation error: \(error)", category: "Feedback")
             completion(.failure(.dataPreparationError))
             return
         }
 
-        // Log collection info for debugging
-        logCollectionInfo()
+        // Get logs if requested (default is true)
+        let applicationLogs: [String: Any]?
+
+        if includeLogs {
+            // Get the JSON logs directly - don't convert to string
+            applicationLogs = Logger.getLogsForFeedbackJSON()
+            Logger.info("Including structured logs in feedback", category: "Feedback")
+        } else {
+            applicationLogs = nil
+            Logger.info("Submitting feedback without logs", category: "Feedback")
+        }
 
         // Prepare submission data
         let collectionValues = getRequiredCollectionValues()
         let chapterNumber = getCurrentChapterNumber()
 
-        let submission = FeedbackSubmission(
-            userEmail: email,
-            description: feedbackBody,
-            workbookID: currentWorkbook?.id,
-            chapterNumber: chapterNumber,
-            pageNumber: currentPage + 1, // Convert from 0-based index
-            majorVersion: collectionValues.majorVersion,
-            minorVersion: collectionValues.minorVersion,
-            localization: collectionValues.localization
+        // Create the submission data as a dictionary first
+        var submissionData: [String: Any] = [
+            "user_email": email,
+            "description": feedbackBody,
+            "workbook_id": currentWorkbook?.id ?? NSNull(),
+            "chapter_number": chapterNumber,
+            "page_number": currentPage + 1, // Convert from 0-based index
+            "major_version": collectionValues.majorVersion,
+            "minor_version": collectionValues.minorVersion,
+            "localization": collectionValues.localization
+        ]
+
+        // Add logs if available
+        if let logs = applicationLogs {
+            submissionData["logs"] = logs
+        }
+
+        // Log submission details (without sensitive data)
+        Logger.info(
+            "Submitting feedback for workbook: \(currentWorkbook?.id ?? -1), page: \(currentPage + 1)",
+            category: "Feedback"
         )
 
         // Submit to API
-        submitToAPI(submission: submission) { result in
+        submitToAPI(submissionData: submissionData) { result in
             switch result {
             case .success:
+                Logger.info("Feedback submitted successfully", category: "Feedback")
                 completion(.success(()))
             case let .failure(error):
+                Logger.error("Feedback submission failed: \(error.localizedDescription)", category: "Feedback")
                 completion(.failure(error))
             }
         }
     }
 
     // MARK: - Private Methods
-
-    /// Logs the current collection information to the console
-    private func logCollectionInfo() {
-        if let collection = collection {
-            print(
-                "Collection available: ID=\(collection.id)," +
-                    "majorVersion=\(collection.majorVersion)," +
-                    "minorVersion=\(collection.minorVersion)," +
-                    "localization=\(collection.localization)"
-            )
-        } else {
-            print("Collection is nil")
-        }
-    }
 
     /// Validates email address format using a regular expression
     private func isValidEmail(_ email: String) -> Bool {
@@ -202,6 +161,7 @@ class FeedbackManager: ObservableObject {
         let defaultChapterNumber = 1
 
         guard let workbook = currentWorkbook else {
+            Logger.info("Using Default Chapter Number", category: "Feedback")
             return defaultChapterNumber
         }
 
@@ -221,34 +181,22 @@ class FeedbackManager: ObservableObject {
     private func getRequiredCollectionValues() -> (majorVersion: Int, minorVersion: Int, localization: String) {
         // First check if we have a collection in our FeedbackManager
         if let collection = collection {
-            print(
-                "Using collection values from FeedbackManager: " +
-                    "majorVersion=\(collection.majorVersion)," +
-                    "minorVersion=\(collection.minorVersion)," +
-                    "localization=\(collection.localization)"
-            )
             return (collection.majorVersion, collection.minorVersion, collection.localization)
         }
 
         // Try the injected InitializationManager
         if let latestCollection = initializationManager.latestCollection {
-            print(
-                "Using latestCollection from InitializationManager:" +
-                    "majorVersion=\(latestCollection.majorVersion), " +
-                    "minorVersion=\(latestCollection.minorVersion)," +
-                    "localization=\(latestCollection.localization)"
-            )
             return (latestCollection.majorVersion, latestCollection.minorVersion, latestCollection.localization)
         }
 
         // Default values as last resort
-        print("No collection found, using default values")
+        Logger.warning("No collection found, using default values", category: "Feedback")
         return (1, 0, "en-US")
     }
 
     /// Submits feedback data to the API
     private func submitToAPI(
-        submission: FeedbackSubmission,
+        submissionData: [String: Any],
         completion: @escaping (Result<Void, FeedbackError>) -> Void
     ) {
         // Prepare the request
@@ -256,12 +204,13 @@ class FeedbackManager: ObservableObject {
             ApplicationConstants.API.baseURLString +
                 ApplicationConstants.APIEndpoints.feedback)
         else {
+            Logger.error("Failed to create URL for feedback API call", category: "Feedback")
             completion(.failure(.invalidURL))
             return
         }
 
         // Prepare the JSON data
-        guard let jsonData = try? JSONEncoder().encode(submission) else {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: submissionData, options: []) else {
             completion(.failure(.dataPreparationError))
             return
         }

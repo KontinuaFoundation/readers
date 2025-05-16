@@ -7,49 +7,51 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0007_alter_workbook_options_alter_workbook_collection'),
+        ("core", "0007_alter_workbook_options_alter_workbook_collection"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='feedback',
-            name='chapter_number',
+            model_name="feedback",
+            name="chapter_number",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="feedback",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='description',
-            field=models.TextField(default=''),
+            model_name="feedback",
+            name="description",
+            field=models.TextField(default=""),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='localization',
-            field=models.CharField(default='en-US', max_length=5),
+            model_name="feedback",
+            name="localization",
+            field=models.CharField(default="en-US", max_length=5),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='major_version',
+            model_name="feedback",
+            name="major_version",
             field=models.IntegerField(default=1),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='minor_version',
+            model_name="feedback",
+            name="minor_version",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='user_email',
-            field=models.EmailField(default='', max_length=254),
+            model_name="feedback",
+            name="user_email",
+            field=models.EmailField(default="", max_length=254),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='page_number',
+            model_name="feedback",
+            name="page_number",
             field=models.IntegerField(default=0),
         ),
     ]

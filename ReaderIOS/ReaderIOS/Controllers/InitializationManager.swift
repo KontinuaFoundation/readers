@@ -17,7 +17,7 @@ enum FetchConstants {
 final class InitializationManager: ObservableObject {
     @Published var isInitialized = false
     @Published var loadFailed = false
-    @Published var workbooks: [WorkbookPreview] = []
+    @Published var workbooks: [WorkbookPreview]?
     @Published var pdfDocument: PDFDocument?
     @Published var workbookID: Int?
     @Published var latestCollection: Collection?
@@ -75,7 +75,7 @@ final class InitializationManager: ObservableObject {
                     }
                 }
             case let .failure(error):
-                print("Error fetching workbooks: \(error)")
+                print("Error fetching initial workbooks: \(error)")
 
                 // if delay is set, does not show failure until after delay is elapsed
                 DispatchQueue.main.asyncAfter(deadline: start + .milliseconds(self?.delay ?? 0)) {
@@ -91,23 +91,11 @@ final class InitializationManager: ObservableObject {
                 switch result {
                 case let .success(workbook):
                     self?.workbook = workbook
-                    self?.fetchPDF(for: workbook)
                 case let .failure(error):
-                    print("Error fetching PDF: \(error)")
+                    print("Error fetching initial workbook information: \(error)")
                 }
-                // Mark initialization complete regardless; you could also have error states.
-                self?.isInitialized = true
-            }
-        }
-    }
 
-    private func fetchPDF(for workbook: Workbook) {
-        NetworkingService.shared.fetchPDF(workbook: workbook) { [weak self] result in
-            switch result {
-            case let .success(pdf):
-                self?.pdfDocument = pdf
-            case let .failure(error):
-                print("Error fetching PDF: \(error)")
+                self?.isInitialized = true
             }
         }
     }

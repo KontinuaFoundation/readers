@@ -8,21 +8,16 @@ import PDFKit
 import SwiftUI
 
 struct SplitView: View {
-    var initialWorkbooks: [WorkbookPreview] = []
-    var initialWorkbookID: Int?
-    var initialPDFDocument: PDFDocument?
-    var initialCollection: Collection?
-
     // Loaded workbooks information state vars
-    @State private var workbooks: [WorkbookPreview]?
-    @State private var chapters: [Chapter]?
-    @State private var covers: [Cover]?
-    @State private var currentCollection: Collection?
+    @State var workbooks: [WorkbookPreview]?
+    @State var chapters: [Chapter]?
+    @State var covers: [Cover]?
+    @State var currentCollection: Collection?
 
     // User selection (what they are viewing) state vars
-    @State private var selectedWorkbookID: Int?
+    @State var selectedWorkbookID: Int?
     @State private var selectedChapterID: String?
-    @State private var currentWorkbook: Workbook?
+    @State var currentWorkbook: Workbook?
     @State private var currentPage: Int = 0
     @State private var columnVisibility = NavigationSplitViewVisibility.automatic
 
@@ -49,13 +44,7 @@ struct SplitView: View {
                     }
                 }
             } else {
-                ProgressView("Fetching Workbooks")
-                    .onAppear {
-                        if !initialWorkbooks.isEmpty {
-                            workbooks = initialWorkbooks
-                            selectedWorkbookID = initialWorkbookID
-                        }
-                    }
+                ProgressView("Fetching workbooks...")
             }
         }
         content: {
@@ -91,29 +80,20 @@ struct SplitView: View {
                 }
             }
         } detail: {
-            if currentWorkbook != nil {
-                // TODO: Only give access to bookmarks for current file.
-                PDFView(
-                    currentWorkbook: $currentWorkbook,
-                    currentPage: $currentPage,
-                    covers: $covers,
-                    pdfDocument: $pdfDocument,
-                    collection: $currentCollection,
-                    bookmarkManager: bookmarkManager
-                )
-                .blur(radius: networkingSingleton.isContentLoading ? 10 : 0)
-            } else {
-                ProgressView("Getting the latest workbook.")
-            }
+            // TODO: Only give access to bookmarks for current file.
+            PDFView(
+                currentWorkbook: $currentWorkbook,
+                currentPage: $currentPage,
+                covers: $covers,
+                pdfDocument: $pdfDocument,
+                collection: $currentCollection,
+                bookmarkManager: bookmarkManager
+            )
+            .blur(radius: networkingSingleton.isContentLoading ? 10 : 0)
         }
         .onAppear {
-            if let collection = initialCollection {
-                // Initialize currentCollection from initialCollection
-                currentCollection = collection
-            }
-            // Optionally, if initialPDFDocument is available, set it.
-            if let initialPDF = initialPDFDocument {
-                pdfDocument = initialPDF
+            if let selectedWorkbookID {
+                currentPage = StateRestoreManager.shared.loadPageNumber(for: selectedWorkbookID)
             }
         }
         .onChange(of: selectedWorkbookID) {
@@ -122,8 +102,6 @@ struct SplitView: View {
             if let selectedWorkbookID {
                 currentPage = StateRestoreManager.shared.loadPageNumber(for: selectedWorkbookID)
             }
-
-            persistState()
         }
         .onChange(of: currentPage) { _, _ in
             updateSelectedChapter()
@@ -139,35 +117,6 @@ struct SplitView: View {
     func persistState() {
         if let selectedWorkbookID {
             StateRestoreManager.shared.saveState(workbookID: selectedWorkbookID, pageNumber: currentPage)
-        }
-    }
-
-    func fetchWorkbooks() {
-        guard let initialCollection else { return }
-
-        NetworkingService.shared.fetchWorkbooks(collection: initialCollection) { result in
-            switch result {
-            case let .success(workbookResponse):
-                workbooks = workbookResponse
-
-                // Try to load saved state now that workbooks are available.
-                if let savedState = StateRestoreManager.shared.loadState() {
-                    if workbookResponse.first(where: { $0.id == savedState.workbookID }) != nil {
-                        selectedWorkbookID = savedState.workbookID
-                        currentPage = savedState.pageNumber
-                    } else {
-                        // Fallback: default to the first workbook if the saved one isn't found.
-                        print("defaulting to first ")
-                        selectedWorkbookID = workbookResponse.first?.id
-                    }
-                } else {
-                    // No saved state, so select the first workbook by default.
-                    print("no saved state")
-                    selectedWorkbookID = workbookResponse.first?.id
-                }
-            case let .failure(error):
-                print("Error fetching workbooks: \(error)")
-            }
         }
     }
 
@@ -205,6 +154,8 @@ struct SplitView: View {
     }
 }
 
-#Preview {
-    SplitView()
-}
+/*
+ #Preview {
+ SplitView()
+ }
+ */

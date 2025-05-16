@@ -14,19 +14,36 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
-from core.views import FeedbackView, DestroyAuthTokenView, CollectionViewSet, WorkbookViewSet
+from core.views import (
+    FeedbackView,
+    DestroyAuthTokenView,
+    CollectionViewSet,
+    RootAPIView,
+    WorkbookViewSet,
+)
+from django.contrib import admin
+
+from core.views import (
+    FeedbackView,
+    DestroyAuthTokenView,
+    CollectionViewSet,
+    WorkbookViewSet,
+)
 
 router = DefaultRouter()
-router.register('collections', CollectionViewSet, basename='collection')
-router.register('workbooks', WorkbookViewSet, basename='workbook')
+router.register("api/collections", CollectionViewSet, basename="collection")
+router.register("api/workbooks", WorkbookViewSet, basename="workbook")
 
 urlpatterns = [
-    path("token/", obtain_auth_token, name="token-obtain"),
-    path("token/destroy/", DestroyAuthTokenView.as_view(), name="token-destroy"),
-    path("feedback/", FeedbackView.as_view(), name="feedback"),
+    path("api/", RootAPIView.as_view(), name="root"),
+    path("api/token/", obtain_auth_token, name="token-obtain"),
+    path("api/token/destroy/", DestroyAuthTokenView.as_view(), name="token-destroy"),
+    path("api/feedback/", FeedbackView.as_view(), name="feedback"),
+    path("management/", admin.site.urls),
 ]
 
 urlpatterns += router.urls
