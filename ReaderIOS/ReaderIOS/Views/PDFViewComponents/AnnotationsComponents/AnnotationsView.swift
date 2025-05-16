@@ -34,7 +34,6 @@ struct AnnotationsView: View {
 
     @State private var lastDragValue: CGSize = .zero
 
-
     // MARK: - Body
 
     var body: some View {
@@ -58,8 +57,8 @@ struct AnnotationsView: View {
                 // Draw live drawing path
                 context.stroke(Path(liveDrawingPath.cgPath),
                                with: selectedScribbleTool == "Highlight" ?
-                    .color(selectedHighlighterColor.opacity(0.2)) :
-                        .color(selectedColor),
+                                   .color(selectedHighlighterColor.opacity(0.2)) :
+                                   .color(selectedColor),
                                lineWidth: selectedScribbleTool == "Highlight" ? 15 : 2)
             }
             .gesture(

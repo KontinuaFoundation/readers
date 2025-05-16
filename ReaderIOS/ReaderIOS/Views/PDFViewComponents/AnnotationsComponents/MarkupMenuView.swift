@@ -127,9 +127,11 @@ struct MarkupMenu: View {
     private func selectScribbleTool(_ tool: String) {
         selectedScribbleTool = tool
     }
+
     private func selectPenColor(_ color: Color) {
         selectedPenColor = color
     }
+
     private func selectHighlightColor(_ color: Color) {
         selectedHighlighterColor = color
     }
