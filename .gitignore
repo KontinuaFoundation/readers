@@ -60,3 +60,4 @@ media
 #development db and files
 db.sqlite3
 files/
+**/Constants.*
