@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import java.io.File
+import java.util.UUID
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -24,6 +25,17 @@ class AnnotationViewModel : androidx.lifecycle.ViewModel() {
         val points: List<OffsetSerializable>,
         val isHighlight: Boolean = false,
         val colorValue: Long = Color.Black.toArgb().toLong()
+    )
+
+    @OptIn(kotlinx.serialization.InternalSerializationApi::class)
+    @Serializable
+    data class TextAnnotation(
+        val id: String = UUID.randomUUID().toString(), // uniquely identify each textbox
+        val text: String,
+        val position: OffsetSerializable,
+        val size: OffsetSerializable,
+        val fontSize: Float = 16f,
+        val colorHex: String = "#000000"
     )
 
     object DrawingStore {
@@ -78,6 +90,20 @@ class AnnotationViewModel : androidx.lifecycle.ViewModel() {
         private fun getFile(context: Context, workbookId: String, page: Int): File {
             val dir = File(context.filesDir, DIR_NAME)
             return File(dir, "${workbookId}_page_$page.json")
+        }
+
+        fun saveTextAnnotations(context: Context, workbookId: String, page: Int, annotations: List<TextAnnotation>) {
+            val file = File(context.filesDir, "text-$workbookId-$page.json")
+            file.writeText(Json.encodeToString(annotations))
+        }
+
+        fun getTextAnnotations(context: Context, workbookId: String, page: Int): List<TextAnnotation> {
+            val file = File(context.filesDir, "text-$workbookId-$page.json")
+            return if (file.exists()) {
+                Json.decodeFromString(file.readText())
+            } else {
+                emptyList()
+            }
         }
     }
 }
