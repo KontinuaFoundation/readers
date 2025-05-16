@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +48,7 @@ fun Toolbar(
 ) {
     var showMarkupMenu by remember { mutableStateOf(false) }
     var showPenColorMenu by remember { mutableStateOf(false) }
+    var showHighlightColorMenu by remember { mutableStateOf(false) }
     var showResourcesMenu by remember { mutableStateOf(false) }
     var showTimerMenu by remember { mutableStateOf(false) }
 
@@ -136,16 +138,50 @@ fun Toolbar(
                         )
                     }
                 }
-                DropdownMenuItem(text = { Text("Highlight") }, onClick = {
-                    annotationManager.toggleScribble(true)
-                    annotationManager.toggleHighlight(true)
-                    showMarkupMenu = false
-                })
+                DropdownMenuItem(
+                    text = { Text("Highlighter") },
+                    onClick = {
+                        showHighlightColorMenu = !showHighlightColorMenu
+                    },
+                    trailingIcon = { Text("▼") }
+                )
+
+                if (showHighlightColorMenu) {
+                    val highlightColors = listOf(
+                        "Yellow" to Color.Yellow,
+                        "Pink" to Color.Magenta,
+                        "Green" to Color.Green,
+                        "Blue" to Color.Blue
+                    )
+                    highlightColors.forEach { (name, color) ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .clip(CircleShape)
+                                            .background(color)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(name)
+                                }
+                            },
+                            onClick = {
+                                annotationManager.setHighlightColor(color)
+                                annotationManager.toggleHighlight(true)
+                                showHighlightColorMenu = false
+                                showMarkupMenu = false
+                            }
+                        )
+                    }
+                }
                 DropdownMenuItem(text = { Text("Eraser") }, onClick = {
                     annotationManager.toggleScribble(true)
                     annotationManager.toggleErase(true)
                     showMarkupMenu = false
                 })
+                HorizontalDivider()
                 DropdownMenuItem(text = { Text("Exit") }, onClick = {
                     annotationManager.toggleScribble(false)
                     showMarkupMenu = false
