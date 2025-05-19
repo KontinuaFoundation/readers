@@ -14,7 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -88,7 +87,7 @@ fun DrawingCanvas(
                             currentPath,
                             isHighlight = annotationManager.highlightEnabled,
                             color = if (annotationManager.highlightEnabled) {
-                                Color.Yellow
+                                annotationManager.currentHighlightColor
                             } else {
                                 annotationManager.currentPenColor
                             }
@@ -129,7 +128,11 @@ fun DrawingCanvas(
             DrawingPath(
                 currentPath,
                 isHighlight = annotationManager.highlightEnabled,
-                color = if (annotationManager.highlightEnabled) Color.Yellow else annotationManager.currentPenColor
+                color = if (annotationManager.highlightEnabled) {
+                    annotationManager.currentHighlightColor
+                } else {
+                    annotationManager.currentPenColor
+                }
             ),
             pageWidth,
             pageHeight,
@@ -146,7 +149,8 @@ private fun DrawScope.drawPathLine(
 ) {
     val points = path.points
     val highlight = path.isHighlight
-    val pathColor = if (path.isHighlight) Color.Yellow.copy(alpha = 0.4f) else path.color
+//    val pathColor = path.color
+    val pathColor = if (path.isHighlight) path.color.copy(alpha = 0.4f) else path.color
     if (points.size < 2) return
     val path = Path().apply {
         moveTo(
