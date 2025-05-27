@@ -28,7 +28,7 @@ def get_required_env_var(key):
 
 load_dotenv()
 
-API_VERSION = "1.0"
+API_VERSION = "1.0.0"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "core.apps.CoreConfig",
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -173,6 +174,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/minute",
     },
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # Email Configuration for production
@@ -206,3 +208,10 @@ TEMPLATES = [
         },
     },
 ]
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Readers API',
+    'DESCRIPTION': 'API for the Readers project',
+    'VERSION': API_VERSION,
+    'SERVE_INCLUDE_SCHEMA': False,
+}
