@@ -101,22 +101,13 @@ STORAGES = {
     },
 }
 
-# Static files storage directory in debug.
-if DEBUG:
-    MEDIA_URL = "/files/"
-    MEDIA_ROOT = os.path.join(BASE_DIR, "files")
+# Media files storage directory.
+# This is where pdfs will be stored.
+MEDIA_URL = "/files/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "files")
 
-# If we're in production we need to use S3 as our storage backend.
 if not DEBUG:
-    AWS_STORAGE_BUCKET_NAME = get_required_env_var("AWS_STORAGE_BUCKET_NAME")
-    AWS_S3_REGION_NAME = get_required_env_var("AWS_S3_REGION_NAME")
-    AWS_S3_ADDRESSING_STYLE = get_required_env_var("AWS_S3_ADDRESSING_STYLE")
-
-    STORAGES["default"] = {
-        "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {},
-    }
-
+    MEDIA_ROOT = get_required_env_var("MEDIA_ROOT")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
