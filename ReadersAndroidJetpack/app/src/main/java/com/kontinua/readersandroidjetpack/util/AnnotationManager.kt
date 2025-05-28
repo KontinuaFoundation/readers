@@ -44,6 +44,9 @@ class AnnotationManager {
     var currentPenColor by mutableStateOf(Color.Black)
         private set
 
+    var currentHighlightColor by mutableStateOf(Color.Yellow)
+        private set
+
     init {
         scribbleEnabled = false
         penEnabled = false
@@ -84,6 +87,14 @@ class AnnotationManager {
         penEnabled = false
         eraseEnabled = false
         textEnabled = false
+    }
+
+    fun setHighlightColor(color: Color) {
+        currentHighlightColor = color
+        penEnabled = false
+        highlightEnabled = true
+        eraseEnabled = false
+        scribbleEnabled = true
     }
 
     fun toggleErase(boolean: Boolean) {

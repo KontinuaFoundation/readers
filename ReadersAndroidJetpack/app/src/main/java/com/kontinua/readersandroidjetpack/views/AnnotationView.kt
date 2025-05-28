@@ -119,15 +119,6 @@ fun DrawingCanvas(
                                 }
                                 DrawingStore.savePaths(context, workbookId, page, serializableList)
                             }
-                            if (removed) {
-                                val serializableList = savedPaths.map { path ->
-                                    DrawingPathSerializable(
-                                        points = path.points.map { pt -> OffsetSerializable(pt.x, pt.y) },
-                                        isHighlight = path.isHighlight
-                                    )
-                                }
-                                DrawingStore.savePaths(context, workbookId, page, serializableList)
-                            }
                         } else if (annotationManager.penEnabled || annotationManager.highlightEnabled) {
                             currentPath += normalized
                         }
@@ -186,7 +177,11 @@ fun DrawingCanvas(
             DrawingPath(
                 currentPath,
                 isHighlight = annotationManager.highlightEnabled,
-                color = if (annotationManager.highlightEnabled) Color.Yellow else annotationManager.currentPenColor
+                color = if (annotationManager.highlightEnabled) {
+                    annotationManager.currentHighlightColor
+                } else {
+                    annotationManager.currentPenColor
+                }
             ),
             pageWidth,
             pageHeight,
@@ -273,7 +268,8 @@ private fun DrawScope.drawPathLine(
 ) {
     val points = path.points
     val highlight = path.isHighlight
-    val pathColor = if (path.isHighlight) Color.Yellow.copy(alpha = 0.4f) else path.color
+//    val pathColor = path.color
+    val pathColor = if (path.isHighlight) path.color.copy(alpha = 0.4f) else path.color
     if (points.size < 2) return
     val path = Path().apply {
         moveTo(
