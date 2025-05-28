@@ -120,12 +120,12 @@ class AnnotationManager {
     ) {
         val index = textAnnotations.indexOfFirst { it.id == id }
         if (index != -1) {
-            val old = textAnnotations[index]
-            textAnnotations[index] = old.copy(
-                position = newPos ?: old.position,
-                size = newSize ?: old.size,
-                text = newText ?: old.text
+            val updated = textAnnotations[index].copy(
+                position = newPos ?: textAnnotations[index].position,
+                size = newSize ?: textAnnotations[index].size,
+                text = newText ?: textAnnotations[index].text
             )
+            textAnnotations[index] = updated
         }
     }
 

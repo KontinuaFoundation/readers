@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.TextAnnotation
@@ -54,13 +54,16 @@ fun MovableTextBox(
     onResize: (Offset) -> Unit,
     onFocusChange: (Boolean) -> Unit
 ) {
-    val position = Offset(annotation.position.x, annotation.position.y)
+    val currentAnnotation by rememberUpdatedState(annotation)
+    val position = Offset(currentAnnotation.position.x, currentAnnotation.position.y)
     val x = position.x * canvasSize.width * zoom + pan.x
     val y = position.y * canvasSize.height * zoom + pan.y
-    val width = annotation.size.x * canvasSize.width * zoom
-    val height = annotation.size.y * canvasSize.height * zoom
+    val xDp = with(LocalDensity.current) { x.toDp() }
+    val yDp = with(LocalDensity.current) { y.toDp() }
+    val width = currentAnnotation.size.x * canvasSize.width * zoom
+    val height = currentAnnotation.size.y * canvasSize.height * zoom
     val localDensity = LocalDensity.current
-    var editingText by remember { mutableStateOf(annotation.text) }
+    var editingText by remember { mutableStateOf(currentAnnotation.text) }
 
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -68,10 +71,11 @@ fun MovableTextBox(
     LaunchedEffect(isFocused) {
         onFocusChange(isFocused)
     }
+    println("h: $height w: $width")
 
     Box(
         modifier = Modifier
-            .offset { IntOffset(x.toInt(), y.toInt()) }
+            .offset(x = xDp, y = yDp)
             .size(with(localDensity) { width.toDp() }, with(localDensity) { height.toDp() })
             .background(Color.White.copy(alpha = 0.5f))
             .border(1.dp, Color.Black)
@@ -79,72 +83,96 @@ fun MovableTextBox(
         // Move handle (top-left)
         Box(
             modifier = Modifier
-                .size(30.dp)
+                .size(25.dp)
+                .offset((-20).dp, (-20).dp)
                 .align(Alignment.TopStart)
+                .background(Color.DarkGray.copy(alpha = 0.6f))
                 .pointerInput(annotation.id) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
-                        val newX = position.x + (dragAmount.x / (canvasSize.width * zoom))
-                        val newY = position.y + (dragAmount.y / (canvasSize.height * zoom))
+                        val newX = currentAnnotation.position.x + (dragAmount.x / (canvasSize.width * zoom))
+                        val newY = currentAnnotation.position.y + (dragAmount.y / (canvasSize.height * zoom))
                         onMove(Offset(newX, newY))
                     }
-                }
-                .offset((-20).dp, (-20).dp)
-                .background(Color.DarkGray.copy(alpha = 0.6f)),
+                },
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.OpenWith, contentDescription = "Move", tint = Color.White)
+            Icon(
+                imageVector = Icons.Default.OpenWith,
+                contentDescription = "Move",
+                tint = Color.White,
+                modifier = Modifier.fillMaxSize() // Make entire box respond to touch
+            )
         }
 
         // Resize handle (bottom-right)
         Box(
             modifier = Modifier
-                .size(30.dp)
+                .size(25.dp)
+                .offset(20.dp, 20.dp)
+                .background(Color.DarkGray.copy(alpha = 0.6f))
                 .align(Alignment.BottomEnd)
                 .pointerInput(annotation.id + "-resize") {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
-                        val newWidth = (width + dragAmount.x) / (canvasSize.width * zoom)
-                        val newHeight = (height + dragAmount.y) / (canvasSize.height * zoom)
+                        val deltaWidth = dragAmount.x / (canvasSize.width * zoom)
+                        val deltaHeight = dragAmount.y / (canvasSize.height * zoom)
+
+                        val newWidth = currentAnnotation.size.x + deltaWidth
+                        val newHeight = currentAnnotation.size.y + deltaHeight
                         onResize(
                             Offset(
-                                newWidth.coerceAtLeast(0.05f),
-                                newHeight.coerceAtLeast(0.02f)
+                                newWidth.coerceIn(0.05f, 0.5f),
+                                newHeight.coerceIn(0.02f, 0.2f)
                             )
                         )
                     }
-                }
-                .offset(20.dp, 20.dp)
-                .background(Color.DarkGray.copy(alpha = 0.6f)),
+                },
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.AspectRatio, contentDescription = "Resize", tint = Color.White)
+            Icon(
+                imageVector = Icons.Default.AspectRatio,
+                contentDescription = "Resize",
+                tint = Color.White,
+                modifier = Modifier.fillMaxSize() // Make entire box respond to touch
+            )
         }
 
         Box(
             modifier = Modifier
-                .size(30.dp)
+                .size(25.dp)
+                .offset(20.dp, (-20).dp)
+                .background(Color.Red.copy(alpha = 0.6f))
                 .align(Alignment.TopEnd)
                 .pointerInput(annotation.id + "-tap") {
                     detectTapGestures(
-                        onDoubleTap = {
+                        onTap = {
                             onDelete()
-                            println("hello")
                         }
                     )
-                }
-                .offset(20.dp, (-20).dp)
-                .background(Color.Red.copy(alpha = 0.6f)),
+                },
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Delete, contentDescription = "Trash", tint = Color.White)
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Trash",
+                tint = Color.White,
+                modifier = Modifier.fillMaxSize() // Make entire box respond to touch
+            )
         }
 
         // Main text area (tap/edit + double-tap/delete)
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 6.dp, end = 6.dp, start = 6.dp, bottom = 6.dp)
+                .pointerInput(annotation.id + "-text-doubletap") {
+                    detectTapGestures(
+                        onDoubleTap = {
+                            onDelete()
+                        }
+                    )
+                }
+                .padding(10.dp)
         ) {
             BasicTextField(
                 value = editingText,
