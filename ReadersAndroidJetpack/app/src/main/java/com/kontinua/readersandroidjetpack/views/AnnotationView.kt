@@ -16,7 +16,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -129,7 +128,7 @@ fun DrawingCanvas(
                                 currentPath,
                                 isHighlight = annotationManager.highlightEnabled,
                                 color = if (annotationManager.highlightEnabled) {
-                                    Color.Yellow
+                                    annotationManager.currentHighlightColor
                                 } else {
                                     annotationManager.currentPenColor
                                 }
