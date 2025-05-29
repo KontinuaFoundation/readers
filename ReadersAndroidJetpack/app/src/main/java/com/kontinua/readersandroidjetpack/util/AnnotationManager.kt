@@ -55,7 +55,7 @@ class AnnotationManager {
         toggleScribble(boolean)
     }
 
-    fun toggleText(boolean: Boolean){
+    fun toggleText(boolean: Boolean) {
         mode = AnnotationMode.TEXT
         toggleScribble(boolean)
     }
