@@ -6,11 +6,19 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
@@ -25,6 +33,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPath
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPathSerializable
@@ -51,12 +60,15 @@ fun DrawingCanvas(
     val canvasSize = remember { mutableStateOf(Size.Zero) }
     val textToDelete = remember { mutableStateOf<TextAnnotation?>(null) }
     val focusManager = LocalFocusManager.current
+    var areTextboxesVisible by rememberSaveable { mutableStateOf(true) }
+    var hasTextboxes by mutableStateOf(false)
 
     // Load drawing paths
     LaunchedEffect(workbookId, page) {
         val paths = DrawingStore.getPaths(context, workbookId, page)
         savedPaths = paths.toMutableStateList()
         annotationManager.getText(context, workbookId, page)
+        hasTextboxes = annotationManager.textAnnotations.isNotEmpty()
     }
 
     val gestureModifier = if (annotationManager.scribbleEnabled) {
@@ -69,7 +81,9 @@ fun DrawingCanvas(
             annotationManager.eraseEnabled,
             annotationManager.clearEnabled,
             annotationManager.textAnnotations,
-            annotationManager.isFocused
+            annotationManager.isFocused,
+            hasTextboxes,
+            areTextboxesVisible
         ) {
             if (annotationManager.isFocused) {
                 focusManager.clearFocus()
@@ -187,41 +201,62 @@ fun DrawingCanvas(
             zoom
         )
     }
-    for (i in annotationManager.textAnnotations.indices) {
-        val annotation = annotationManager.textAnnotations[i]
-        MovableTextBox(
-            annotation = annotation,
-            zoom = zoom,
-            pan = Offset(panX - pan.x, -pan.y - panY),
-            canvasSize = canvasSize.value,
-            onMove = { newPos ->
-                annotationManager.updateText(
-                    annotation.id,
-                    newPos = OffsetSerializable(newPos.x, newPos.y)
-                )
-                DrawingStore.saveTextAnnotations(
-                    context,
-                    workbookId,
-                    page,
-                    annotationManager.textAnnotations
-                )
+    hasTextboxes = annotationManager.textAnnotations.isNotEmpty()
+    if (areTextboxesVisible) {
+        for (i in annotationManager.textAnnotations.indices) {
+            val annotation = annotationManager.textAnnotations[i]
+            MovableTextBox(
+                annotation = annotation,
+                zoom = zoom,
+                pan = Offset(panX - pan.x, -pan.y - panY),
+                canvasSize = canvasSize.value,
+                onMove = { newPos ->
+                    annotationManager.updateText(
+                        annotation.id,
+                        newPos = OffsetSerializable(newPos.x, newPos.y)
+                    )
+                    DrawingStore.saveTextAnnotations(
+                        context,
+                        workbookId,
+                        page,
+                        annotationManager.textAnnotations
+                    )
+                },
+                onEdit = { newText ->
+                    annotationManager.updateText(annotation.id, newText = newText)
+                    DrawingStore.saveTextAnnotations(context, workbookId, page, annotationManager.textAnnotations)
+                },
+                onResize = { newSize ->
+                    annotationManager.updateText(annotation.id, newSize = OffsetSerializable(newSize.x, newSize.y))
+                    DrawingStore.saveTextAnnotations(context, workbookId, page, annotationManager.textAnnotations)
+                },
+                onDelete = {
+                    textToDelete.value = annotation
+                    deleteText = true
+                },
+                onFocusChange = { isFocused ->
+                    annotationManager.toggleFocus(true)
+                }
+            )
+        }
+    }
+    if (hasTextboxes) {
+        IconButton(
+            onClick = {
+                areTextboxesVisible = !areTextboxesVisible
+                println(areTextboxesVisible)
             },
-            onEdit = { newText ->
-                annotationManager.updateText(annotation.id, newText = newText)
-                DrawingStore.saveTextAnnotations(context, workbookId, page, annotationManager.textAnnotations)
-            },
-            onResize = { newSize ->
-                annotationManager.updateText(annotation.id, newSize = OffsetSerializable(newSize.x, newSize.y))
-                DrawingStore.saveTextAnnotations(context, workbookId, page, annotationManager.textAnnotations)
-            },
-            onDelete = {
-                textToDelete.value = annotation
-                deleteText = true
-            },
-            onFocusChange = { isFocused ->
-                annotationManager.toggleFocus(true)
-            }
-        )
+            modifier = Modifier
+                .padding(16.dp)
+                .size(48.dp)
+                .offset(0.dp, 1000.dp)
+        ) {
+            Icon(
+                imageVector = if (areTextboxesVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                contentDescription = "Toggle Textbox Visibility",
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
     if (deleteText && textToDelete.value != null) {
         ConfirmDeleteDialog(
