@@ -28,6 +28,7 @@ from core.serializers import (
 # Then lets display that here.
 class RootAPIView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = None
 
     def get(self, request):
         return Response({"message": f"Readers API v{settings.API_VERSION}"})
@@ -35,6 +36,7 @@ class RootAPIView(APIView):
 
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = None
 
     def delete(self, request):
         Token.objects.filter(user=request.user).delete()
@@ -61,7 +63,9 @@ class CollectionViewSet(
         # TODO: Consider just returning the entire collection rather than the list representation...
         elif self.action == "latest":
             return CollectionListSerializer
-        return None
+
+        # drf-spectacular requires a default serializer.
+        return CollectionListSerializer
 
     def get_permissions(self):
         if self.action in ["list", "retrieve", "latest"]:
@@ -69,6 +73,10 @@ class CollectionViewSet(
         return [IsAuthenticated()]
 
     def get_queryset(self):
+        # drf-spectacular compatibility.
+        if getattr(self, 'swagger_fake_view', False):
+            return Collection.objects.none()
+
         queryset = Collection.objects.all()
 
         # Unauthenticated users should never have access to unreleased collections.
@@ -151,6 +159,10 @@ class WorkbookViewSet(
     queryset = Workbook.objects.all()
 
     def get_queryset(self):
+        # drf-spectacular compatibility.
+        if getattr(self, 'swagger_fake_view', False):
+            return Workbook.objects.none()
+
         queryset = super().get_queryset()
 
         # Only users can access unreleased workbooks.
@@ -164,7 +176,9 @@ class WorkbookViewSet(
             return WorkbookCreateSerializer
         if self.action == "retrieve":
             return WorkbookRetrieveSerializer
-        return None
+
+        # drf-spectacular requires a default serializer.
+        return WorkbookRetrieveSerializer
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
@@ -183,6 +197,7 @@ class FeedbackView(APIView):
     """
 
     permission_classes = [AllowAny]  # Allow unauthenticated users to submit feedback
+    serializer_class = FeedbackSerializer
 
     def post(self, request):
         serializer = FeedbackSerializer(data=request.data)
