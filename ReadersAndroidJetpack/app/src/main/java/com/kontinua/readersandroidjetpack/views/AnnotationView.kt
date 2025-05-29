@@ -72,15 +72,11 @@ fun DrawingCanvas(
         hasTextboxes = annotationManager.textAnnotations.isNotEmpty()
     }
 
-    val gestureModifier = if (annotationManager.scribbleEnabled) {
+    val gestureModifier = if (annotationManager.mode != AnnotationMode.NONE) {
         Modifier.pointerInput(
             workbookId,
             page,
-            annotationManager.textEnabled,
-            annotationManager.penEnabled,
-            annotationManager.highlightEnabled,
-            annotationManager.eraseEnabled,
-            annotationManager.clearEnabled,
+            annotationManager.mode,
             annotationManager.textAnnotations,
             annotationManager.isFocused,
             hasTextboxes,
@@ -89,7 +85,7 @@ fun DrawingCanvas(
             if (annotationManager.isFocused) {
                 focusManager.clearFocus()
                 annotationManager.toggleFocus(false)
-            } else if (annotationManager.textEnabled) {
+            } else if (annotationManager.mode == AnnotationMode.TEXT) {
                 detectTapGestures(
                     onTap = { offset ->
                         val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
@@ -111,13 +107,13 @@ fun DrawingCanvas(
                 detectDragGestures(
                     onDragStart = { offset ->
                         val normalized = Offset(offset.x / size.width, offset.y / size.height)
-                        if (!annotationManager.eraseEnabled) {
+                        if (annotationManager.mode != AnnotationMode.ERASE) {
                             currentPath = listOf(normalized)
                         }
                     },
                     onDrag = { change, _ ->
                         val normalized = Offset(change.position.x / size.width, change.position.y / size.height)
-                        if (annotationManager.eraseEnabled) {
+                        if (annotationManager.mode == AnnotationMode.ERASE) {
                             val eraseThreshold = 0.02f
                             val touch = normalized
                             val removed = savedPaths.removeAll { path ->
@@ -133,16 +129,18 @@ fun DrawingCanvas(
                                 }
                                 DrawingStore.savePaths(context, workbookId, page, serializableList)
                             }
-                        } else if (annotationManager.penEnabled || annotationManager.highlightEnabled) {
+                        } else if (annotationManager.mode == AnnotationMode.PEN ||
+                            annotationManager.mode == AnnotationMode.HIGHLIGHT
+                        ) {
                             currentPath += normalized
                         }
                     },
                     onDragEnd = {
-                        if (!annotationManager.eraseEnabled && currentPath.isNotEmpty()) {
+                        if (annotationManager.mode != AnnotationMode.ERASE && currentPath.isNotEmpty()) {
                             val newPath = DrawingPath(
                                 currentPath,
-                                isHighlight = annotationManager.highlightEnabled,
-                                color = if (annotationManager.highlightEnabled) {
+                                isHighlight = annotationManager.mode == AnnotationMode.HIGHLIGHT,
+                                color = if (annotationManager.mode == AnnotationMode.HIGHLIGHT) {
                                     annotationManager.currentHighlightColor
                                 } else {
                                     annotationManager.currentPenColor
@@ -273,7 +271,7 @@ fun DrawingCanvas(
             }
         )
     }
-    if (annotationManager.clearEnabled) {
+    if (annotationManager.mode == AnnotationMode.CLEAR) {
         ConfirmClearDialog(
             onConfirm = {
                 savedPaths.clear()
@@ -286,10 +284,10 @@ fun DrawingCanvas(
                 }
                 DrawingStore.savePaths(context, workbookId, page, serializableList)
                 DrawingStore.saveTextAnnotations(context, workbookId, page, annotationManager.textAnnotations)
-                annotationManager.toggleClear(false)
+                annotationManager.toggleTool(annotationManager.prevMode)
             },
             onDismiss = {
-                annotationManager.toggleClear(false)
+                annotationManager.toggleTool(annotationManager.prevMode)
             }
         )
     }

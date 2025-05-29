@@ -16,17 +16,14 @@ enum class AnnotationMode {
     PEN,
     HIGHLIGHT,
     ERASE,
-    TEXT
+    TEXT,
+    CLEAR,
+    FOCUSED
 }
 
 class AnnotationManager {
     var mode: AnnotationMode = AnnotationMode.NONE
-
-    val annotationsEnabled: AnnotationMode
-        get() = mode
-  
-  var clearEnabled by mutableStateOf(false)
-        private set
+    var prevMode: AnnotationMode = mode
 
     var isFocused by mutableStateOf(false)
         private set
@@ -36,50 +33,23 @@ class AnnotationManager {
 
     var currentHighlightColor by mutableStateOf(Color.Yellow)
         private set
-  
-    init{
-      isFocused = false
-      clearEnabled = false
-    }
-  
-    fun toggleScribble(boolean: Boolean) {
-        if (!boolean) {
-            mode = AnnotationMode.NONE
-        }
+
+    var textAnnotations = mutableStateListOf<TextAnnotation>()
+
+    init {
+        isFocused = false
     }
 
-    fun togglePen(boolean: Boolean) {
-        mode = AnnotationMode.PEN
-        toggleScribble(boolean)
+    fun toggleTool(newMode: AnnotationMode) {
+        mode = newMode
     }
 
     fun setPenColor(color: Color) {
         currentPenColor = color
-        togglePen(true)
-    }
-
-    fun toggleHighlight(boolean: Boolean) {
-        mode = AnnotationMode.HIGHLIGHT
-        toggleScribble(boolean)
     }
 
     fun setHighlightColor(color: Color) {
         currentHighlightColor = color
-        toggleHighlight(true)
-    }
-
-    fun toggleErase(boolean: Boolean) {
-        mode = AnnotationMode.ERASE
-        toggleScribble(boolean)
-    }
-
-    fun toggleText(boolean: Boolean) {
-        mode = AnnotationMode.TEXT
-        toggleScribble(boolean)
-    }
-
-    fun toggleClear(boolean: Boolean) {
-        clearEnabled = boolean
     }
 
     fun toggleFocus(boolean: Boolean) {
