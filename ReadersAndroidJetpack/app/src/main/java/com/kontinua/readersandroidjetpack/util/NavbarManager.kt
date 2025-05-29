@@ -1,5 +1,4 @@
 package com.kontinua.readersandroidjetpack.util
-
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.runtime.getValue
@@ -10,7 +9,7 @@ import androidx.core.content.edit
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
-class NavbarManager(private val context: Context) { // Inject Context
+class NavbarManager(private val context: Context) {
     var isChapterVisible by mutableStateOf(false)
         private set
 
@@ -32,12 +31,6 @@ class NavbarManager(private val context: Context) { // Inject Context
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(Constants.PDF_VIEWER_PREFS, Context.MODE_PRIVATE)
 
-//    init {
-//        isChapterVisible = false
-//        isWorkbookVisible = false
-//        collectionVM = null
-//    }
-
     fun toggleChapterSidebar() {
         isChapterVisible = !isChapterVisible
     }
@@ -50,10 +43,6 @@ class NavbarManager(private val context: Context) { // Inject Context
         isChapterVisible = false
         isWorkbookVisible = false
     }
-
-//    fun setCollection(collection: CollectionViewModel?) {
-//        this.collectionVM = collection
-//    }
 
     fun setCollection(collection: CollectionViewModel?) {
         this.collectionVM = collection
