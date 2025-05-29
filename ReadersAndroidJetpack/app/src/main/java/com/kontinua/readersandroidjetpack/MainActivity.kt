@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
@@ -54,8 +55,9 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MainScreen() {
+        val context = LocalContext.current
         val timerViewModel: TimerViewModel = viewModel()
-        val navbarManager = remember { NavbarManager() }
+        val navbarManager = remember { NavbarManager(context) }
         val annotationManager = remember { AnnotationManager() }
         val feedbackViewModel: FeedbackViewModel = viewModel(factory = FeedbackViewModelFactory(navbarManager))
         val collectionViewModel: CollectionViewModel = viewModel()
