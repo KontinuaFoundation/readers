@@ -42,9 +42,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -172,8 +172,11 @@ fun ChapterSidebar(
     }
 
     LaunchedEffect(searchQuery) {
-        pdfResults = if (searchQuery.isBlank()) emptyList()
-        else navbarManager.searchManager.search(searchQuery)
+        pdfResults = if (searchQuery.isBlank()) {
+            emptyList()
+        } else {
+            navbarManager.searchManager.search(searchQuery)
+        }
     }
 
     Column(
@@ -276,7 +279,7 @@ fun ChapterSidebar(
 
         Spacer(Modifier.height(12.dp))
 
-        if(searchQuery.isNotEmpty()){
+        if (searchQuery.isNotEmpty()) {
             Text("Word Matches", style = MaterialTheme.typography.titleMedium)
 
             ListingDivider()
@@ -300,7 +303,8 @@ fun ChapterSidebar(
                             overflow = TextOverflow.Ellipsis
                         )
 
-                        Text("Page ${result.page + 1}",
+                        Text(
+                            "Page ${result.page + 1}",
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -308,7 +312,7 @@ fun ChapterSidebar(
                         ListingDivider()
                     }
                 }
-            } else{
+            } else {
                 Text(
                     "No word matches found",
                     style = MaterialTheme.typography.bodyMedium,
@@ -320,7 +324,6 @@ fun ChapterSidebar(
         }
     }
 }
-
 
 @Composable
 fun ListingDivider() {
