@@ -9,8 +9,8 @@ import Foundation
 import PDFKit.PDFDocument
 
 enum CacheConstants {
-    static let mbInMem = 50
-    static let mbOnDisk = 50
+    static let mbInMem = 100
+    static let mbOnDisk = 200
     static let cacheDirectory = "pdfCache"
 }
 
