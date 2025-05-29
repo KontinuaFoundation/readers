@@ -4,24 +4,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
+enum class AnnotationMode {
+    NONE,
+    PEN,
+    HIGHLIGHT,
+    ERASE,
+    TEXT
+}
+
 class AnnotationManager {
-    var scribbleEnabled by mutableStateOf(false)
-        private set
+    var mode: AnnotationMode = AnnotationMode.NONE
 
-    var penEnabled by mutableStateOf(false)
-        private set
-
-    var highlightEnabled by mutableStateOf(false)
-        private set
-
-    var eraseEnabled by mutableStateOf(false)
-        private set
-
-    val annotationsEnabled: Boolean
-        get() = scribbleEnabled ||
-            penEnabled ||
-            highlightEnabled ||
-            eraseEnabled
+    val annotationsEnabled: AnnotationMode
+        get() = mode
 
     var currentPenColor by mutableStateOf(Color.Black)
         private set
@@ -29,53 +24,39 @@ class AnnotationManager {
     var currentHighlightColor by mutableStateOf(Color.Yellow)
         private set
 
-    init {
-        scribbleEnabled = false
-        penEnabled = false
-        eraseEnabled = false
-        highlightEnabled = false
-    }
-
     fun toggleScribble(boolean: Boolean) {
-        scribbleEnabled = boolean
         if (!boolean) {
-            penEnabled = false
-            highlightEnabled = false
-            eraseEnabled = false
+            mode = AnnotationMode.NONE
         }
     }
 
     fun togglePen(boolean: Boolean) {
-        penEnabled = boolean
-        eraseEnabled = false
-        highlightEnabled = false
+        mode = AnnotationMode.PEN
+        toggleScribble(boolean)
     }
 
     fun setPenColor(color: Color) {
         currentPenColor = color
-        penEnabled = true
-        highlightEnabled = false
-        eraseEnabled = false
-        scribbleEnabled = true
+        togglePen(true)
     }
 
     fun toggleHighlight(boolean: Boolean) {
-        highlightEnabled = boolean
-        penEnabled = false
-        eraseEnabled = false
+        mode = AnnotationMode.HIGHLIGHT
+        toggleScribble(boolean)
     }
 
     fun setHighlightColor(color: Color) {
         currentHighlightColor = color
-        penEnabled = false
-        highlightEnabled = true
-        eraseEnabled = false
-        scribbleEnabled = true
+        toggleHighlight(true)
     }
 
     fun toggleErase(boolean: Boolean) {
-        eraseEnabled = boolean
-        penEnabled = false
-        highlightEnabled = false
+        mode = AnnotationMode.ERASE
+        toggleScribble(boolean)
+    }
+
+    fun toggleText(boolean: Boolean){
+        mode = AnnotationMode.TEXT
+        toggleScribble(boolean)
     }
 }

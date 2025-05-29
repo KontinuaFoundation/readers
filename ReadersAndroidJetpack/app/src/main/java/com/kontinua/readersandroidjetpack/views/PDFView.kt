@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
 import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
+import com.kontinua.readersandroidjetpack.util.AnnotationMode
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
@@ -120,7 +121,7 @@ fun PDFViewer(
                             }
                             .onTap { event ->
                                 // if we’re zoomed or in annotation mode, don’t consume
-                                if (annotationManager.annotationsEnabled || pdfView.zoom != 1f) {
+                                if (annotationManager.mode != AnnotationMode.NONE || pdfView.zoom != 1f) {
                                     false
                                 } else {
                                     if (event.x > pdfView.width.toFloat() * PREV_PAGE_TAP_RATIO) {

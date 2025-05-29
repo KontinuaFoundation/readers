@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
+import com.kontinua.readersandroidjetpack.util.AnnotationMode
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPath
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingPathSerializable
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.DrawingStore
@@ -50,18 +51,18 @@ fun DrawingCanvas(
         savedPaths = paths.toMutableStateList()
     }
 
-    val gestureModifier = if (annotationManager.scribbleEnabled) {
+    val gestureModifier = if (annotationManager.mode != AnnotationMode.NONE) {
         Modifier.pointerInput(workbookId, page) {
             detectDragGestures(
                 onDragStart = { offset ->
                     val normalized = Offset(offset.x / size.width, offset.y / size.height)
-                    if (!annotationManager.eraseEnabled) {
+                    if (annotationManager.mode != AnnotationMode.ERASE) {
                         currentPath = listOf(normalized)
                     }
                 },
                 onDrag = { change, _ ->
                     val normalized = Offset(change.position.x / size.width, change.position.y / size.height)
-                    if (annotationManager.eraseEnabled) {
+                    if (annotationManager.mode == AnnotationMode.ERASE) {
                         val eraseThreshold = 0.02f
                         val touch = normalized
                         val removed = savedPaths.removeAll { path ->
@@ -82,11 +83,11 @@ fun DrawingCanvas(
                     }
                 },
                 onDragEnd = {
-                    if (!annotationManager.eraseEnabled && currentPath.isNotEmpty()) {
+                    if (annotationManager.mode != AnnotationMode.ERASE && currentPath.isNotEmpty()) {
                         val newPath = DrawingPath(
                             currentPath,
-                            isHighlight = annotationManager.highlightEnabled,
-                            color = if (annotationManager.highlightEnabled) {
+                            isHighlight = annotationManager.mode == AnnotationMode.HIGHLIGHT,
+                            color = if (annotationManager.mode == AnnotationMode.HIGHLIGHT) {
                                 annotationManager.currentHighlightColor
                             } else {
                                 annotationManager.currentPenColor
@@ -127,8 +128,8 @@ fun DrawingCanvas(
         drawPathLine(
             DrawingPath(
                 currentPath,
-                isHighlight = annotationManager.highlightEnabled,
-                color = if (annotationManager.highlightEnabled) {
+                isHighlight = annotationManager.mode == AnnotationMode.HIGHLIGHT,
+                color = if (annotationManager.mode == AnnotationMode.HIGHLIGHT) {
                     annotationManager.currentHighlightColor
                 } else {
                     annotationManager.currentPenColor
