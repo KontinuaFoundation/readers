@@ -18,7 +18,7 @@ final class StateRestoreManager {
     private let workbookPagesKey = "workbookPages" // Dictionary key
     private let collectionMajorVersionKey = "collectionMajorVersion"
     private let collectionMinorVersionKey = "collectionMinorVersion"
-    
+
     private let defaults = UserDefaults.standard
 
     // Private initializer prevents external instantiation.
@@ -65,19 +65,19 @@ final class StateRestoreManager {
 
         return 0
     }
-    
+
     func saveCollectionVersion(major: Int, minor: Int) {
         defaults.set(major, forKey: collectionMajorVersionKey)
         defaults.set(minor, forKey: collectionMinorVersionKey)
     }
-    
-    func isCollectionCurrent(latestMajor: Int, latestMinor: Int) -> Bool{
+
+    func isCollectionCurrent(latestMajor: Int, latestMinor: Int) -> Bool {
         guard let savedMajor = defaults.object(forKey: collectionMajorVersionKey) as? Int,
-              let savedMinor = defaults.object(forKey: collectionMinorVersionKey) as? Int else {
-            return false 
+              let savedMinor = defaults.object(forKey: collectionMinorVersionKey) as? Int
+        else {
+            return false
         }
-        
+
         return savedMajor == latestMajor && savedMinor <= latestMinor
-        
     }
 }

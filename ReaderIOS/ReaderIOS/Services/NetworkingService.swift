@@ -35,11 +35,11 @@ final class NetworkingService: ObservableObject {
             diskCapacity: CacheConstants.mbOnDisk * 1024 * 1024,
             diskPath: CacheConstants.cacheDirectory
         )
-        
+
         let config = URLSessionConfiguration.default
         config.urlCache = cache
         config.requestCachePolicy = .useProtocolCachePolicy
-        
+
         return URLSession(configuration: config)
     }()
 
@@ -222,7 +222,7 @@ final class NetworkingService: ObservableObject {
     }
 
     func fetchPDF(workbook: Workbook, completion: @escaping (Result<PDFDocument, Error>) -> Void) {
-        //Logger.error("Invalid PDF URL for workbook: \(workbook.id)", category: "Network")
+        // Logger.error("Invalid PDF URL for workbook: \(workbook.id)", category: "Network")
         guard let url = URL(string: workbook.pdf) else {
             completion(.failure(NetworkError.invalidURL))
             return
@@ -230,21 +230,22 @@ final class NetworkingService: ObservableObject {
 
         Logger.Network.request(url.absoluteString)
         startLoading()
-        
-        //build request
+
+        // build request
         var request = URLRequest(url: url)
         request.cachePolicy = .useProtocolCachePolicy
-        
-        //check if in URLCache
+
+        // check if in URLCache
         if let cached = session.configuration.urlCache?
             .cachedResponse(for: request),
-           let doc = PDFDocument(data: cached.data){
+            let doc = PDFDocument(data: cached.data)
+        {
             Logger.info("Loaded PDF (\(workbook.id)) from URLCache", category: "Network")
             DispatchQueue.main.async { completion(.success(doc)) }
             stopLoading()
             return
         }
-        
+
         Logger.info("Downloading PDF (\(workbook.id)) from network", category: "Network")
 
         let task = session.dataTask(with: request) { data, response, error in
