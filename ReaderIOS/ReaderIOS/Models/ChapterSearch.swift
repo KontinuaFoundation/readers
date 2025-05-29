@@ -81,13 +81,13 @@ enum ChapterSearch {
 extension SearchResult where T == Chapter {
     /// Creates a view with the chapter title, highlighting matching text
     func highlightedTitleView() -> some View {
-        return VStack(alignment: .leading) {
+        VStack(alignment: .leading) {
             Text("Chapter \(item.chapNum)")
                 .font(.caption)
-            
+
             Text(highlightRanges.isEmpty
-                 ? highlightAttributedString()
-                 : AttributedString(item.title))
+                ? highlightAttributedString()
+                : AttributedString(item.title))
         }
     }
 
