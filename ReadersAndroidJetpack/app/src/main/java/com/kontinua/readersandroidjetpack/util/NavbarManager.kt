@@ -2,14 +2,13 @@ package com.kontinua.readersandroidjetpack.util
 
 import android.content.Context
 import android.content.SharedPreferences
-
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.edit
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
-import androidx.core.content.edit
 
 class NavbarManager(private val context: Context) { // Inject Context
     var isChapterVisible by mutableStateOf(false)
@@ -24,10 +23,10 @@ class NavbarManager(private val context: Context) { // Inject Context
     var currentChapterIndex by mutableIntStateOf(-1)
         private set
 
-    var pageNumber by mutableIntStateOf(0) //default 0
+    var pageNumber by mutableIntStateOf(0) // default 0
         private set
 
-    var pageCount by mutableIntStateOf(-1) //default -1 aka not set
+    var pageCount by mutableIntStateOf(-1) // default -1 aka not set
         private set
 
     private val sharedPreferences: SharedPreferences =

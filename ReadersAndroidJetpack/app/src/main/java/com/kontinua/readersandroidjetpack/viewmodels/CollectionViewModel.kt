@@ -24,7 +24,7 @@ class CollectionViewModel : ViewModel() {
     val collectionState: StateFlow<Collection?> = _collectionState.asStateFlow()
     val workbookState: StateFlow<Workbook?> = _workbookState.asStateFlow()
     var currentWorkbookPreview: WorkbookPreview? by mutableStateOf(null)
-    private set
+        private set
 
     var chapters: List<Chapter> by mutableStateOf(emptyList())
         private set

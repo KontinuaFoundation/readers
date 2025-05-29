@@ -23,16 +23,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
 import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
+import com.kontinua.readersandroidjetpack.util.Constants
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
-import androidx.core.content.edit
-import com.kontinua.readersandroidjetpack.util.Constants
 
 private const val PREV_PAGE_TAP_RATIO = 0.25f
 
@@ -170,7 +170,7 @@ fun PDFViewer(
                 }
             }
         )
-        if (pdfFile != null && workbook!= null) {
+        if (pdfFile != null && workbook != null) {
             DrawingCanvas(
                 workbookId = workbook!!.id.toString(),
                 page = navbarManager.pageNumber,
