@@ -23,7 +23,7 @@ class Command(BaseCommand):
             return
 
         collection = {
-            "localization": "en-US",
+            "localization": "en_US",
             "major_version": 1,
             "minor_version": 0,
         }
