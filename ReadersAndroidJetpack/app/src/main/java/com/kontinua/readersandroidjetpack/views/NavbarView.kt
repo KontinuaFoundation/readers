@@ -231,6 +231,7 @@ fun ChapterSidebar(
                     .background(bgColor)
                     .clickable {
                         collectionVM.setWorkbook(collectionVM.currentWorkbook)
+                        //this line fixed the page issue
                         navbarManager.setPage(chapter.startPage - 1)
                         onClose()
                     }
