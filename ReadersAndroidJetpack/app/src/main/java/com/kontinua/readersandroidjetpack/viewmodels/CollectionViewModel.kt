@@ -1,6 +1,9 @@
 package com.kontinua.readersandroidjetpack.viewmodels
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kontinua.readersandroidjetpack.serialization.Chapter
@@ -20,27 +23,91 @@ class CollectionViewModel : ViewModel() {
 
     val collectionState: StateFlow<Collection?> = _collectionState.asStateFlow()
     val workbookState: StateFlow<Workbook?> = _workbookState.asStateFlow()
-    lateinit var currentWorkbook: WorkbookPreview
-    var chapters: List<Chapter> = emptyList()
+    var currentWorkbookPreview: WorkbookPreview? by mutableStateOf(null)
+    private set
+
+    var chapters: List<Chapter> by mutableStateOf(emptyList())
+        private set
 
     init {
+        fetchLatestCollection()
+    }
+
+    private fun fetchLatestCollection(onCollectionLoaded: (() -> Unit)? = null) {
         viewModelScope.launch {
-            val latestCollection = APIManager.getLatestCollection()
-
-            if (latestCollection == null) {
-                Log.e("Collection", "Fetching latest collection returned null.")
-                return@launch
+            if (_collectionState.value == null) {
+                val latestCollection = APIManager.getLatestCollection()
+                if (latestCollection != null) {
+                    _collectionState.value = latestCollection
+                }
             }
-
-            updateCollection(latestCollection)
-            // Default to the first workbook for now...
-            setWorkbook(latestCollection.workbooks.first())
+            onCollectionLoaded?.invoke()
         }
     }
 
-    private fun updateCollection(newCollection: Collection) {
-        _collectionState.value = newCollection
+    private fun updateWorkbookInternal(workbook: Workbook, preview: WorkbookPreview) {
+        _workbookState.value = workbook
+        this.currentWorkbookPreview = preview
+        this.chapters = workbook.chapters
     }
+
+    private fun setWorkbookByPreview(preview: WorkbookPreview) {
+        viewModelScope.launch {
+            val workbook = APIManager.getWorkbook(preview)
+
+            if (workbook == null) {
+                _workbookState.value = null
+                this@CollectionViewModel.currentWorkbookPreview = null
+                this@CollectionViewModel.chapters = emptyList()
+                return@launch
+            }
+            updateWorkbookInternal(workbook, preview)
+        }
+    }
+
+    fun loadWorkbookById(workbookIdString: String) {
+        val workbookId = workbookIdString.toIntOrNull()
+        if (workbookId == null) {
+            loadDefaultWorkbook()
+            return
+        }
+
+        fetchLatestCollection {
+            val currentCollection = _collectionState.value
+            if (currentCollection == null) {
+                loadDefaultWorkbookAfterCheck()
+                return@fetchLatestCollection
+            }
+
+            val previewToLoad = currentCollection.workbooks.find { it.id == workbookId }
+            if (previewToLoad != null) {
+                setWorkbookByPreview(previewToLoad)
+            } else {
+                loadDefaultWorkbookAfterCheck()
+            }
+        }
+    }
+
+    fun loadDefaultWorkbook() {
+        fetchLatestCollection {
+            loadDefaultWorkbookAfterCheck()
+        }
+    }
+    private fun loadDefaultWorkbookAfterCheck() {
+        val currentCollection = _collectionState.value
+        if (currentCollection != null && currentCollection.workbooks.isNotEmpty()) {
+            val firstWorkbookPreview = currentCollection.workbooks.first()
+            setWorkbookByPreview(firstWorkbookPreview)
+        } else {
+            _workbookState.value = null
+            this.currentWorkbookPreview = null
+            this.chapters = emptyList()
+        }
+    }
+
+//    private fun updateCollection(newCollection: Collection) {
+//        _collectionState.value = newCollection
+//    }
 
     private fun updateWorkbook(workbook: Workbook) {
         /*
@@ -63,7 +130,7 @@ class CollectionViewModel : ViewModel() {
                 return@launch
             }
 
-            currentWorkbook = preview
+            currentWorkbookPreview = preview
             chapters = workbook.chapters
             updateWorkbook(workbook)
         }

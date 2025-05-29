@@ -1,5 +1,6 @@
 package com.kontinua.readersandroidjetpack.views
 
+import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,8 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
+import androidx.core.content.edit
+import com.kontinua.readersandroidjetpack.util.Constants
 
 private const val PREV_PAGE_TAP_RATIO = 0.25f
 
@@ -45,7 +48,6 @@ fun PDFViewer(
     var pdfFile by remember { mutableStateOf<File?>(null) }
     var lastLoadedFile by remember { mutableStateOf<File?>(null) }
     val workbook by collectionViewModel.workbookState.collectAsState()
-    val collectionViewModel: CollectionViewModel = viewModel()
     val currentZoom = remember { mutableFloatStateOf(1f) }
     val zoomPoint = remember { mutableStateOf(Offset.Zero) }
     val panOffset = remember { mutableStateOf(Offset.Zero) }
@@ -54,23 +56,49 @@ fun PDFViewer(
         allBookmarks[wbId]?.contains(navbarManager.pageNumber)
     } ?: false
 
-    navbarManager.setCollection(collectionViewModel)
+    // Helper to get SharedPreferences
+    val sharedPreferences = remember {
+        context.getSharedPreferences(Constants.PDF_VIEWER_PREFS, Context.MODE_PRIVATE)
+    }
+
+// Load saved state on initial composition
+    LaunchedEffect(Unit) {
+        val savedWorkbookId = sharedPreferences.getString(Constants.KEY_LAST_WORKBOOK_ID, null)
+        val savedPageNumber = sharedPreferences.getInt(Constants.KEY_LAST_PAGE_NUMBER, 0)
+        if (savedWorkbookId != null) {
+            collectionViewModel.loadWorkbookById(savedWorkbookId)
+        } else {
+            collectionViewModel.loadDefaultWorkbook()
+        }
+        navbarManager.setInitialPage(savedPageNumber)
+    }
+
+    LaunchedEffect(workbook) {
+        workbook?.id?.let { wbId ->
+            sharedPreferences.edit() { putString(Constants.KEY_LAST_WORKBOOK_ID, wbId.toString()) }
+        }
+        if (workbook != null && pdfFile?.nameWithoutExtension != workbook?.pdf) {
+            pdfFile = null
+            lastLoadedFile = null
+        } else if (workbook == null) {
+            pdfFile = null
+            lastLoadedFile = null
+        }
+    }
 
     LaunchedEffect(collectionViewModel) {
         navbarManager.setCollection(collectionViewModel)
     }
 
     LaunchedEffect(workbook) {
-        // whenever workbook switches, force reload
-        pdfFile = null
-        lastLoadedFile = null
-    }
-
-    // only fetch new file when workbook changes
-    LaunchedEffect(workbook) {
-        workbook?.let {
-            APIManager.getPDFFromWorkbook(context, it)
-        }?.also { pdfFile = it }
+        workbook?.let { wb ->
+            pdfFile = null
+            lastLoadedFile = null
+            APIManager.getPDFFromWorkbook(context, wb)?.also {
+                pdfFile = it
+            } ?: run {
+            }
+        }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -142,10 +170,9 @@ fun PDFViewer(
                 }
             }
         )
-        if (pdfFile != null) {
-            val workbookId = "Workbook ${collectionViewModel.currentWorkbook.number}"
+        if (pdfFile != null && workbook!= null) {
             DrawingCanvas(
-                workbookId = workbookId,
+                workbookId = workbook!!.id.toString(),
                 page = navbarManager.pageNumber,
                 annotationManager = annotationManager,
                 context = context,

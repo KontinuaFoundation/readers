@@ -1,15 +1,17 @@
 package com.kontinua.readersandroidjetpack.util
+
+import android.content.Context
+import android.content.SharedPreferences
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
+import androidx.core.content.edit
 
-// TODO: if i am on page 6 of workbook x and then i switch to workbook y,
-// it opens up to page 6 on workbook y
-
-class NavbarManager {
+class NavbarManager(private val context: Context) { // Inject Context
     var isChapterVisible by mutableStateOf(false)
         private set
 
@@ -22,17 +24,20 @@ class NavbarManager {
     var currentChapterIndex by mutableIntStateOf(-1)
         private set
 
-    var pageNumber by mutableIntStateOf(0)
+    var pageNumber by mutableIntStateOf(0) //default 0
         private set
 
-    var pageCount by mutableIntStateOf(-1)
+    var pageCount by mutableIntStateOf(-1) //default -1 aka not set
         private set
 
-    init {
-        isChapterVisible = false
-        isWorkbookVisible = false
-        collectionVM = null
-    }
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences(Constants.PDF_VIEWER_PREFS, Context.MODE_PRIVATE)
+
+//    init {
+//        isChapterVisible = false
+//        isWorkbookVisible = false
+//        collectionVM = null
+//    }
 
     fun toggleChapterSidebar() {
         isChapterVisible = !isChapterVisible
@@ -47,16 +52,30 @@ class NavbarManager {
         isWorkbookVisible = false
     }
 
+//    fun setCollection(collection: CollectionViewModel?) {
+//        this.collectionVM = collection
+//    }
+
     fun setCollection(collection: CollectionViewModel?) {
         this.collectionVM = collection
+        updateChapter() // Re-evaluate chapter if ViewModel changes
     }
 
     fun setPageCountValue(newPageCount: Int) {
-        pageCount = newPageCount
+        pageCount = newPageCount.coerceAtLeast(0)
     }
 
     fun setPage(newPage: Int) {
-        pageNumber = newPage
+        val newSafePage = newPage.coerceAtLeast(0)
+        if (pageNumber != newSafePage) {
+            pageNumber = newSafePage
+            sharedPreferences.edit() { putInt(Constants.KEY_LAST_PAGE_NUMBER, newSafePage) }
+            updateChapter()
+        }
+    }
+
+    fun setInitialPage(initialPage: Int) {
+        pageNumber = initialPage.coerceAtLeast(0)
         updateChapter()
     }
 

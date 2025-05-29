@@ -36,6 +36,8 @@ import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import androidx.compose.ui.platform.LocalContext
+
 
 // TODO: add a loading screen of some sort while the PDF is getting fetched
 
@@ -54,8 +56,9 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MainScreen() {
+        val context = LocalContext.current
         val timerViewModel: TimerViewModel = viewModel()
-        val navbarManager = remember { NavbarManager() }
+        val navbarManager = remember { NavbarManager(context) }
         val annotationManager = remember { AnnotationManager() }
         val feedbackViewModel: FeedbackViewModel = viewModel(factory = FeedbackViewModelFactory(navbarManager))
         val collectionViewModel: CollectionViewModel = viewModel()

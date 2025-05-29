@@ -230,8 +230,8 @@ fun ChapterSidebar(
                     .clip(RoundedCornerShape(6.dp))
                     .background(bgColor)
                     .clickable {
-                        collectionVM.setWorkbook(collectionVM.currentWorkbook)
-                        //this line fixed the page issue
+                        collectionVM.currentWorkbookPreview?.let { collectionVM.setWorkbook(it) }
+                        //this line fixed the page issue!!!!
                         navbarManager.setPage(chapter.startPage - 1)
                         onClose()
                     }
@@ -300,7 +300,7 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
     ) {
         for (workbook in workbooks) {
             val bgColor =
-                if (workbook == collectionVM.currentWorkbook) {
+                if (workbook == collectionVM.currentWorkbookPreview) {
                     Color.LightGray
                 } else {
                     Color.Transparent

@@ -105,10 +105,7 @@ class FeedbackViewModel(
             return
         }
 
-        val workbookId = navbarManager.collectionVM?.currentWorkbook?.id
-        if (workbookId == null) {
-            return
-        }
+        val workbookId = navbarManager.collectionVM?.currentWorkbookPreview?.id ?: return
 
         val pageNumber = navbarManager.pageNumber + 1
 
@@ -117,10 +114,7 @@ class FeedbackViewModel(
         val chapterNumber = chapter?.chapNum ?: 0
 
         // Get version information from the collection
-        val collection = navbarManager.collectionVM?.collectionState?.value
-        if (collection == null) {
-            return
-        }
+        val collection = navbarManager.collectionVM?.collectionState?.value ?: return
 
         val majorVersion = collection.majorVersion
         val minorVersion = collection.minorVersion
