@@ -40,7 +40,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +56,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -61,6 +64,7 @@ import androidx.compose.ui.zIndex
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.util.SearchResult
 
 @Composable
 fun UnifiedSidebar(navbarManager: NavbarManager) {
@@ -154,6 +158,26 @@ fun ChapterSidebar(
     val chapters = collectionVM.chapters
     val scroll = rememberScrollState()
     var searchQuery by remember { mutableStateOf("") }
+    var pdfResults by remember { mutableStateOf<List<SearchResult>>(emptyList()) }
+
+    val filteredChapters by remember(searchQuery, chapters) {
+        derivedStateOf {
+            if (searchQuery.isBlank()) {
+                chapters
+            } else {
+                val q = searchQuery.trim().lowercase()
+                chapters.filter { it.title.lowercase().contains(q) }
+            }
+        }
+    }
+
+    LaunchedEffect(searchQuery) {
+        pdfResults = if (searchQuery.isBlank()) {
+            emptyList()
+        } else {
+            navbarManager.searchManager.search(searchQuery)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -216,14 +240,8 @@ fun ChapterSidebar(
         ListingDivider()
 
         // ← Each chapter + divider
-        chapters.forEachIndexed { i, chapter ->
-            val bgColor =
-                if (i == navbarManager.currentChapterIndex) {
-                    Color.LightGray
-                } else {
-                    Color.Transparent
-                }
-
+        filteredChapters.forEachIndexed { i, chapter ->
+            val bgColor = if (i == navbarManager.currentChapterIndex) Color.LightGray else Color.Transparent
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.95f)
@@ -246,8 +264,63 @@ fun ChapterSidebar(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+            ListingDivider()
+        }
+
+        if (filteredChapters.isEmpty()) {
+            Text(
+                "No chapters found",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
 
             ListingDivider()
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        if (searchQuery.isNotEmpty()) {
+            Text("Word Matches", style = MaterialTheme.typography.titleMedium)
+
+            ListingDivider()
+
+            if (pdfResults.isNotEmpty()) {
+                pdfResults.forEach { result ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                // jump to that page (zero-based)
+                                navbarManager.setPage(result.page)
+                                onClose()
+                            }
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = result.snippet,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Text(
+                            "Page ${result.page + 1}",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+
+                        ListingDivider()
+                    }
+                }
+            } else {
+                Text(
+                    "No word matches found",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+
+                ListingDivider()
+            }
         }
     }
 }
