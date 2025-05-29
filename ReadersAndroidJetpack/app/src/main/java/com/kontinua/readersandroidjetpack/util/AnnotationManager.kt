@@ -11,35 +11,22 @@ import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.Drawing
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.OffsetSerializable
 import com.kontinua.readersandroidjetpack.viewmodels.AnnotationViewModel.TextAnnotation
 
+enum class AnnotationMode {
+    NONE,
+    PEN,
+    HIGHLIGHT,
+    ERASE,
+    TEXT,
+    CLEAR,
+    FOCUSED
+}
+
 class AnnotationManager {
-    var scribbleEnabled by mutableStateOf(false)
-        private set
-
-    var penEnabled by mutableStateOf(false)
-        private set
-
-    var highlightEnabled by mutableStateOf(false)
-        private set
-
-    var eraseEnabled by mutableStateOf(false)
-        private set
-
-    var textEnabled by mutableStateOf(false)
-        private set
-
-    var clearEnabled by mutableStateOf(false)
-        private set
+    var mode: AnnotationMode = AnnotationMode.NONE
+    var prevMode: AnnotationMode = mode
 
     var isFocused by mutableStateOf(false)
         private set
-
-    var textAnnotations = mutableStateListOf<TextAnnotation>()
-
-    val annotationsEnabled: Boolean
-        get() = scribbleEnabled ||
-            penEnabled ||
-            highlightEnabled ||
-            eraseEnabled
 
     var currentPenColor by mutableStateOf(Color.Black)
         private set
@@ -47,72 +34,22 @@ class AnnotationManager {
     var currentHighlightColor by mutableStateOf(Color.Yellow)
         private set
 
+    var textAnnotations = mutableStateListOf<TextAnnotation>()
+
     init {
-        scribbleEnabled = false
-        penEnabled = false
-        eraseEnabled = false
-        highlightEnabled = false
-        textEnabled = false
-        clearEnabled = false
         isFocused = false
     }
 
-    fun toggleScribble(boolean: Boolean) {
-        scribbleEnabled = boolean
-        if (!boolean) {
-            penEnabled = false
-            highlightEnabled = false
-            eraseEnabled = false
-            textEnabled = false
-        }
-    }
-
-    fun togglePen(boolean: Boolean) {
-        penEnabled = boolean
-        eraseEnabled = false
-        highlightEnabled = false
-        textEnabled = false
+    fun toggleTool(newMode: AnnotationMode) {
+        mode = newMode
     }
 
     fun setPenColor(color: Color) {
         currentPenColor = color
-        penEnabled = true
-        highlightEnabled = false
-        eraseEnabled = false
-        scribbleEnabled = true
-    }
-
-    fun toggleHighlight(boolean: Boolean) {
-        highlightEnabled = boolean
-        penEnabled = false
-        eraseEnabled = false
-        textEnabled = false
     }
 
     fun setHighlightColor(color: Color) {
         currentHighlightColor = color
-        penEnabled = false
-        highlightEnabled = true
-        eraseEnabled = false
-        scribbleEnabled = true
-    }
-
-    fun toggleErase(boolean: Boolean) {
-        eraseEnabled = boolean
-        penEnabled = false
-        highlightEnabled = false
-        textEnabled = false
-    }
-
-    fun toggleText(boolean: Boolean) {
-        textEnabled = boolean
-        penEnabled = false
-        highlightEnabled = false
-        eraseEnabled = false
-    }
-
-    fun toggleClear(boolean: Boolean) {
-        clearEnabled = boolean
     }
 
     fun toggleFocus(boolean: Boolean) {

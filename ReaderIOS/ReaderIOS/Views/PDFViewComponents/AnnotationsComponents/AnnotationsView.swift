@@ -10,7 +10,7 @@ struct AnnotationsView: View {
 
     @Binding var pagePaths: [String: [(path: Path, color: Color)]]
     @Binding var highlightPaths: [String: [(path: Path, color: Color)]]
-    @Binding var selectedScribbleTool: String
+    @Binding var selectedScribbleTool: AnnotationMode
     @Binding var textOpened: Bool
 
     // MARK: - Input Parameters
@@ -60,15 +60,15 @@ struct AnnotationsView: View {
                 }
                 // Draw live drawing path
                 context.stroke(Path(liveDrawingPath.cgPath),
-                               with: selectedScribbleTool == "Highlight" ?
+                               with: selectedScribbleTool == .highlight ?
                                    .color(selectedHighlighterColor.opacity(0.2)) :
                                    .color(selectedColor),
-                               lineWidth: selectedScribbleTool == "Highlight" ? 15 : 2)
+                               lineWidth: selectedScribbleTool == .highlight ? 15 : 2)
             }
             .gesture(
                 DragGesture(minimumDistance: 0.0001)
                     .onChanged { value in
-                        if zoomManager.getZoomedIn(), selectedScribbleTool.isEmpty {
+                        if zoomManager.getZoomedIn(), selectedScribbleTool == .none {
                             // Calculate the incremental translation since the last update.
                             let delta = CGSize(
                                 width: value.translation.width - lastDragValue.width,
@@ -78,9 +78,9 @@ struct AnnotationsView: View {
                             lastDragValue = value.translation
                         } else {
                             // Existing logic for drawing/erasing
-                            if selectedScribbleTool == "Erase" {
+                            if selectedScribbleTool == .erase {
                                 erasePath(at: value.location)
-                            } else if selectedScribbleTool == "Pen" || selectedScribbleTool == "Highlight" {
+                            } else if selectedScribbleTool == .pen || selectedScribbleTool == .highlight {
                                 updateLivePath(with: value.location)
                             }
                         }
@@ -89,12 +89,12 @@ struct AnnotationsView: View {
                         // Reset the incremental drag offset
                         lastDragValue = .zero
 
-                        if !zoomManager.getZoomedIn() || !selectedScribbleTool.isEmpty {
-                            if selectedScribbleTool == "Pen" {
+                        if !zoomManager.getZoomedIn() || selectedScribbleTool != .none {
+                            if selectedScribbleTool == .pen {
                                 finalizeCurrentPath(for: &pagePaths, using: selectedColor)
-                            } else if selectedScribbleTool == "Highlight" {
+                            } else if selectedScribbleTool == .highlight {
                                 finalizeCurrentPath(for: &highlightPaths, using: selectedHighlighterColor)
-                            } else if selectedScribbleTool.isEmpty || selectedScribbleTool == "Text" {
+                            } else if selectedScribbleTool == .none || selectedScribbleTool == .text {
                                 // Page change logic (swipe left/right) only when not zoomed in.
                                 if value.translation.width < 0 {
                                     nextPage?()
@@ -116,7 +116,7 @@ struct AnnotationsView: View {
                                          width: geometry.size.width,
                                          height: geometry.size.height)
 
-                if !textOpened, selectedScribbleTool == "Text" {
+                if !textOpened, selectedScribbleTool == .text {
                     textOpened = true
                     textManager.addText(textBoxes: $textBoxes,
                                         key: key,
@@ -129,7 +129,7 @@ struct AnnotationsView: View {
                 textOpened = false
 
                 // ——— PAGE TURNS ———
-                guard selectedScribbleTool.isEmpty else { return }
+                guard selectedScribbleTool == .none else { return }
                 if !zoomManager.getZoomedIn() {
                     if location.x > geometry.size.width * TapConstants.prevPageTapRatio {
                         nextPage?()
@@ -180,7 +180,7 @@ struct AnnotationsView: View {
                                      using _: Color)
     {
         guard !liveDrawingPath.isEmpty else { return }
-        let finalColor = selectedScribbleTool == "Highlight" ? selectedHighlighterColor : selectedColor
+        let finalColor = selectedScribbleTool == .highlight ? selectedHighlighterColor : selectedColor
         paths[key, default: []].append((path: liveDrawingPath, color: finalColor))
         liveDrawingPath = Path()
     }

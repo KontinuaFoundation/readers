@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
+import com.kontinua.readersandroidjetpack.util.AnnotationMode
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
 
@@ -131,7 +132,7 @@ fun Toolbar(
                             },
                             onClick = {
                                 annotationManager.setPenColor(color)
-                                annotationManager.togglePen(true)
+                                annotationManager.toggleTool(AnnotationMode.PEN)
                                 showPenColorMenu = false
                                 showMarkupMenu = false
                             }
@@ -169,7 +170,7 @@ fun Toolbar(
                             },
                             onClick = {
                                 annotationManager.setHighlightColor(color)
-                                annotationManager.toggleHighlight(true)
+                                annotationManager.toggleTool(AnnotationMode.HIGHLIGHT)
                                 showHighlightColorMenu = false
                                 showMarkupMenu = false
                             }
@@ -177,22 +178,21 @@ fun Toolbar(
                     }
                 }
                 DropdownMenuItem(text = { Text("Eraser") }, onClick = {
-                    annotationManager.toggleScribble(true)
-                    annotationManager.toggleErase(true)
+                    annotationManager.toggleTool(AnnotationMode.ERASE)
                     showMarkupMenu = false
                 })
                 DropdownMenuItem(text = { Text("Text") }, onClick = {
-                    annotationManager.toggleScribble(true)
-                    annotationManager.toggleText(true)
+                    annotationManager.toggleTool(AnnotationMode.TEXT)
                     showMarkupMenu = false
                 })
                 DropdownMenuItem(text = { Text("Clear Screen") }, onClick = {
-                    annotationManager.toggleClear(true)
+                    annotationManager.prevMode = annotationManager.mode
+                    annotationManager.toggleTool(AnnotationMode.CLEAR)
                     showMarkupMenu = false
                 })
                 HorizontalDivider()
                 DropdownMenuItem(text = { Text("Exit") }, onClick = {
-                    annotationManager.toggleScribble(false)
+                    annotationManager.toggleTool(AnnotationMode.NONE)
                     showMarkupMenu = false
                 })
             }

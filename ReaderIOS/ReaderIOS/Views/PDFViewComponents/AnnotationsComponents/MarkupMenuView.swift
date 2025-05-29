@@ -9,7 +9,7 @@ import SwiftUI
 struct MarkupMenu: View {
     // MARK: - Bindings
 
-    @Binding var selectedScribbleTool: String
+    @Binding var selectedScribbleTool: AnnotationMode
     @Binding var exitNotSelected: Bool
     @Binding var showClearAlert: Bool
     @Binding var selectedPenColor: Color
@@ -40,7 +40,7 @@ struct MarkupMenu: View {
             } label: {
                 HStack {
                     Text("Pen")
-                    if selectedScribbleTool == "Pen" {
+                    if selectedScribbleTool == .pen {
                         Circle()
                             .fill(selectedPenColor)
                             .frame(width: 10, height: 10)
@@ -57,7 +57,7 @@ struct MarkupMenu: View {
             } label: {
                 HStack {
                     Text("Highlight")
-                    if selectedScribbleTool == "Highlight" {
+                    if selectedScribbleTool == .highlight {
                         Circle()
                             .fill(selectedHighlighterColor)
                             .frame(width: 10, height: 10)
@@ -66,24 +66,24 @@ struct MarkupMenu: View {
             }
 
             Button("Erase") {
-                selectScribbleTool("Erase")
+                selectedScribbleTool = .erase
                 exitNotSelected = true
             }
             Button("Text") {
-                selectScribbleTool("Text")
+                selectedScribbleTool = .text
                 exitNotSelected = true
             }
             Button("Clear Screen") {
                 showClearAlert = true
             }
             Button("Exit Markup") {
-                selectScribbleTool("")
+                selectedScribbleTool = .none
                 exitNotSelected = false
                 annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
                 textManager.saveTextBoxes(textBoxes: textBoxes)
             }
         } label: {
-            Text(selectedScribbleTool.isEmpty ? "Markup" : "Markup: \(selectedScribbleTool)")
+            Text(selectedScribbleTool == .none ? "Markup" : "Markup: \(selectedScribbleTool)")
                 .padding(5)
                 .foregroundColor(exitNotSelected ? .pink : .blue)
                 .cornerRadius(8)
@@ -95,7 +95,7 @@ struct MarkupMenu: View {
     private func penColorButton(color: Color, label: String) -> some View {
         Button {
             selectPenColor(color)
-            selectScribbleTool("Pen")
+            selectedScribbleTool = .pen
             exitNotSelected = true
             isPenSubmenuVisible = false
         } label: {
@@ -111,7 +111,7 @@ struct MarkupMenu: View {
     private func highlighterColorButton(color: Color, label: String) -> some View {
         Button {
             selectHighlightColor(color)
-            selectScribbleTool("Highlight")
+            selectedScribbleTool = .highlight
             exitNotSelected = true
             isPenSubmenuVisible = false
         } label: {
@@ -122,10 +122,6 @@ struct MarkupMenu: View {
                 }
             }
         }
-    }
-
-    private func selectScribbleTool(_ tool: String) {
-        selectedScribbleTool = tool
     }
 
     private func selectPenColor(_ color: Color) {
