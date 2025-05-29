@@ -40,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +56,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -62,6 +64,7 @@ import androidx.compose.ui.zIndex
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.NavbarManager
+import com.kontinua.readersandroidjetpack.util.SearchResult
 
 @Composable
 fun UnifiedSidebar(navbarManager: NavbarManager) {
@@ -155,6 +158,7 @@ fun ChapterSidebar(
     val chapters = collectionVM.chapters
     val scroll = rememberScrollState()
     var searchQuery by remember { mutableStateOf("") }
+    var pdfResults by remember { mutableStateOf<List<SearchResult>>(emptyList()) }
 
     val filteredChapters by remember(searchQuery, chapters) {
         derivedStateOf {
@@ -165,6 +169,11 @@ fun ChapterSidebar(
                 chapters.filter { it.title.lowercase().contains(q) }
             }
         }
+    }
+
+    LaunchedEffect(searchQuery) {
+        pdfResults = if (searchQuery.isBlank()) emptyList()
+        else navbarManager.searchManager.search(searchQuery)
     }
 
     Column(
@@ -259,14 +268,49 @@ fun ChapterSidebar(
             Text(
                 "No chapters found",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-                modifier = Modifier.padding(top = 16.dp)
+                color = Color.Gray
             )
 
             ListingDivider()
         }
+
+        if(searchQuery.isNotEmpty()){
+            Text("Word Matches", style = MaterialTheme.typography.titleMedium)
+            Divider()
+
+            if (pdfResults.isNotEmpty()) {
+                pdfResults.forEach { result ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                // jump to that page (zero-based)
+                                navbarManager.setPage(result.page)
+                                onClose()
+                            }
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Text("Page ${result.page + 1}", style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            text = result.snippet,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            } else{
+                Text(
+                    "No word matches found",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+            }
+        }
     }
 }
+
 
 @Composable
 fun ListingDivider() {
