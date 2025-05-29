@@ -105,10 +105,6 @@ class CollectionViewModel : ViewModel() {
         }
     }
 
-//    private fun updateCollection(newCollection: Collection) {
-//        _collectionState.value = newCollection
-//    }
-
     private fun updateWorkbook(workbook: Workbook) {
         /*
         Sets the current workbook. Do not call directly, instead use setWorkbook
