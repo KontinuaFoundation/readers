@@ -16,6 +16,8 @@ final class StateRestoreManager {
 
     private let lastWorkbookKey = "lastWorkbook"
     private let workbookPagesKey = "workbookPages" // Dictionary key
+    private let collectionMajorVersionKey = "collectionMajorVersion"
+    private let collectionMinorVersionKey = "collectionMinorVersion"
 
     // Private initializer prevents external instantiation.
     private init() {}
@@ -66,5 +68,12 @@ final class StateRestoreManager {
         }
 
         return 0
+    }
+    
+    func saveCollectionVersion(major: Int, minor: Int) {
+        let defaults = UserDefaults.standard
+        
+        defaults.set(major, forKey: collectionMajorVersionKey)
+        defaults.set(minor, forKey: collectionMinorVersionKey)
     }
 }
