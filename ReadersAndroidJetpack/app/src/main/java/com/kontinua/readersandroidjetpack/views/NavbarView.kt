@@ -274,7 +274,7 @@ fun ChapterSidebar(
             ListingDivider()
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
         if(searchQuery.isNotEmpty()){
             Text("Word Matches", style = MaterialTheme.typography.titleMedium)
@@ -293,13 +293,18 @@ fun ChapterSidebar(
                             }
                             .padding(vertical = 4.dp)
                     ) {
-                        Text("Page ${result.page + 1}", style = MaterialTheme.typography.labelSmall)
                         Text(
                             text = result.snippet,
                             style = MaterialTheme.typography.bodyMedium,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
+
+                        Text("Page ${result.page + 1}",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+
                         ListingDivider()
                     }
                 }
@@ -307,9 +312,10 @@ fun ChapterSidebar(
                 Text(
                     "No word matches found",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 16.dp)
+                    color = Color.Gray
                 )
+
+                ListingDivider()
             }
         }
     }
