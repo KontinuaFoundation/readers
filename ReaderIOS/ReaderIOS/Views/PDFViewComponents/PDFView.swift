@@ -34,8 +34,6 @@ struct PDFView: View {
     @State private var isHidden = false
     @State private var showClearAlert = false
     @State private var isLandscape = false
-    @State private var keyboardHeight: CGFloat = 0
-    @State private var isKeyboardVisible = false
 
     // MARK: - StateObjects and Observed
 

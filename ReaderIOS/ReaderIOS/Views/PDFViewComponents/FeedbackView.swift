@@ -80,7 +80,6 @@ struct FeedbackView: View {
                             .keyboardType(.emailAddress)
                             .autocapitalization(.none)
                             .autocorrectionDisabled(true)
-                            .disableAutocorrection(true)
                             .padding(10)
                             .background(Color.white)
                             .cornerRadius(8)
@@ -97,7 +96,7 @@ struct FeedbackView: View {
                         if showEmailError {
                             Text("Invalid email")
                                 .font(.caption)
-                                .foregroundColor(.gray)
+                                .foregroundColor(.red)
                                 .padding(.leading, 4)
                         }
                     }
