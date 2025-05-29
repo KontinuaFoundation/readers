@@ -274,9 +274,12 @@ fun ChapterSidebar(
             ListingDivider()
         }
 
+        Spacer(Modifier.height(16.dp))
+
         if(searchQuery.isNotEmpty()){
             Text("Word Matches", style = MaterialTheme.typography.titleMedium)
-            Divider()
+
+            ListingDivider()
 
             if (pdfResults.isNotEmpty()) {
                 pdfResults.forEach { result ->
@@ -297,6 +300,7 @@ fun ChapterSidebar(
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
+                        ListingDivider()
                     }
                 }
             } else{
