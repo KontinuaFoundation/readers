@@ -125,6 +125,7 @@ struct PDFView: View {
                                 }
                             }
                         }
+                        .ignoresSafeArea(.keyboard)
                         .toolbar {
                             ToolbarItemGroup(placement: .navigationBarLeading) {
                                 PageControlView(currentPage: $currentPage, totalPages: pdfDoc.pageCount)
@@ -180,7 +181,7 @@ struct PDFView: View {
                                     HStack(spacing: 0) {
                                         TimerProgressView(timerManager: timerManager)
                                             .frame(maxWidth: .infinity)
-                                        FeedbackView.button(
+                                        FeedbackButton(
                                             feedbackManager: feedbackManager,
                                             workbook: currentWorkbook,
                                             currentPage: currentPage,

@@ -210,8 +210,8 @@ final class NetworkingService: ObservableObject {
     }
 
     func fetchPDF(workbook: Workbook, completion: @escaping (Result<PDFDocument, Error>) -> Void) {
-        Logger.error("Invalid PDF URL for workbook: \(workbook.id)", category: "Network")
         guard let url = URL(string: workbook.pdf) else {
+            Logger.error("Invalid PDF URL for workbook: \(workbook.id) - \(workbook.pdf)", category: "Network")
             completion(.failure(NetworkError.invalidURL))
             return
         }
