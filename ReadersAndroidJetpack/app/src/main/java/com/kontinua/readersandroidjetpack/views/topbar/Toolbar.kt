@@ -181,6 +181,15 @@ fun Toolbar(
                     annotationManager.toggleErase(true)
                     showMarkupMenu = false
                 })
+                DropdownMenuItem(text = { Text("Text") }, onClick = {
+                    annotationManager.toggleScribble(true)
+                    annotationManager.toggleText(true)
+                    showMarkupMenu = false
+                })
+                DropdownMenuItem(text = { Text("Clear Screen") }, onClick = {
+                    annotationManager.toggleClear(true)
+                    showMarkupMenu = false
+                })
                 HorizontalDivider()
                 DropdownMenuItem(text = { Text("Exit") }, onClick = {
                     annotationManager.toggleScribble(false)
