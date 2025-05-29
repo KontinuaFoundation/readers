@@ -8,6 +8,12 @@
 import Foundation
 import PDFKit.PDFDocument
 
+enum CacheConstants {
+    static let mbInMem = 20
+    static let mbOnDisk = 50
+    static let cacheDirectory = "pdfCache"
+}
+
 enum NetworkError: Error {
     case invalidURL
     case noData
@@ -23,11 +29,17 @@ final class NetworkingService: ObservableObject {
 
     private init() {}
 
-    // Configure a URLSession with no caching.
     private let session: URLSession = {
+        let cache = URLCache(
+            memoryCapacity: CacheConstants.mbInMem * 1024 * 1024,
+            diskCapacity: CacheConstants.mbOnDisk * 1024 * 1024,
+            diskPath: "pdfCache"
+        )
+        
         let config = URLSessionConfiguration.default
-        config.urlCache = nil
-        config.requestCachePolicy = .reloadIgnoringLocalCacheData
+        config.urlCache = cache
+        config.requestCachePolicy = .useProtocolCachePolicy
+        
         return URLSession(configuration: config)
     }()
 
@@ -210,7 +222,7 @@ final class NetworkingService: ObservableObject {
     }
 
     func fetchPDF(workbook: Workbook, completion: @escaping (Result<PDFDocument, Error>) -> Void) {
-        Logger.error("Invalid PDF URL for workbook: \(workbook.id)", category: "Network")
+        //Logger.error("Invalid PDF URL for workbook: \(workbook.id)", category: "Network")
         guard let url = URL(string: workbook.pdf) else {
             completion(.failure(NetworkError.invalidURL))
             return
