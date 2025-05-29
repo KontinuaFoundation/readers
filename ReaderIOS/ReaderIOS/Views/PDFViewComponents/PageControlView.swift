@@ -56,6 +56,8 @@ struct PageControlView: View {
                         }
                     }
 
+                Text("/ \(totalPages)")
+
                 Button(action: incrementPage) {
                     Image(systemName: "chevron.right")
                         .font(.title)
