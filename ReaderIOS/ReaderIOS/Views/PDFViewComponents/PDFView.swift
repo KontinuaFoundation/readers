@@ -34,6 +34,8 @@ struct PDFView: View {
     @State private var isHidden = false
     @State private var showClearAlert = false
     @State private var isLandscape = false
+    @State private var keyboardHeight: CGFloat = 0
+    @State private var isKeyboardVisible = false
 
     // MARK: - StateObjects and Observed
 
@@ -117,6 +119,7 @@ struct PDFView: View {
                                 }
                             }
                         }
+                        .ignoresSafeArea(.keyboard)
                         .toolbar {
                             ToolbarItemGroup(placement: .navigationBarLeading) {
                                 PageControlView(currentPage: $currentPage, totalPages: pdfDoc.pageCount)
@@ -172,7 +175,7 @@ struct PDFView: View {
                                     HStack(spacing: 0) {
                                         TimerProgressView(timerManager: timerManager)
                                             .frame(maxWidth: .infinity)
-                                        FeedbackView.button(
+                                        FeedbackButton(
                                             feedbackManager: feedbackManager,
                                             workbook: currentWorkbook,
                                             currentPage: currentPage,
