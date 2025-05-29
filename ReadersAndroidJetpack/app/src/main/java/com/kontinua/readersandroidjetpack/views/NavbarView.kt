@@ -43,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -155,6 +156,17 @@ fun ChapterSidebar(
     val scroll = rememberScrollState()
     var searchQuery by remember { mutableStateOf("") }
 
+    val filteredChapters by remember(searchQuery, chapters) {
+        derivedStateOf {
+            if (searchQuery.isBlank()) {
+                chapters
+            } else {
+                val q = searchQuery.trim().lowercase()
+                chapters.filter { it.title.lowercase().contains(q) }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .width(350.dp)
@@ -216,14 +228,8 @@ fun ChapterSidebar(
         ListingDivider()
 
         // ← Each chapter + divider
-        chapters.forEachIndexed { i, chapter ->
-            val bgColor =
-                if (i == navbarManager.currentChapterIndex) {
-                    Color.LightGray
-                } else {
-                    Color.Transparent
-                }
-
+        filteredChapters.forEachIndexed { i, chapter ->
+            val bgColor = if (i == navbarManager.currentChapterIndex) Color.LightGray else Color.Transparent
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.95f)
@@ -246,6 +252,16 @@ fun ChapterSidebar(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+            ListingDivider()
+        }
+
+        if (filteredChapters.isEmpty()) {
+            Text(
+                "No chapters found",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                modifier = Modifier.padding(top = 16.dp)
+            )
 
             ListingDivider()
         }
