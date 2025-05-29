@@ -54,7 +54,7 @@ final class NetworkingService: ObservableObject {
 
     func fetchLatestCollection(completion: @escaping (Result<Collection, Error>) -> Void) {
         guard let url = URL(string: ApplicationConstants.API.baseURLString + ApplicationConstants.APIEndpoints
-            .collections + "latest" + "?localization=en-US")
+            .collections + "latest" + "?localization=en_US")
         else {
             Logger.error("Invalid URL for latest collection", category: "Network")
             completion(.failure(NetworkError.invalidURL))
