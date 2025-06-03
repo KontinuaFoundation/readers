@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -31,6 +32,8 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
+import com.kontinua.readersandroidjetpack.R
+
 
 private const val PREV_PAGE_TAP_RATIO = 0.25f
 
@@ -166,7 +169,7 @@ fun PDFViewer(
         ) {
             Icon(
                 imageVector = if (isPageBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                contentDescription = if (isPageBookmarked) "Remove Bookmark" else "Add Bookmark"
+                contentDescription = if (isPageBookmarked) stringResource(R.string.remove_bookmark) else stringResource(R.string.add_bookmark)
             )
         }
     }
