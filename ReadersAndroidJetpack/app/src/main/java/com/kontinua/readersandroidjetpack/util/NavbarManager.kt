@@ -28,6 +28,9 @@ class NavbarManager {
     var pageCount by mutableIntStateOf(-1)
         private set
 
+    var searchManager = SearchManager()
+        private set
+
     init {
         isChapterVisible = false
         isWorkbookVisible = false
