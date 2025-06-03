@@ -371,7 +371,7 @@
         </p>
 
         <div class="installation-steps">
-          <h2> iOS Downlaod</h2>
+          <h2>iOS Downlaod</h2>
           <h3>Option 1: TestFlight Installation (Recommended)</h3>
           <ol>
             <li>
@@ -392,7 +392,14 @@
             </li>
             <li>Once installed, the app will appear on your home screen.</li>
           </ol>
-          <p><a href="#" class="btn">Request TestFlight Invitation</a></p>
+          <p>
+            <a
+              href="mailto:feedback@kontinua.org?subject=TestFlight%20Invitation%20Request&body=Hi%2C%0A%0AI%20would%20like%20to%20request%20access%20to%20the%20Kontinua%20Reader%20iOS%20alpha%20via%20TestFlight.%0A%0APersonal%20Information%3A%0A-%20First%20Name%3A%20%0A-%20Last%20Name%3A%20%0A-%20Apple%20ID%20Email%3A%20%0A%0ADevice%20Information%3A%0A-%20Device%20Model%3A%20%0A-%20iOS%20Version%3A%20%0A%0AThank%20you!"
+              class="btn"
+            >
+              Request TestFlight Invitation
+            </a>
+          </p>
 
           <h3>Option 2: Manual Installation for Developers</h3>
           <ol>
@@ -420,15 +427,15 @@
         <ul>
           <li>iOS 17.0 or later</li>
           <li>iPad device</li>
-          <li>Approximately 50MB of free space</li>
+          <li>Approximately 5MB of free space</li>
         </ul>
         <h2>Download Developmental Release</h2>
         <p>
-          Kontinua Reader Android is development but is available for
-          testing purposes. There are two ways to install the app:
+          Kontinua Reader Android is development but is available for testing
+          purposes. There are two ways to install the app:
         </p>
         <div class="installation-steps">
-          <h2> Android Downlaod</h2>
+          <h2>Android Downlaod</h2>
           <h3>Option 1: Manual Installation for Developers</h3>
           <ol>
             <li>Clone the repository from GitHub:</li>
@@ -462,58 +469,118 @@
           in future versions.
         </p>
 
-        <div class="feedback-form">
-          <form action="https://formspree.io/f/yourformid" method="POST">
-            <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" id="name" name="name" required />
-            </div>
+        <div
+          class="feedback-options"
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+          "
+        >
+          <div
+            class="feedback-option"
+            style="
+              background: var(--white);
+              padding: 1.5rem;
+              border-radius: 10px;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              text-align: center;
+            "
+          >
+            <div style="font-size: 2rem; margin-bottom: 1rem">🐛</div>
+            <h3>Bug Report</h3>
+            <p>Found something that's not working right?</p>
+            <a
+              href="https://github.com/KontinuaFoundation/readers/issues/new?labels=bug&template=bug_report.md&title=%5BBug%5D%20"
+              class="btn"
+              target="_blank"
+              rel="noopener"
+            >
+              Report Bug
+            </a>
+          </div>
 
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" required />
-            </div>
+          <div
+            class="feedback-option"
+            style="
+              background: var(--white);
+              padding: 1.5rem;
+              border-radius: 10px;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              text-align: center;
+            "
+          >
+            <div style="font-size: 2rem; margin-bottom: 1rem">✨</div>
+            <h3>Feature Request</h3>
+            <p>Have an idea for a new feature?</p>
+            <a
+              href="https://github.com/KontinuaFoundation/readers/issues/new?labels=enhancement&template=feature_request.md&title=%5BFeature%5D%20"
+              class="btn"
+              target="_blank"
+              rel="noopener"
+            >
+              Request Feature
+            </a>
+          </div>
 
-            <div class="form-group">
-              <label for="feedback-type">Feedback Type</label>
-              <select id="feedback-type" name="feedback-type" required>
-                <option value="">-- Select Feedback Type --</option>
-                <option value="bug">Bug Report</option>
-                <option value="feature">Feature Request</option>
-                <option value="improvement">Improvement Suggestion</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="device">Device Model & iOS Version</label>
-              <input
-                type="text"
-                id="device"
-                name="device"
-                placeholder="e.g., iPad Pro 13-inch, iOS 17.4"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="message">Your Feedback</label>
-              <textarea id="message" name="message" required></textarea>
-            </div>
-
-            <button type="submit" class="btn">Submit Feedback</button>
-          </form>
+          <div
+            class="feedback-option"
+            style="
+              background: var(--white);
+              padding: 1.5rem;
+              border-radius: 10px;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              text-align: center;
+            "
+          >
+            <div style="font-size: 2rem; margin-bottom: 1rem">💬</div>
+            <h3>General Feedback</h3>
+            <p>Share your thoughts and suggestions</p>
+            <a
+              href="https://github.com/KontinuaFoundation/readers/issues/new?labels=feedback&title=%5BFeedback%5D%20"
+              class="btn"
+              target="_blank"
+              rel="noopener"
+            >
+              Give Feedback
+            </a>
+          </div>
         </div>
 
-        <p>
-          Alternatively, you can send feedback directly to our team at
-          <a href="mailto:feedback@kontinua.org">feedback@kontinua.org</a> or
-          create an issue on our
-          <a
-            href="https://github.com/KontinuaFoundation/readers/issues"
-            target="_blank"
-            >GitHub repository</a
-          >.
-        </p>
+        <div
+          style="
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--light-gray);
+            border-radius: 10px;
+          "
+        >
+          <h3>Prefer Email?</h3>
+          <p>
+            You can also send feedback directly to our team at
+            <a
+              href="mailto:feedback@kontinua.org"
+              style="color: var(--primary-color); font-weight: bold"
+              >feedback@kontinua.org</a
+            >
+          </p>
+        </div>
+
+        <div
+          style="
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+          "
+        >
+          <p>
+            💡 <strong>Tip:</strong> GitHub issues are public, so avoid sharing
+            sensitive information. For private matters, use email.
+          </p>
+        </div>
       </div>
     </section>
 
