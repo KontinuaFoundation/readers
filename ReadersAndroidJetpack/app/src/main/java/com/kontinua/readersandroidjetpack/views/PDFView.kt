@@ -74,6 +74,12 @@ fun PDFViewer(
         }?.also { pdfFile = it }
     }
 
+    LaunchedEffect(pdfFile) {
+        pdfFile?.let { file ->
+            navbarManager.searchManager.loadPdf(file)
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),

@@ -81,9 +81,7 @@ fun Toolbar(
                 onDismissRequest = { showTimerMenu = false }
             ) {
                 DropdownMenuItem(text = { Text("15 Minutes") }, onClick = {
-                    // currently set to 15 seconds for testing
-                    // TODO: must be fixed to 15 minutes before deployment
-                    timerViewModel.setDurationAndReset(15 * 1000L)
+                    timerViewModel.setDurationAndReset(15 * 60 * 1000L)
                     showTimerMenu = false
                 })
                 DropdownMenuItem(text = { Text("20 Minutes") }, onClick = {
