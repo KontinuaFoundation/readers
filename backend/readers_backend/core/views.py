@@ -5,6 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from core.throttles import FeedbackThrottle
 from .utils import send_feedback_email
 from rest_framework.viewsets import GenericViewSet
 from django.utils import timezone
@@ -198,6 +200,7 @@ class FeedbackView(APIView):
 
     permission_classes = [AllowAny]  # Allow unauthenticated users to submit feedback
     serializer_class = FeedbackSerializer
+    throttle_classes = [FeedbackThrottle]
 
     def post(self, request):
         serializer = FeedbackSerializer(data=request.data)
