@@ -180,7 +180,7 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # App's email passw
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 FEEDBACK_EMAIL = os.environ.get(
     "FEEDBACK_EMAIL", EMAIL_HOST_USER
-)  # Where feedback should be sent
+)  # Where feedback should be sent 
 
 # The only template view is the index view.
 # Will display a basic page with the latest US collection.

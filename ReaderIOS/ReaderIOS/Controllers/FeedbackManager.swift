@@ -99,13 +99,16 @@ class FeedbackManager: ObservableObject {
         var submissionData: [String: Any] = [
             "user_email": email,
             "description": feedbackBody,
-            "workbook_id": currentWorkbook?.id ?? NSNull(),
             "chapter_number": chapterNumber,
             "page_number": currentPage + 1, // Convert from 0-based index
             "major_version": collectionValues.majorVersion,
             "minor_version": collectionValues.minorVersion,
             "localization": collectionValues.localization
         ]
+
+        if let workbookId = currentWorkbook?.id {
+            submissionData["workbook_id"] = workbookId
+        }
 
         // Add logs if available
         if let logs = applicationLogs {
@@ -199,7 +202,6 @@ class FeedbackManager: ObservableObject {
         submissionData: [String: Any],
         completion: @escaping (Result<Void, FeedbackError>) -> Void
     ) {
-        // Prepare the request
         guard let url = URL(string:
             ApplicationConstants.API.baseURLString +
                 ApplicationConstants.APIEndpoints.feedback)
@@ -209,20 +211,29 @@ class FeedbackManager: ObservableObject {
             return
         }
 
-        // Prepare the JSON data
+        
+        Logger.info("Submitting to URL: \(url.absoluteString)", category: "Feedback")
+
         guard let jsonData = try? JSONSerialization.data(withJSONObject: submissionData, options: []) else {
             completion(.failure(.dataPreparationError))
             return
         }
 
+        
+        if let jsonString = String(data: jsonData, encoding: .utf8) {
+            Logger.info("Request JSON: \(jsonString)", category: "Feedback")
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.httpBody = jsonData
 
-        // Send the request
+        
+        Logger.info("Request headers: \(request.allHTTPHeaderFields ?? [:])", category: "Feedback")
+
         URLSession.shared.dataTask(with: request) { data, response, error in
-            // Handle the response on the main thread
             DispatchQueue.main.async {
                 if let error = error {
                     completion(.failure(.networkError(error)))
@@ -234,36 +245,61 @@ class FeedbackManager: ObservableObject {
                     return
                 }
 
+                // LOG THE RESPONSE HEADERS TOO
+                Logger.info("Response headers: \(httpResponse.allHeaderFields)", category: "Feedback")
+
                 if httpResponse.statusCode == 201 {
                     completion(.success(()))
                 } else {
-                    let errorMessage = self.parseErrorResponse(from: data, statusCode: httpResponse.statusCode)
-                    completion(.failure(.serverError(httpResponse.statusCode, errorMessage)))
+                    let parseResult = self.parseErrorResponse(from: data, statusCode: httpResponse.statusCode)
+
+                    if parseResult.isParseError {
+                        completion(.failure(.parseError(NSError(
+                            domain: "FeedbackParsingError",
+                            code: httpResponse.statusCode,
+                            userInfo: [NSLocalizedDescriptionKey: parseResult.message ?? "Unknown parsing error"]
+                        ))))
+                    } else {
+                        completion(.failure(.serverError(httpResponse.statusCode, parseResult.message)))
+                    }
                 }
             }
         }.resume()
     }
 
     /// Extracts error message from server response
-    private func parseErrorResponse(from data: Data?, statusCode: Int) -> String? {
+    private func parseErrorResponse(from data: Data?, statusCode: Int) -> (message: String?, isParseError: Bool) {
         guard let data = data else {
-            return "Error submitting feedback. Status: \(statusCode)"
+            return ("Error submitting feedback. Status: \(statusCode)", false)
+        }
+
+        // Log the raw response for debugging (crucial for production 500 errors)
+        if let rawString = String(data: data, encoding: .utf8) {
+            Logger.debug("Raw server response (\(statusCode)): \(rawString)", category: "Feedback")
         }
 
         do {
             // Try to parse as JSON first
             if let errorResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 // Look for common error message fields
-                return errorResponse["message"] as? String
+                let message = errorResponse["message"] as? String
                     ?? errorResponse["error"] as? String
                     ?? errorResponse["detail"] as? String
+                    ?? errorResponse["errors"] as? String
                     ?? "Unknown error from server"
+
+                return (message, false) // Successfully parsed, not a parse error
             } else {
-                // If not JSON, try as plain text
-                return String(data: data, encoding: .utf8)
+                // Not a JSON object, try as plain text
+                Logger.warning("Server response is not JSON (\(statusCode))", category: "Feedback")
+                let textMessage = String(data: data, encoding: .utf8) ?? "Unknown server error"
+                return ("Server error: \(textMessage)", false)
             }
         } catch {
-            return "Error parsing server response: \(error.localizedDescription)"
+            // JSON parsing failed
+            Logger.error("Failed to parse server response: \(error.localizedDescription)", category: "Feedback")
+            let fallbackMessage = String(data: data, encoding: .utf8) ?? "Unknown parsing error"
+            return ("Error parsing server response: \(fallbackMessage)", true)
         }
     }
 }

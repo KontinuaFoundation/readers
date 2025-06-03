@@ -212,12 +212,21 @@ class FeedbackSerializer(serializers.ModelSerializer):
         ):
             return data
 
+        print(
+            f"DEBUG: Looking for version {major_version}.{minor_version} with localization '{localization}'"
+        )
+        print(
+            f"DEBUG: Available collections: {Collection.objects.all().values('major_version', 'minor_version', 'localization')}"
+        )
+
         # Verify the version exists
         version_exists = Collection.objects.filter(
             major_version=major_version,
             minor_version=minor_version,
             localization=localization,
         ).exists()
+
+        print(f"DEBUG: Version exists: {version_exists}")
 
         # If the version does not exist, raise a validation error
         if not version_exists:
