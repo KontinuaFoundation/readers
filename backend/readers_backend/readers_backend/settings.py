@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "core.apps.CoreConfig",
-    'drf_spectacular',
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -162,11 +162,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/minute",
-        "feedback": "5/hour"
-    },
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "feedback": "5/hour"},
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # Email Configuration for production
@@ -202,8 +199,47 @@ TEMPLATES = [
 ]
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Readers API',
-    'DESCRIPTION': 'API for the Readers project',
-    'VERSION': API_VERSION,
-    'SERVE_INCLUDE_SCHEMA': False,
+    "TITLE": "Readers API",
+    "DESCRIPTION": "API for the Readers project",
+    "VERSION": API_VERSION,
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
+
+LOG_DIR = get_required_env_var("LOG_DIR")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "filters": ["require_debug_true"],
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs/django.log",
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "propagate": True,
+        },
+        "myproject.custom": {
+            "handlers": ["console", "mail_admins"],
+            "level": "INFO",
+            "filters": ["special"],
+        },
+    },
 }

@@ -76,7 +76,7 @@ class CollectionViewSet(
 
     def get_queryset(self):
         # drf-spectacular compatibility.
-        if getattr(self, 'swagger_fake_view', False):
+        if getattr(self, "swagger_fake_view", False):
             return Collection.objects.none()
 
         queryset = Collection.objects.all()
@@ -162,7 +162,7 @@ class WorkbookViewSet(
 
     def get_queryset(self):
         # drf-spectacular compatibility.
-        if getattr(self, 'swagger_fake_view', False):
+        if getattr(self, "swagger_fake_view", False):
             return Workbook.objects.none()
 
         queryset = super().get_queryset()
