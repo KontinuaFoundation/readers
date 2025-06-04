@@ -246,7 +246,7 @@ if SHOULD_LOG_TO_FILE:
                 "level": "INFO",
                 "class": "logging.handlers.RotatingFileHandler", 
                 "filename": RESPONSES_LOG_FILE,
-                "maxBytes": 5 * 1024 * 1024, # 5Mb
+                "maxBytes": 5 * 1024 * 1024, # 5MB
                 "backupCount": 5,
                 "formatter": "json",
             },
