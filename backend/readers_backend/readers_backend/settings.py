@@ -236,20 +236,26 @@ if SHOULD_LOG_TO_FILE:
         "handlers": {
             "requests_file": {
                 "level": "INFO",
-                "class": "logging.FileHandler",
+                "class": "logging.handlers.RotatingFileHandler",
                 "filename": REQUESTS_LOG_FILE,
+                "maxBytes": 5 * 1024 * 1024, # 5MB
+                "backupCount": 5,
                 "formatter": "json",
             },
             "responses_file": {
                 "level": "INFO",
-                "class": "logging.FileHandler",
+                "class": "logging.handlers.RotatingFileHandler", 
                 "filename": RESPONSES_LOG_FILE,
+                "maxBytes": 5 * 1024 * 1024, # 5Mb
+                "backupCount": 5,
                 "formatter": "json",
             },
             "exceptions_file": {
                 "level": "ERROR",
-                "class": "logging.FileHandler",
+                "class": "logging.handlers.RotatingFileHandler", 
                 "filename": EXCEPTIONS_LOG_FILE,
+                "maxBytes": 5 * 1024 * 1024, # 5MB
+                "backupCount": 5,
                 "formatter": "json",
             },
             "null": {
@@ -260,14 +266,17 @@ if SHOULD_LOG_TO_FILE:
             "readers.requests": {
                 "handlers": ["requests_file"],
                 "level": "INFO",
+                "propagate": False,
             },
             "readers.responses": {
                 "handlers": ["responses_file"],
                 "level": "INFO",
+                "propagate": False,
             },
             "readers.exceptions": {
                 "handlers": ["exceptions_file"],
                 "level": "ERROR",
+                "propagate": False,
             },
             # Disable other logging...
             # We're not using it anyway and clogs stdout.
