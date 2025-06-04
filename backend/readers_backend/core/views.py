@@ -25,7 +25,6 @@ from core.serializers import (
 )
 
 
-
 # TODO:
 # Let's use an openapi schema/library like drf-yasg to generate the API documentation.
 # Then lets display that here.

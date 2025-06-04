@@ -206,13 +206,6 @@ SPECTACULAR_SETTINGS = {
 }
 
 
-
-
-
-
-
-
-
 # Logging for production...
 # The setup is simple: log requests, responses, and exceptions to files defined by env vars.
 SHOULD_LOG_TO_FILE = get_required_env_var("LOG_TO_FILE") == "True"
@@ -259,8 +252,8 @@ if SHOULD_LOG_TO_FILE:
                 "filename": EXCEPTIONS_LOG_FILE,
                 "formatter": "json",
             },
-            'null': {
-                'class': 'logging.NullHandler',
+            "null": {
+                "class": "logging.NullHandler",
             },
         },
         "loggers": {
@@ -279,7 +272,7 @@ if SHOULD_LOG_TO_FILE:
             # Disable other logging...
             # We're not using it anyway and clogs stdout.
             "root": {
-                "handlers": ['null'],
+                "handlers": ["null"],
                 "propagate": False,
             },
         },
