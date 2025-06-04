@@ -59,18 +59,18 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "core.apps.CoreConfig",
-    'drf_spectacular',
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "readers_backend.middleware.HealthCheckMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "readers_backend.middleware.LoggingMiddleware",
 ]
 
 ROOT_URLCONF = "readers_backend.urls"
@@ -162,11 +162,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/minute",
-        "feedback": "5/hour"
-    },
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "feedback": "5/hour"},
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # Email Configuration for production
@@ -202,8 +199,120 @@ TEMPLATES = [
 ]
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Readers API',
-    'DESCRIPTION': 'API for the Readers project',
-    'VERSION': API_VERSION,
-    'SERVE_INCLUDE_SCHEMA': False,
+    "TITLE": "Readers API",
+    "DESCRIPTION": "API for the Readers project",
+    "VERSION": API_VERSION,
+    "SERVE_INCLUDE_SCHEMA": False,
 }
+
+
+# Logging for production...
+# The setup is simple: log requests, responses, and exceptions to files defined by env vars.
+SHOULD_LOG_TO_FILE = get_required_env_var("LOG_TO_FILE") == "True"
+if SHOULD_LOG_TO_FILE:
+
+    REQUESTS_LOG_FILE = get_required_env_var("REQUESTS_LOG_FILE")
+    RESPONSES_LOG_FILE = get_required_env_var("RESPONSES_LOG_FILE")
+    EXCEPTIONS_LOG_FILE = get_required_env_var("EXCEPTIONS_LOG_FILE")
+
+    for path in [REQUESTS_LOG_FILE, RESPONSES_LOG_FILE, EXCEPTIONS_LOG_FILE]:
+        if not os.path.exists(path):
+            with open(path, "a") as f:
+                pass
+
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": True,
+        "formatters": {
+            "simple_error": {
+                "format": "ERROR: {message}",
+                "style": "{",
+            },
+            "json": {
+                "format": "{message}",
+                "style": "{",
+            },
+        },
+        "handlers": {
+            "requests_file": {
+                "level": "INFO",
+                "class": "logging.FileHandler",
+                "filename": REQUESTS_LOG_FILE,
+                "formatter": "json",
+            },
+            "responses_file": {
+                "level": "INFO",
+                "class": "logging.FileHandler",
+                "filename": RESPONSES_LOG_FILE,
+                "formatter": "json",
+            },
+            "exceptions_file": {
+                "level": "ERROR",
+                "class": "logging.FileHandler",
+                "filename": EXCEPTIONS_LOG_FILE,
+                "formatter": "json",
+            },
+            "null": {
+                "class": "logging.NullHandler",
+            },
+        },
+        "loggers": {
+            "readers.requests": {
+                "handlers": ["requests_file"],
+                "level": "INFO",
+            },
+            "readers.responses": {
+                "handlers": ["responses_file"],
+                "level": "INFO",
+            },
+            "readers.exceptions": {
+                "handlers": ["exceptions_file"],
+                "level": "ERROR",
+            },
+            # Disable other logging...
+            # We're not using it anyway and clogs stdout.
+            "root": {
+                "handlers": ["null"],
+                "propagate": False,
+            },
+        },
+    }
+else:
+    # The default django logging when debug is True is fine for local development
+    # We just need to disable our custom loggers to avoid clogging stdout.
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "null": {
+                "class": "logging.NullHandler",
+            },
+            "console": {
+                "class": "logging.StreamHandler",
+            },
+        },
+        "loggers": {
+            # Lets disable our custom loggers for local development.
+            "readers.requests": {
+                "handlers": ["null"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "readers.responses": {
+                "handlers": ["null"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "readers.exceptions": {
+                "handlers": ["null"],
+                "level": "ERROR",
+                "propagate": False,
+            },
+            # All other logs should use the default handler
+            "root": {
+                "handlers": ["console"],
+                "propagate": False,
+                "level": "DEBUG",
+            },
+        },
+    }
