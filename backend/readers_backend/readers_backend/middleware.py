@@ -42,8 +42,7 @@ class LoggingMiddleware:
     def __call__(self, request):
 
         try:
-            body = dict(request.body)
-            headers = dict(request.headers)
+
 
             request_time = datetime.now()
 
@@ -55,15 +54,23 @@ class LoggingMiddleware:
                 "method": request.method,
                 "path": request.path,
                 "query_params": request.GET.dict(),
-                "body": self.remove_sensitive_values_from_body(body),
-                "headers": self.remove_sensitive_values_from_headers(headers),
+                "headers": request.headers,
+                "body": request.POST.dict(),
+            }
+
+            # Only log the headers we care about.
+            request_message["headers"] = {
+                "Content-Length": request.headers.get("Content-Length"),
+                "Content-Type": request.headers.get("Content-Type"),
+                "User-Agent": request.headers.get("User-Agent"),
+                "Remote-Addr": request.headers.get("Remote-Addr"),
             }
 
             request_logger.info("Request: " + json.dumps(request_message, indent=2))
 
         except Exception as e:
             # Logging should never cause request to fail...
-            exception_logger.error("Error logging request: " + str(e))
+            exception_logger.error("Error logging request: " + str(e) + "\n" + traceback.format_exc())
 
         response = self.get_response(request)
 
@@ -74,17 +81,18 @@ class LoggingMiddleware:
                 "status_code": response.status_code,
             }
 
-            if response.status_code >= 400:
+            if response.status_code >= 400 and hasattr(response, "content"):
+
                 try:
                     response_message["content"] = json.loads(response.content)
                 except json.JSONDecodeError:
-                    response_message["content"] = "Unable to parse response content."
+                    response_message["content"] = str(response.content)
 
             response_logger.info("Response: " + json.dumps(response_message, indent=2))
 
         except Exception as e:
             # Logging should never cause request to fail...
-            exception_logger.error("Error logging response: " + str(e))
+            exception_logger.error("Error logging response: " + str(e) + "\n" + traceback.format_exc())
 
         return response
 
