@@ -124,6 +124,8 @@ class FeedbackManager: ObservableObject {
         if let workbookId = currentWorkbook?.id {
             submissionData["workbook_id"] = workbookId
         }
+        submissionData["workbook_id"] = currentWorkbook?.id ?? NSNull()
+
 
         if let logs = applicationLogs {
             submissionData["logs"] = logs
