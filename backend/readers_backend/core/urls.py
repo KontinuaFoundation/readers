@@ -37,6 +37,7 @@ from core.views import (
 router = DefaultRouter()
 router.register("api/collections", CollectionViewSet, basename="collection")
 router.register("api/workbooks", WorkbookViewSet, basename="workbook")
+router.register("api/feedback", FeedbackView, basename="feedback")
 
 urlpatterns = [
     path("api/", RootAPIView.as_view(), name="root"),
