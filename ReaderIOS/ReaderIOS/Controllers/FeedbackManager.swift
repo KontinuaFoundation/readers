@@ -211,7 +211,6 @@ class FeedbackManager: ObservableObject {
             return
         }
 
-        
         Logger.info("Submitting to URL: \(url.absoluteString)", category: "Feedback")
 
         guard let jsonData = try? JSONSerialization.data(withJSONObject: submissionData, options: []) else {
@@ -219,7 +218,6 @@ class FeedbackManager: ObservableObject {
             return
         }
 
-        
         if let jsonString = String(data: jsonData, encoding: .utf8) {
             Logger.info("Request JSON: \(jsonString)", category: "Feedback")
         }
@@ -230,7 +228,6 @@ class FeedbackManager: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.httpBody = jsonData
 
-        
         Logger.info("Request headers: \(request.allHTTPHeaderFields ?? [:])", category: "Feedback")
 
         URLSession.shared.dataTask(with: request) { data, response, error in
