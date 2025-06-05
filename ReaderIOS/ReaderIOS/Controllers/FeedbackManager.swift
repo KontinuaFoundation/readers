@@ -194,7 +194,7 @@ class FeedbackManager: ObservableObject {
 
         // Default values as last resort
         Logger.warning("No collection found, using default values", category: "Feedback")
-        return (1, 0, "en-US")
+        return (1, 0, "en_US")
     }
 
     /// Submits feedback data to the API
