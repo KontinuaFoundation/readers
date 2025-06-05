@@ -61,3 +61,8 @@ media
 db.sqlite3
 files/
 **/Constants.*
+
+
+# Logs
+log/
+logs/
