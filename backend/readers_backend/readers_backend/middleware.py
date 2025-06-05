@@ -11,6 +11,27 @@ response_logger = logging.getLogger("readers.responses")
 exception_logger = logging.getLogger("readers.exceptions")
 
 
+class ExceptionHandler:
+    """
+    This class is responsible for handling exceptions.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+    
+    def __call__(self, request):
+        # This is a catch-all for any unhandled exceptions.
+        # We log them here, but we don't want to return a response to the client.
+        try:
+            response = self.get_response(request)
+            return response
+        except Exception as e:
+            exception_logger.error(
+                f"Exception: {str(e)}\n"
+                f"Stack trace:\n{traceback.format_exc()}"
+            )
+        return HttpResponse(status=500)
+
 class LoggingMiddleware:
     """
     This middleware is responsible for logging the readers backend.
@@ -19,15 +40,6 @@ class LoggingMiddleware:
 
     def __init__(self, get_response):
         self.get_response = get_response
-
-    def remove_sensitive_values_from_headers(self, headers: dict):
-        if headers is None:
-            return None
-
-        if "Authorization" in headers:
-            headers["Authorization"] = "********"
-
-        return headers
 
     def remove_sensitive_values_from_body(self, body: dict):
 
@@ -43,7 +55,6 @@ class LoggingMiddleware:
 
         try:
 
-
             request_time = datetime.now()
 
             request.log_id = str(uuid.uuid4())
@@ -55,7 +66,7 @@ class LoggingMiddleware:
                 "path": request.path,
                 "query_params": request.GET.dict(),
                 "headers": request.headers,
-                "body": request.POST.dict(),
+                "body": self.remove_sensitive_values_from_body(request.POST.dict()),
             }
 
             # Only log the headers we care about.
@@ -75,6 +86,7 @@ class LoggingMiddleware:
         response = self.get_response(request)
 
         try:
+
             response_message = {
                 "request_id": request.log_id,
                 "response_time": (datetime.now() - request_time).total_seconds(),
@@ -95,17 +107,3 @@ class LoggingMiddleware:
             exception_logger.error("Error logging response: " + str(e) + "\n" + traceback.format_exc())
 
         return response
-
-    def process_exception(self, request, exception):
-        # This is a catch-all for any unhandled exceptions.
-        # We log them here, but we don't want to return a response to the client.
-
-        exception_logger.error(
-            f"Request ID: {request.log_id}\n"
-            f"Exception: {str(exception)}\n"
-            f"Stack trace:\n{traceback.format_exc()}"
-        )
-
-        # TODO: Some sort of notifcation to the dev team.
-
-        return None
