@@ -63,7 +63,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "readers_backend.middleware.ExceptionHandler",
+    "readers_backend.middleware.LoggingMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -71,7 +71,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "readers_backend.middleware.LoggingMiddleware",
 ]
 
 ROOT_URLCONF = "readers_backend.urls"
@@ -223,7 +222,7 @@ if SHOULD_LOG_TO_FILE:
 
     LOGGING = {
         "version": 1,
-        "disable_existing_loggers": True,
+        "disable_existing_loggers": False,
         "formatters": {
             "simple_error": {
                 "format": "ERROR: {message}",
@@ -279,10 +278,16 @@ if SHOULD_LOG_TO_FILE:
                 "level": "ERROR",
                 "propagate": False,
             },
+            "django.request": {
+                "handlers": ["exceptions_file"],
+                "level": "ERROR",
+                "propagate": False,
+            },
             # Disable other logging...
             # We're not using it anyway and clogs stdout.
             "root": {
-                "handlers": ["null"],
+                "handlers": ["exceptions_file"],
+                "level": "ERROR",
                 "propagate": False,
             },
         },
@@ -317,12 +322,6 @@ else:
                 "handlers": ["null"],
                 "level": "ERROR",
                 "propagate": False,
-            },
-            # All other logs should use the default handler
-            "root": {
-                "handlers": ["console"],
-                "propagate": False,
-                "level": "DEBUG",
             },
         },
     }
