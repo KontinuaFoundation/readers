@@ -206,17 +206,11 @@ class FeedbackView(APIView):
         serializer = FeedbackSerializer(data=request.data)
 
         if serializer.is_valid():
-            # Save the feedback to the database
-            if not settings.DEBUG:
-                feedback = serializer.save()
-            else:
-                feedback = Feedback(**serializer.validated_data)
-                feedback.created_at = timezone.now()  # Only need this when not saving
-                print("DEBUG mode: Feedback not saved to database")
-
-            # Send email notification without saving to DB
-            email_sent = send_feedback_email(feedback)
-
+            feedback = serializer.save()
+            try:
+                email_sent = send_feedback_email(feedback)
+            except Exception as e:
+                email_sent = False
             return Response(
                 {
                     "message": "Feedback submitted successfully",
@@ -224,5 +218,4 @@ class FeedbackView(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

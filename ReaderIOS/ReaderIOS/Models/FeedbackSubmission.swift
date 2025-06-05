@@ -16,7 +16,7 @@ struct FeedbackSubmission: Encodable {
     let majorVersion: Int
     let minorVersion: Int
     let localization: String
-    let logs: String? // Optional to allow excluding logs
+    let logs: String?
 
     enum CodingKeys: String, CodingKey {
         case userEmail = "user_email"
