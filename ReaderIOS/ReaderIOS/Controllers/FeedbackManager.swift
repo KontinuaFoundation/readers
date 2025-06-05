@@ -9,54 +9,28 @@ import Combine
 import SwiftUI
 
 class FeedbackManager: ObservableObject {
-    // MARK: - Published Properties
-
-    /// Controls visibility of the feedback sheet
     @Published var isShowingFeedback = false
 
-    // MARK: - Context Properties
-
-    /// Current page being viewed
     var currentPage: Int = 0
-
-    /// Current workbook being viewed
     var currentWorkbook: Workbook?
-
-    /// Collection metadata
     var collection: Collection?
 
-    // MARK: - Private Properties
-
-    /// Manager for chapter operations
     private var chapterManager: ChapterManager?
-
-    /// Source for initialization data if needed
     private let initializationManager: InitializationManager
-
-    // MARK: - Initializers
 
     init(initializationManager: InitializationManager = InitializationManager()) {
         self.initializationManager = initializationManager
     }
 
-    // MARK: - Public Methods
-
-    /// Shows the feedback view
     func showFeedback() {
         isShowingFeedback = true
     }
 
-    /// Sets the current workbook and initializes the chapter manager
     func setWorkbook(_ workbook: Workbook) {
         currentWorkbook = workbook
         chapterManager = ChapterManager(chapters: workbook.chapters)
     }
 
-    /// Submits user feedback to the API
-    /// - Parameters:
-    ///   - email: User's email address
-    ///   - feedbackBody: Feedback content
-    ///   - completion: Callback with result
     func submitFeedback(
         email: String,
         feedbackBody: String,
@@ -66,7 +40,6 @@ class FeedbackManager: ObservableObject {
         Logger.info("Attempting to submit feedback", category: "Feedback")
         Logger.UserAction.featureUsed("Feedback Submission")
 
-        // Validate inputs
         do {
             try validateFeedbackInput(email: email, description: feedbackBody)
         } catch let error as FeedbackError {
@@ -79,49 +52,17 @@ class FeedbackManager: ObservableObject {
             return
         }
 
-        // Get logs if requested (default is true)
-        let applicationLogs: [String: Any]?
+        let submissionData = prepareSubmissionData(
+            email: email,
+            feedbackBody: feedbackBody,
+            includeLogs: includeLogs
+        )
 
-        if includeLogs {
-            // Get the JSON logs directly - don't convert to string
-            applicationLogs = Logger.getLogsForFeedbackJSON()
-            Logger.info("Including structured logs in feedback", category: "Feedback")
-        } else {
-            applicationLogs = nil
-            Logger.info("Submitting feedback without logs", category: "Feedback")
-        }
-
-        // Prepare submission data
-        let collectionValues = getRequiredCollectionValues()
-        let chapterNumber = getCurrentChapterNumber()
-
-        // Create the submission data as a dictionary first
-        var submissionData: [String: Any] = [
-            "user_email": email,
-            "description": feedbackBody,
-            "chapter_number": chapterNumber,
-            "page_number": currentPage + 1, // Convert from 0-based index
-            "major_version": collectionValues.majorVersion,
-            "minor_version": collectionValues.minorVersion,
-            "localization": collectionValues.localization
-        ]
-
-        if let workbookId = currentWorkbook?.id {
-            submissionData["workbook_id"] = workbookId
-        }
-
-        // Add logs if available
-        if let logs = applicationLogs {
-            submissionData["logs"] = logs
-        }
-
-        // Log submission details (without sensitive data)
         Logger.info(
             "Submitting feedback for workbook: \(currentWorkbook?.id ?? -1), page: \(currentPage + 1)",
             category: "Feedback"
         )
 
-        // Submit to API
         submitToAPI(submissionData: submissionData) { result in
             switch result {
             case .success:
@@ -134,33 +75,64 @@ class FeedbackManager: ObservableObject {
         }
     }
 
-    // MARK: - Private Methods
-
-    /// Validates email address format using a regular expression
     func isValidEmail(_ email: String) -> Bool {
         let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
         return emailPredicate.evaluate(with: email)
     }
 
-    /// Validates feedback input data
     private func validateFeedbackInput(email: String, description: String) throws {
         guard !email.isEmpty else {
             throw FeedbackError.emptyEmail
         }
-
         guard !description.isEmpty else {
             throw FeedbackError.emptyDescription
         }
-
         guard isValidEmail(email) else {
             throw FeedbackError.invalidEmail
         }
     }
 
-    /// Gets the current chapter number based on the page
+    private func prepareSubmissionData(
+        email: String,
+        feedbackBody: String,
+        includeLogs: Bool
+    ) -> [String: Any] {
+        let applicationLogs: [String: Any]?
+
+        if includeLogs {
+            applicationLogs = Logger.getLogsForFeedbackJSON()
+            Logger.info("Including structured logs in feedback", category: "Feedback")
+        } else {
+            applicationLogs = nil
+            Logger.info("Submitting feedback without logs", category: "Feedback")
+        }
+
+        let collectionValues = getRequiredCollectionValues()
+        let chapterNumber = getCurrentChapterNumber()
+
+        var submissionData: [String: Any] = [
+            "user_email": email,
+            "description": feedbackBody,
+            "chapter_number": chapterNumber,
+            "page_number": currentPage + 1,
+            "major_version": collectionValues.majorVersion,
+            "minor_version": collectionValues.minorVersion,
+            "localization": collectionValues.localization
+        ]
+
+        if let workbookId = currentWorkbook?.id {
+            submissionData["workbook_id"] = workbookId
+        }
+
+        if let logs = applicationLogs {
+            submissionData["logs"] = logs
+        }
+
+        return submissionData
+    }
+
     private func getCurrentChapterNumber() -> Int {
-        // Default chapter number
         let defaultChapterNumber = 1
 
         guard let workbook = currentWorkbook else {
@@ -171,33 +143,26 @@ class FeedbackManager: ObservableObject {
         return determineCurrentChapter(workbook: workbook, page: currentPage)?.chapNum ?? defaultChapterNumber
     }
 
-    /// Determines which chapter contains the given page
     private func determineCurrentChapter(workbook: Workbook, page: Int) -> Chapter? {
         if chapterManager == nil {
             chapterManager = ChapterManager(chapters: workbook.chapters)
         }
-
         return chapterManager?.getChapter(forPage: page)
     }
 
-    /// Gets the required collection metadata values for feedback submission
     private func getRequiredCollectionValues() -> (majorVersion: Int, minorVersion: Int, localization: String) {
-        // First check if we have a collection in our FeedbackManager
         if let collection = collection {
             return (collection.majorVersion, collection.minorVersion, collection.localization)
         }
 
-        // Try the injected InitializationManager
         if let latestCollection = initializationManager.latestCollection {
             return (latestCollection.majorVersion, latestCollection.minorVersion, latestCollection.localization)
         }
 
-        // Default values as last resort
         Logger.warning("No collection found, using default values", category: "Feedback")
         return (1, 0, "en_US")
     }
 
-    /// Submits feedback data to the API
     private func submitToAPI(
         submissionData: [String: Any],
         completion: @escaping (Result<Void, FeedbackError>) -> Void
@@ -242,7 +207,6 @@ class FeedbackManager: ObservableObject {
                     return
                 }
 
-                // LOG THE RESPONSE HEADERS TOO
                 Logger.info("Response headers: \(httpResponse.allHeaderFields)", category: "Feedback")
 
                 if httpResponse.statusCode == 201 {
@@ -264,36 +228,30 @@ class FeedbackManager: ObservableObject {
         }.resume()
     }
 
-    /// Extracts error message from server response
     private func parseErrorResponse(from data: Data?, statusCode: Int) -> (message: String?, isParseError: Bool) {
         guard let data = data else {
             return ("Error submitting feedback. Status: \(statusCode)", false)
         }
 
-        // Log the raw response for debugging (crucial for production 500 errors)
         if let rawString = String(data: data, encoding: .utf8) {
             Logger.debug("Raw server response (\(statusCode)): \(rawString)", category: "Feedback")
         }
 
         do {
-            // Try to parse as JSON first
             if let errorResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                // Look for common error message fields
                 let message = errorResponse["message"] as? String
                     ?? errorResponse["error"] as? String
                     ?? errorResponse["detail"] as? String
                     ?? errorResponse["errors"] as? String
                     ?? "Unknown error from server"
 
-                return (message, false) // Successfully parsed, not a parse error
+                return (message, false)
             } else {
-                // Not a JSON object, try as plain text
                 Logger.warning("Server response is not JSON (\(statusCode))", category: "Feedback")
                 let textMessage = String(data: data, encoding: .utf8) ?? "Unknown server error"
                 return ("Server error: \(textMessage)", false)
             }
         } catch {
-            // JSON parsing failed
             Logger.error("Failed to parse server response: \(error.localizedDescription)", category: "Feedback")
             let fallbackMessage = String(data: data, encoding: .utf8) ?? "Unknown parsing error"
             return ("Error parsing server response: \(fallbackMessage)", true)
