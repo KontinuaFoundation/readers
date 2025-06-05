@@ -203,39 +203,19 @@ class FeedbackView(APIView):
     throttle_classes = [FeedbackThrottle]
 
     def post(self, request):
-        try:
-            serializer = FeedbackSerializer(data=request.data)
+        serializer = FeedbackSerializer(data=request.data)
 
-            if serializer.is_valid():
-                # Save the feedback to the database
-                feedback = serializer.save()
-
-                # Send email notification
-                try:
-                    email_sent = send_feedback_email(feedback)
-                except Exception as e:
-                    # Don't let email failures break the feedback submission
-                    print(f"Failed to send feedback email: {e}")
-                    email_sent = False
-
-                return Response(
-                    {
-                        "message": "Feedback submitted successfully",
-                        "email_sent": email_sent,
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
-
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        except Exception as e:
-            # Log the full error for debugging
-            print(f"Error in FeedbackView: {str(e)}")
-            import traceback
-
-            print(traceback.format_exc())
-
+        if serializer.is_valid():
+            feedback = serializer.save()
+            try:
+                email_sent = send_feedback_email(feedback)
+            except Exception as e:
+                email_sent = False
             return Response(
-                {"error": "Internal server error"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {
+                    "message": "Feedback submitted successfully",
+                    "email_sent": email_sent,
+                },
+                status=status.HTTP_201_CREATED,
             )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
