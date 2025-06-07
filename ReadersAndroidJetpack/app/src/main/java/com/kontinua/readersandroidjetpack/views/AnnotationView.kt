@@ -72,7 +72,11 @@ fun DrawingCanvas(
         hasTextboxes = annotationManager.textAnnotations.isNotEmpty()
     }
 
-    val gestureModifier = if (annotationManager.mode != AnnotationMode.NONE) {
+    val gestureModifier = if (annotationManager.mode == AnnotationMode.PEN ||
+        annotationManager.mode == AnnotationMode.HIGHLIGHT ||
+        annotationManager.mode == AnnotationMode.ERASE ||
+        annotationManager.mode == AnnotationMode.TEXT
+    ) {
         Modifier.pointerInput(
             workbookId,
             page,
@@ -82,11 +86,8 @@ fun DrawingCanvas(
             hasTextboxes,
             areTextboxesVisible
         ) {
-            if (annotationManager.isFocused) {
-                focusManager.clearFocus()
-                annotationManager.toggleFocus(false)
-            } else if (annotationManager.mode == AnnotationMode.TEXT) {
-                detectTapGestures(
+            when (annotationManager.mode) {
+                AnnotationMode.TEXT ->  detectTapGestures(
                     onTap = { offset ->
                         val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
                         val newAnnotation = TextAnnotation(
@@ -103,8 +104,7 @@ fun DrawingCanvas(
                         )
                     }
                 )
-            } else {
-                detectDragGestures(
+                AnnotationMode.PEN, AnnotationMode.HIGHLIGHT, AnnotationMode.ERASE -> detectDragGestures(
                     onDragStart = { offset ->
                         val normalized = Offset(offset.x / size.width, offset.y / size.height)
                         if (annotationManager.mode != AnnotationMode.ERASE) {
@@ -152,15 +152,19 @@ fun DrawingCanvas(
                         }
                     }
                 )
+                else ->
+                    if (annotationManager.isFocused) {
+                        focusManager.clearFocus()
+                        annotationManager.toggleFocus(false)
+                    }
             }
-        }
-    } else if (annotationManager.isFocused) {
-        Modifier.pointerInput(annotationManager.isFocused) {
-            focusManager.clearFocus()
-            annotationManager.toggleFocus(false)
         }
     } else {
         // allows gestures to pass through when annotations are disabled
+        if (annotationManager.isFocused) {
+            focusManager.clearFocus()
+            annotationManager.toggleFocus(false)
+        }
         Modifier
     }
 
