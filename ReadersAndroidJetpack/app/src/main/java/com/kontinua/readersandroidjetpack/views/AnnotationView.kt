@@ -87,7 +87,7 @@ fun DrawingCanvas(
             areTextboxesVisible
         ) {
             when (annotationManager.mode) {
-                AnnotationMode.TEXT ->  detectTapGestures(
+                AnnotationMode.TEXT -> detectTapGestures(
                     onTap = { offset ->
                         val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
                         val newAnnotation = TextAnnotation(
