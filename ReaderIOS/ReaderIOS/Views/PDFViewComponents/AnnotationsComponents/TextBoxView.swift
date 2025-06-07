@@ -154,6 +154,24 @@ struct TextBox: View {
                     x: data.position.x - 100 * (data.size.width / 200),
                     y: data.position.y - 50 * (data.size.height / 100)
                 )
+            Rectangle()
+                .frame(width: isFocused ? 20 : 0, height: isFocused ? 20 : 0)
+                .foregroundColor(Color.red)
+                .cornerRadius(3)
+                .position(x: data.position.x + 100 * (data.size.width / 200),
+                          y: data.position.y - 50 * (data.size.height / 100))
+            Image(systemName: "trash")
+                .frame(width: isFocused ? 20 : 0, height: isFocused ? 20 : 0)
+                .foregroundColor(Color.white)
+                .cornerRadius(3)
+                .gesture(
+                    TapGesture()
+                        .onEnded { _ in
+                            deleteTextBox = true
+                        }
+                )
+                .position(x: data.position.x + 100 * (data.size.width / 200),
+                          y: data.position.y - 50 * (data.size.height / 100))
         }
     }
 }
