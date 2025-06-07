@@ -89,19 +89,24 @@ fun DrawingCanvas(
             when (annotationManager.mode) {
                 AnnotationMode.TEXT -> detectTapGestures(
                     onTap = { offset ->
-                        val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
-                        val newAnnotation = TextAnnotation(
-                            text = "",
-                            position = normalized,
-                            size = OffsetSerializable(0.3f, 0.1f)
-                        )
-                        annotationManager.addTextAnnotation(newAnnotation)
-                        DrawingStore.saveTextAnnotations(
-                            context,
-                            workbookId,
-                            page,
-                            annotationManager.textAnnotations
-                        )
+                        if (annotationManager.isFocused) {
+                            focusManager.clearFocus()
+                            annotationManager.toggleFocus(false)
+                        } else {
+                            val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
+                            val newAnnotation = TextAnnotation(
+                                text = "",
+                                position = normalized,
+                                size = OffsetSerializable(0.3f, 0.1f)
+                            )
+                            annotationManager.addTextAnnotation(newAnnotation)
+                            DrawingStore.saveTextAnnotations(
+                                context,
+                                workbookId,
+                                page,
+                                annotationManager.textAnnotations
+                            )
+                        }
                     }
                 )
                 AnnotationMode.PEN, AnnotationMode.HIGHLIGHT, AnnotationMode.ERASE -> detectDragGestures(

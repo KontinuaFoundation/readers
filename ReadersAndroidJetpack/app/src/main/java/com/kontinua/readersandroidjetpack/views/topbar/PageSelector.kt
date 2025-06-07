@@ -1,6 +1,7 @@
 package com.kontinua.readersandroidjetpack.views.topbar
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -34,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.util.NavbarManager
+
 // TODO: keyboard does not fully pop up when entering a page number, and i think it should.
 
 @Composable
@@ -41,6 +44,7 @@ fun PageSelector(navbarManager: NavbarManager) {
     var pageInputText by remember { mutableStateOf(navbarManager.getAdjustedPage()) }
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
+    val isDarkMode = isSystemInDarkTheme()
 
     LaunchedEffect(navbarManager.pageNumber) {
         pageInputText = navbarManager.getAdjustedPage()
@@ -109,7 +113,8 @@ fun PageSelector(navbarManager: NavbarManager) {
                 }
             ),
             textStyle = MaterialTheme.typography.bodyMedium.copy(
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = if (isDarkMode) Color.White else Color.Black
             ),
             singleLine = true,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
