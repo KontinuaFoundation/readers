@@ -17,12 +17,11 @@ enum class AnnotationMode {
     HIGHLIGHT,
     ERASE,
     TEXT,
-    CLEAR,
-    FOCUSED
+    CLEAR
 }
 
 class AnnotationManager {
-    var mode: AnnotationMode = AnnotationMode.NONE
+    var mode by mutableStateOf(AnnotationMode.NONE)
     var prevMode: AnnotationMode = mode
 
     var isFocused by mutableStateOf(false)
