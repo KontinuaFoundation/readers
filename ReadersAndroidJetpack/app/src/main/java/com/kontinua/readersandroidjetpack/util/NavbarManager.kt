@@ -133,7 +133,7 @@ class NavbarManager {
     }
 
     fun getCurrentChapter(): Chapter? {
-        return if (currentChapterIndex >= 0) collectionVM?.chapters?.getOrNull(currentChapterIndex) else null
+        return if (currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex) else null
     }
 
     fun getAdjustedPage(): String {
