@@ -384,8 +384,7 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager, collectio
                 "Workbook ${workbook.number}",
                 modifier = Modifier
                     .clickable {
-                        collectionViewModel.setWorkbook(workbook)
-//                        navbarManager.setPage(0)
+                        navbarManager.onWorkbookChanged(workbook)
                         onClose()
                     }
                     .fillMaxWidth()

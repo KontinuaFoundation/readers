@@ -1,12 +1,21 @@
 package com.kontinua.readersandroidjetpack.util
-import androidx.compose.runtime.getValue
+
 import android.content.Context
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.serialization.Chapter
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class NavbarManager {
     var isChapterVisible by mutableStateOf(false)
@@ -30,39 +39,60 @@ class NavbarManager {
     var searchManager = SearchManager()
         private set
 
-    // for persistence
+    // The single source of truth for the loading state
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private var prefs: UserPreferencesRepository? = null
+    private val scope = CoroutineScope(Dispatchers.Main)
     private var isInitialized = false
 
-//    init {
-//        isChapterVisible = false
-//        isWorkbookVisible = false
-//        collectionVM = null
-//    }
-
     /**
-     * Initializes the manager with context to load user preferences.
-     * This should be called once from a Composable with access to the context.
+     * Initializes the manager asynchronously.
      */
-    fun initialize(context: Context, collectionVM: CollectionViewModel) {
+    fun initialize(context: Context, collectionViewModel: CollectionViewModel) {
         if (isInitialized) return
-        this.prefs = UserPreferencesRepository(context)
-        setCollection(collectionVM)
-
-        val collection = collectionVM.collectionState.value ?: return
-
-        // 1. Determine the workbook to load
-        val lastWorkbookId = prefs?.getLastWorkbookId()
-        val workbookToLoad = collection.workbooks.find { it.id == lastWorkbookId }
-            ?: collection.workbooks.first()
-
-        // 2. Load the last viewed page for that workbook
-        val lastPage = prefs?.getPageForWorkbook(workbookToLoad.id) ?: 0
-        setPage(lastPage, persist = false) // Don't re-save on init
-
-        // 3. Tell the ViewModel to fetch this workbook's data
-        collectionVM.setWorkbook(workbookToLoad)
         isInitialized = true
+
+        this.prefs = UserPreferencesRepository(context)
+        this.collectionVM = collectionViewModel
+
+        scope.launch {
+            val collection = collectionViewModel.collectionState.filterNotNull().first()
+            if (collection.workbooks.isEmpty()) {
+                _isLoading.value = false
+                return@launch
+            }
+
+            val lastWorkbookId = prefs?.getLastWorkbookId() ?: -1
+            val workbookToLoad = collection.workbooks.find { it.id == lastWorkbookId }
+                ?: collection.workbooks.first()
+
+            val lastPage = prefs?.getPageForWorkbook(workbookToLoad.id) ?: 0
+            setPage(lastPage, persist = false)
+
+            collectionViewModel.setWorkbook(workbookToLoad)
+            collectionViewModel.workbookState.filterNotNull().first { it.id == workbookToLoad.id }
+
+            _isLoading.value = false
+        }
+    }
+
+    // --- THIS IS THE MISSING FUNCTION, NOW ADDED BACK ---
+    /**
+     * Called when the user selects a new workbook from the sidebar.
+     * It saves the new workbook ID and loads the last viewed page for it.
+     */
+    fun onWorkbookChanged(newWorkbook: WorkbookPreview) {
+        // 1. Save this new workbook as the most recently viewed one.
+        prefs?.saveLastWorkbookId(newWorkbook.id)
+
+        // 2. Load the last known page for this new workbook, defaulting to 0.
+        val lastPage = prefs?.getPageForWorkbook(newWorkbook.id) ?: 0
+        setPage(lastPage, persist = false) // Set page without re-saving.
+
+        // 3. Tell the ViewModel to fetch the data for the new workbook.
+        collectionVM?.setWorkbook(newWorkbook)
     }
 
     fun toggleChapterSidebar() {
@@ -78,46 +108,22 @@ class NavbarManager {
         isWorkbookVisible = false
     }
 
-    fun setCollection(collection: CollectionViewModel?) {
-        this.collectionVM = collection
-    }
-
     fun setPageCountValue(newPageCount: Int) {
         pageCount = newPageCount
     }
 
-//    fun setPage(newPage: Int) {
-//        pageNumber = newPage
-//        updateChapter()
-//    }
-    /**
-     * Sets the current page and persists it if required.
-     */
     fun setPage(newPage: Int, persist: Boolean = true) {
         if (pageNumber != newPage) {
             pageNumber = newPage
             updateChapter()
-            if (persist && collectionVM != null) {
+            if (persist && collectionVM?.currentWorkbook != null) {
                 prefs?.savePageForWorkbook(collectionVM!!.currentWorkbook.id, newPage)
             }
         }
     }
 
-    /**
-     * Called when the user selects a new workbook from the sidebar.
-     * It loads the last viewed page for that workbook.
-     */
-    fun onWorkbookChanged(newWorkbook: WorkbookPreview) {
-        // Save this as the most recently used workbook
-        prefs?.saveLastWorkbookId(newWorkbook.id)
-
-        // Load the last known page for this new workbook, defaulting to 0
-        val lastPage = prefs?.getPageForWorkbook(newWorkbook.id) ?: 0
-        setPage(lastPage, persist = false) // Set page without re-saving
-    }
-
     fun goToNextPage() {
-        if (pageNumber < pageCount) {
+        if (pageNumber < pageCount - 1) {
             setPage(pageNumber + 1)
         }
     }
@@ -129,7 +135,7 @@ class NavbarManager {
     }
 
     fun getCurrentChapter(): Chapter? {
-        return if (currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex) else null
+        return if (currentChapterIndex >= 0) collectionVM?.chapters?.getOrNull(currentChapterIndex) else null
     }
 
     fun getAdjustedPage(): String {
@@ -138,14 +144,16 @@ class NavbarManager {
 
     private fun updateChapter() {
         val startPages = collectionVM?.chapters?.map { it.startPage - 1 } ?: emptyList()
+        if (startPages.isEmpty()) {
+            currentChapterIndex = -1
+            return
+        }
+
         val index = startPages.binarySearch(pageNumber)
 
         currentChapterIndex = if (index >= 0) {
-            // pageNumber exactly matches a chapter start page.
             index
         } else {
-            // Compute the insertion point: (-index - 1), and then adjust by subtracting 1.
-            // This gives the index of the start page that is immediately less than pageNumber.
             (-index - 2).coerceIn(-1, startPages.lastIndex)
         }
     }

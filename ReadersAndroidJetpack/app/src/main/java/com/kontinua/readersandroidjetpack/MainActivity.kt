@@ -9,15 +9,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
@@ -66,6 +70,15 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
+        // --- NEW: Observe the loading state directly from NavbarManager ---
+        val isLoading by navbarManager.isLoading.collectAsState()
+
+        // --- NEW: Call initialize just once ---
+        val context = LocalContext.current
+        LaunchedEffect(Unit) {
+            navbarManager.initialize(context, collectionViewModel)
+        }
+
         val currentChapterReferences by remember(navbarManager.currentChapterIndex) {
             derivedStateOf { chapterContentManager.getReferencesForCurrentChapter() }
         }
@@ -75,60 +88,60 @@ class MainActivity : ComponentActivity() {
         }
 
         var overlayContent by remember { mutableStateOf<Any?>(null) }
-
-        val handleReferenceClick: (Reference) -> Unit = { reference ->
-            overlayContent = reference
-        }
-
-        val handleVideoClick: (Video) -> Unit = { video ->
-            overlayContent = video
-        }
-
-        LaunchedEffect(collectionViewModel) {
-            navbarManager.setCollection(collectionViewModel)
-        }
-
+        val handleReferenceClick: (Reference) -> Unit = { reference -> overlayContent = reference }
+        val handleVideoClick: (Video) -> Unit = { video -> overlayContent = video }
         val dismissOverlay: () -> Unit = { overlayContent = null }
 
         Box(Modifier.fillMaxSize()) {
-            Scaffold(
-                topBar = {
-                    Toolbar(
-                        timerViewModel = timerViewModel,
-                        navbarManager = navbarManager,
-                        currentChapterReferences = currentChapterReferences,
-                        currentChapterVideos = currentChapterVideos,
-                        onReferenceClick = handleReferenceClick,
-                        onVideoClick = handleVideoClick,
-                        annotationManager = annotationManager
-                    )
-                },
-                bottomBar = {
-                    Column {
-                        TimerProgressIndicator(timerViewModel)
-                        BottomBarComponent(feedbackViewModel, timerViewModel)
-                    }
-                },
-                content = { innerPadding ->
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
-                        PDFViewer(
+            if (isLoading) {
+                // Show a loading indicator while NavbarManager is initializing.
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                // Once loading is complete, show the main app UI.
+                Scaffold(
+                    topBar = {
+                        Toolbar(
+                            timerViewModel = timerViewModel,
                             navbarManager = navbarManager,
-                            collectionViewModel = collectionViewModel,
+                            currentChapterReferences = currentChapterReferences,
+                            currentChapterVideos = currentChapterVideos,
+                            onReferenceClick = handleReferenceClick,
+                            onVideoClick = handleVideoClick,
                             annotationManager = annotationManager
                         )
+                    },
+                    bottomBar = {
+                        Column {
+                            TimerProgressIndicator(timerViewModel)
+                            BottomBarComponent(feedbackViewModel, timerViewModel)
+                        }
+                    },
+                    content = { innerPadding ->
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)
+                        ) {
+                            PDFViewer(
+                                navbarManager = navbarManager,
+                                collectionViewModel = collectionViewModel,
+                                annotationManager = annotationManager
+                            )
+                        }
                     }
-                }
-            )
-        }
+                )
 
-        UnifiedSidebar(
-            navbarManager = navbarManager,
-            collectionViewModel = collectionViewModel
-        )
+                UnifiedSidebar(
+                    navbarManager = navbarManager,
+                    collectionViewModel = collectionViewModel
+                )
+            }
+        }
 
         if (overlayContent != null) {
             ResourceOverlayView(
