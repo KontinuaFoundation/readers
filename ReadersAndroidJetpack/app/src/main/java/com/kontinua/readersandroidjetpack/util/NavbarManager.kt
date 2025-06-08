@@ -49,10 +49,10 @@ class NavbarManager {
     private val scope = CoroutineScope(Dispatchers.Main)
     private var isInitialized = false
 
-    /**
-     * new init for the manager async  using the saved
-     * preferences from the last time the app was used
-     */
+
+     // new init for the manager async  using the saved
+     // preferences from the last time the app was used
+
     fun initialize(context: Context, collectionViewModel: CollectionViewModel) {
         if (isInitialized) return
         isInitialized = true
@@ -81,10 +81,7 @@ class NavbarManager {
         }
     }
 
-    /**
-     * Called when the user selects a new workbook from the sidebar
-     * saves the new workbook id and loads the last viewed page for it
-     */
+    // if workbook changes, loads last viewed page
     fun onWorkbookChanged(newWorkbook: WorkbookPreview) {
         prefs?.saveLastWorkbookId(newWorkbook.id)
 
