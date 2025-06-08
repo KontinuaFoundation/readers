@@ -30,7 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -351,7 +350,7 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager, collectio
             .background(Color.White)
             .drawWithContent {
                 drawContent()
-                val stroke = with(density) { 1.dp.toPx() }
+                val stroke = 1.dp.toPx()
                 drawLine(
                     color = Color.LightGray,
                     start = Offset(size.width - stroke / 2, 0f),
