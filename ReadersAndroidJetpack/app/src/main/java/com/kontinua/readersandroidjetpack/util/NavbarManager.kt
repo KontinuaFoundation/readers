@@ -39,16 +39,19 @@ class NavbarManager {
     var searchManager = SearchManager()
         private set
 
-    // The single source of truth for the loading state
+    // added so there are no race conditions failing with mainactivty and loading and stuff
+    // tbh no 100% sure why it's happening anyway, but this fixed it
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // needed for preferences and loading stuff
     private var prefs: UserPreferencesRepository? = null
     private val scope = CoroutineScope(Dispatchers.Main)
     private var isInitialized = false
 
     /**
-     * Initializes the manager asynchronously.
+     * new init for the manager async  using the saved
+     * preferences from the last time the app was used
      */
     fun initialize(context: Context, collectionViewModel: CollectionViewModel) {
         if (isInitialized) return
@@ -78,20 +81,17 @@ class NavbarManager {
         }
     }
 
-    // --- THIS IS THE MISSING FUNCTION, NOW ADDED BACK ---
     /**
-     * Called when the user selects a new workbook from the sidebar.
-     * It saves the new workbook ID and loads the last viewed page for it.
+     * Called when the user selects a new workbook from the sidebar
+     * saves the new workbook id and loads the last viewed page for it
      */
     fun onWorkbookChanged(newWorkbook: WorkbookPreview) {
-        // 1. Save this new workbook as the most recently viewed one.
         prefs?.saveLastWorkbookId(newWorkbook.id)
 
-        // 2. Load the last known page for this new workbook, defaulting to 0.
+        // default to first page if never opened before
         val lastPage = prefs?.getPageForWorkbook(newWorkbook.id) ?: 0
-        setPage(lastPage, persist = false) // Set page without re-saving.
+        setPage(lastPage, persist = false)
 
-        // 3. Tell the ViewModel to fetch the data for the new workbook.
         collectionVM?.setWorkbook(newWorkbook)
     }
 
@@ -112,6 +112,7 @@ class NavbarManager {
         pageCount = newPageCount
     }
 
+    // updated to save w persistence
     fun setPage(newPage: Int, persist: Boolean = true) {
         if (pageNumber != newPage) {
             pageNumber = newPage
@@ -123,7 +124,7 @@ class NavbarManager {
     }
 
     fun goToNextPage() {
-        if (pageNumber < pageCount - 1) {
+        if (pageNumber < pageCount) {
             setPage(pageNumber + 1)
         }
     }
@@ -144,16 +145,14 @@ class NavbarManager {
 
     private fun updateChapter() {
         val startPages = collectionVM?.chapters?.map { it.startPage - 1 } ?: emptyList()
-        if (startPages.isEmpty()) {
-            currentChapterIndex = -1
-            return
-        }
-
         val index = startPages.binarySearch(pageNumber)
 
         currentChapterIndex = if (index >= 0) {
+            // pageNumber exactly matches a chapter start page.
             index
         } else {
+            // Compute the insertion point: (-index - 1), and then adjust by subtracting 1.
+            // This gives the index of the start page that is immediately less than pageNumber.
             (-index - 2).coerceIn(-1, startPages.lastIndex)
         }
     }
