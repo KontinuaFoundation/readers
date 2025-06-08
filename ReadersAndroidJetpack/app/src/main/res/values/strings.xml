@@ -8,4 +8,9 @@
     <string name="add_bookmark">Add Bookmark</string>
     <string name="remove_bookmark">Remove Bookmark</string>
 
+    <string name = "PREFS_NAME">reader_app_prefs</string>
+    <string name = "KEY_LAST_WORKBOOK_ID">last_workbook_id</string>
+    <string name = "KEY_WORKBOOK_PAGE_PREFIX">page_for_workbook</string>
+
+
 </resources>
