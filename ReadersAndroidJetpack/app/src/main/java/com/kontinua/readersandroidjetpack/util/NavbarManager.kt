@@ -1,13 +1,12 @@
 package com.kontinua.readersandroidjetpack.util
 import androidx.compose.runtime.getValue
+import android.content.Context
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.kontinua.readersandroidjetpack.serialization.Chapter
+import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
-
-// TODO: if i am on page 6 of workbook x and then i switch to workbook y,
-// it opens up to page 6 on workbook y
 
 class NavbarManager {
     var isChapterVisible by mutableStateOf(false)
@@ -31,10 +30,39 @@ class NavbarManager {
     var searchManager = SearchManager()
         private set
 
-    init {
-        isChapterVisible = false
-        isWorkbookVisible = false
-        collectionVM = null
+    // for persistence
+    private var prefs: UserPreferencesRepository? = null
+    private var isInitialized = false
+
+//    init {
+//        isChapterVisible = false
+//        isWorkbookVisible = false
+//        collectionVM = null
+//    }
+
+    /**
+     * Initializes the manager with context to load user preferences.
+     * This should be called once from a Composable with access to the context.
+     */
+    fun initialize(context: Context, collectionVM: CollectionViewModel) {
+        if (isInitialized) return
+        this.prefs = UserPreferencesRepository(context)
+        setCollection(collectionVM)
+
+        val collection = collectionVM.collectionState.value ?: return
+
+        // 1. Determine the workbook to load
+        val lastWorkbookId = prefs?.getLastWorkbookId()
+        val workbookToLoad = collection.workbooks.find { it.id == lastWorkbookId }
+            ?: collection.workbooks.first()
+
+        // 2. Load the last viewed page for that workbook
+        val lastPage = prefs?.getPageForWorkbook(workbookToLoad.id) ?: 0
+        setPage(lastPage, persist = false) // Don't re-save on init
+
+        // 3. Tell the ViewModel to fetch this workbook's data
+        collectionVM.setWorkbook(workbookToLoad)
+        isInitialized = true
     }
 
     fun toggleChapterSidebar() {
@@ -58,9 +86,34 @@ class NavbarManager {
         pageCount = newPageCount
     }
 
-    fun setPage(newPage: Int) {
-        pageNumber = newPage
-        updateChapter()
+//    fun setPage(newPage: Int) {
+//        pageNumber = newPage
+//        updateChapter()
+//    }
+    /**
+     * Sets the current page and persists it if required.
+     */
+    fun setPage(newPage: Int, persist: Boolean = true) {
+        if (pageNumber != newPage) {
+            pageNumber = newPage
+            updateChapter()
+            if (persist && collectionVM != null) {
+                prefs?.savePageForWorkbook(collectionVM!!.currentWorkbook.id, newPage)
+            }
+        }
+    }
+
+    /**
+     * Called when the user selects a new workbook from the sidebar.
+     * It loads the last viewed page for that workbook.
+     */
+    fun onWorkbookChanged(newWorkbook: WorkbookPreview) {
+        // Save this as the most recently used workbook
+        prefs?.saveLastWorkbookId(newWorkbook.id)
+
+        // Load the last known page for this new workbook, defaulting to 0
+        val lastPage = prefs?.getPageForWorkbook(newWorkbook.id) ?: 0
+        setPage(lastPage, persist = false) // Set page without re-saving
     }
 
     fun goToNextPage() {
