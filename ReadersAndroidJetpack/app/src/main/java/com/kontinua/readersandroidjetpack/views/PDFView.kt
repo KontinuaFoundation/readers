@@ -52,7 +52,6 @@ fun PDFViewer(
     var pdfFile by remember { mutableStateOf<File?>(null) }
     var lastLoadedFile by remember { mutableStateOf<File?>(null) }
     val workbook by collectionViewModel.workbookState.collectAsState()
-//    val collectionViewModel: CollectionViewModel = viewModel()
     val currentZoom = remember { mutableFloatStateOf(1f) }
     val zoomPoint = remember { mutableStateOf(Offset.Zero) }
     val panOffset = remember { mutableStateOf(Offset.Zero) }
@@ -61,60 +60,32 @@ fun PDFViewer(
         allBookmarks[wbId]?.contains(navbarManager.pageNumber)
     } ?: false
 
-//    navbarManager.setCollection(collectionViewModel)
-
-    // Effect to initialize NavbarManager once the collection data is available.
+  // init
     LaunchedEffect(Unit) {
-        // Wait until the collection is loaded from the API
+        // wait until collection is loaded
         snapshotFlow { collectionViewModel.collectionState.value }
             .filterNotNull()
             .first()
-        // Now that data is ready, initialize the navbar manager to load preferences
         navbarManager.initialize(context, collectionViewModel)
     }
 
-    // Effect to handle when a new workbook is selected and loaded
+    // when workbook changes
     LaunchedEffect(workbook) {
         if (workbook == null) return@LaunchedEffect
 
-        // Notify NavbarManager that the workbook has changed so it can load the correct page
         navbarManager.onWorkbookChanged(collectionViewModel.currentWorkbook)
 
-        // Fetch the new PDF file
         pdfFile = null
         lastLoadedFile = null
         APIManager.getPDFFromWorkbook(context, workbook!!)?.also { pdfFile = it }
     }
 
-    // Effect to load the PDF into the search manager
+    // loads pdf into search
     LaunchedEffect(pdfFile) {
         pdfFile?.let { file ->
             navbarManager.searchManager.loadPdf(file)
         }
     }
-
-//    LaunchedEffect(collectionViewModel) {
-//        navbarManager.setCollection(collectionViewModel)
-//    }
-//
-//    LaunchedEffect(workbook) {
-//        // whenever workbook switches, force reload
-//        pdfFile = null
-//        lastLoadedFile = null
-//    }
-
-//    // only fetch new file when workbook changes
-//    LaunchedEffect(workbook) {
-//        workbook?.let {
-//            APIManager.getPDFFromWorkbook(context, it)
-//        }?.also { pdfFile = it }
-//    }
-//
-//    LaunchedEffect(pdfFile) {
-//        pdfFile?.let { file ->
-//            navbarManager.searchManager.loadPdf(file)
-//        }
-//    }
 
     Box(modifier = modifier.fillMaxSize()) {
         AndroidView(

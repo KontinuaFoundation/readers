@@ -343,7 +343,6 @@ fun ListingDivider() {
 
 @Composable
 fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
-//    val collectionVM = navbarManager.collectionVM
     val collection by collectionViewModel.collectionState.collectAsState()
     val workbooks: List<WorkbookPreview> = collection?.workbooks ?: emptyList()
     val scroll = rememberScrollState()

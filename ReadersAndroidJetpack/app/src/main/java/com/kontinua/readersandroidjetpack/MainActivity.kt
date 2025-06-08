@@ -41,8 +41,6 @@ import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressInd
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 
-// TODO: add a loading screen of some sort while the PDF is getting fetched
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,10 +68,10 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-        // --- NEW: Observe the loading state directly from NavbarManager ---
+        //observe loading from navbarmanager
         val isLoading by navbarManager.isLoading.collectAsState()
 
-        // --- NEW: Call initialize just once ---
+        //init once
         val context = LocalContext.current
         LaunchedEffect(Unit) {
             navbarManager.initialize(context, collectionViewModel)
@@ -94,7 +92,7 @@ class MainActivity : ComponentActivity() {
 
         Box(Modifier.fillMaxSize()) {
             if (isLoading) {
-                // Show a loading indicator while NavbarManager is initializing.
+                // loading circle while it inits
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -102,7 +100,7 @@ class MainActivity : ComponentActivity() {
                     CircularProgressIndicator()
                 }
             } else {
-                // Once loading is complete, show the main app UI.
+                // show ui once loaded
                 Scaffold(
                     topBar = {
                         Toolbar(
