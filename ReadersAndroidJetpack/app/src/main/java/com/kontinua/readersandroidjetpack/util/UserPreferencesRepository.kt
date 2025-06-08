@@ -2,13 +2,14 @@ package com.kontinua.readersandroidjetpack.util
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
 import com.kontinua.readersandroidjetpack.R
 
-
 class UserPreferencesRepository(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences((R.string.PREFS_NAME.toString()), Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = context.getSharedPreferences(
+        (R.string.PREFS_NAME.toString()),
+        Context.MODE_PRIVATE
+    )
 
     fun saveLastWorkbookId(id: Int) {
         prefs.edit() { putInt(R.string.KEY_LAST_WORKBOOK_ID.toString(), id) }
@@ -30,5 +31,4 @@ class UserPreferencesRepository(context: Context) {
     private fun getWorkbookPageKey(workbookId: Int): String {
         return "${R.string.KEY_WORKBOOK_PAGE_PREFIX}_$workbookId"
     }
-
 }

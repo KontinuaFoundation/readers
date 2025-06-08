@@ -68,10 +68,10 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-        //observe loading from navbarmanager
+        // observe loading from navbarmanager
         val isLoading by navbarManager.isLoading.collectAsState()
 
-        //init once
+        // init once
         val context = LocalContext.current
         LaunchedEffect(Unit) {
             navbarManager.initialize(context, collectionViewModel)

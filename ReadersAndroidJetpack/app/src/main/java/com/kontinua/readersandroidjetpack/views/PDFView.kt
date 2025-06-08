@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
+import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.AnnotationMode
@@ -34,9 +36,6 @@ import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import androidx.compose.runtime.snapshotFlow
-import com.kontinua.readersandroidjetpack.R
-
 
 private const val PREV_PAGE_TAP_RATIO = 0.25f
 
@@ -60,7 +59,7 @@ fun PDFViewer(
         allBookmarks[wbId]?.contains(navbarManager.pageNumber)
     } ?: false
 
-  // init
+    // init
     LaunchedEffect(Unit) {
         // wait until collection is loaded
         snapshotFlow { collectionViewModel.collectionState.value }
@@ -179,7 +178,13 @@ fun PDFViewer(
         ) {
             Icon(
                 imageVector = if (isPageBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                contentDescription = if (isPageBookmarked) stringResource(R.string.remove_bookmark) else stringResource(R.string.add_bookmark)
+                contentDescription = if (isPageBookmarked) {
+                    stringResource(R.string.remove_bookmark)
+                } else {
+                    stringResource(
+                        R.string.add_bookmark
+                    )
+                }
             )
         }
     }

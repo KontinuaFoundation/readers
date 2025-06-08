@@ -33,7 +33,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -376,8 +375,11 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager, collectio
     ) {
         val currentWb = navbarManager.collectionVM?.currentWorkbook
         for (workbook in workbooks) {
-            val bgColor = if (workbook == currentWb) Color.LightGray
-            else Color.Transparent
+            val bgColor = if (workbook == currentWb) {
+                Color.LightGray
+            } else {
+                Color.Transparent
+            }
 
             Text(
                 "Workbook ${workbook.number}",
