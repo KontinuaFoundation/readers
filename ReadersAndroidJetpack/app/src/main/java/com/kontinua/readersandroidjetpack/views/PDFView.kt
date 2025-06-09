@@ -127,7 +127,7 @@ fun PDFViewer(
                             }
                             .onTap { event ->
                                 // if we’re zoomed or in annotation mode, don’t consume
-                                if (annotationManager.mode != AnnotationMode.NONE || pdfView.zoom != 1f) {
+                                if (annotationManager.mode != AnnotationMode.HIDDEN || annotationManager.mode != AnnotationMode.NONE || pdfView.zoom != 1f) {
                                     false
                                 } else {
                                     if (event.x > pdfView.width.toFloat() * PREV_PAGE_TAP_RATIO) {

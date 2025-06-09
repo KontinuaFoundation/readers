@@ -17,12 +17,14 @@ enum class AnnotationMode {
     HIGHLIGHT,
     ERASE,
     TEXT,
-    CLEAR
+    CLEAR,
+    HIDDEN
 }
 
 class AnnotationManager {
     var mode by mutableStateOf(AnnotationMode.NONE)
     var prevMode: AnnotationMode = mode
+    var hideMode: AnnotationMode = mode
 
     var isFocused by mutableStateOf(false)
         private set
@@ -40,7 +42,11 @@ class AnnotationManager {
     }
 
     fun toggleTool(newMode: AnnotationMode) {
-        mode = newMode
+        if (mode == AnnotationMode.HIDDEN) {
+            hideMode = newMode
+        } else {
+            mode = newMode
+        }
     }
 
     fun setPenColor(color: Color) {
