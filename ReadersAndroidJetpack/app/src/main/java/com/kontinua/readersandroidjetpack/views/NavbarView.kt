@@ -29,10 +29,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -65,9 +65,10 @@ import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.serialization.WorkbookPreview
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.util.SearchResult
+import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 
 @Composable
-fun UnifiedSidebar(navbarManager: NavbarManager) {
+fun UnifiedSidebar(navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
     // common duration + easing
     val duration = 300
     val easing = FastOutSlowInEasing
@@ -142,7 +143,9 @@ fun UnifiedSidebar(navbarManager: NavbarManager) {
         ) {
             WorkbookSidebar(
                 onClose = { navbarManager.closeSidebar() },
-                navbarManager = navbarManager
+                navbarManager = navbarManager,
+                collectionViewModel = collectionViewModel
+
             )
         }
     }
@@ -327,20 +330,19 @@ fun ChapterSidebar(
 
 @Composable
 fun ListingDivider() {
-    Divider(
+    HorizontalDivider(
         modifier = Modifier
             .fillMaxWidth(0.95f)
             .padding(vertical = 1.dp),
-        color = Color.LightGray,
-        thickness = 1.dp
+        thickness = 1.dp,
+        color = Color.LightGray
     )
 }
 
 @Composable
-fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
-    val collectionVM = navbarManager.collectionVM
-    val collection = collectionVM!!.collectionState.collectAsState()
-    val workbooks: List<WorkbookPreview> = collection.value!!.workbooks
+fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager, collectionViewModel: CollectionViewModel) {
+    val collection by collectionViewModel.collectionState.collectAsState()
+    val workbooks: List<WorkbookPreview> = collection?.workbooks ?: emptyList()
     val scroll = rememberScrollState()
     Column(
         modifier = Modifier
@@ -348,7 +350,7 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
             .background(Color.White)
             .drawWithContent {
                 drawContent()
-                val stroke = with(density) { 1.dp.toPx() }
+                val stroke = 1.dp.toPx()
                 drawLine(
                     color = Color.LightGray,
                     start = Offset(size.width - stroke / 2, 0f),
@@ -370,19 +372,19 @@ fun WorkbookSidebar(onClose: () -> Unit, navbarManager: NavbarManager) {
             ) { /* Prevent clicks from propagating */ },
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        val currentWb = navbarManager.collectionVM?.currentWorkbook
         for (workbook in workbooks) {
-            val bgColor =
-                if (workbook == collectionVM.currentWorkbook) {
-                    Color.LightGray
-                } else {
-                    Color.Transparent
-                }
+            val bgColor = if (workbook == currentWb) {
+                Color.LightGray
+            } else {
+                Color.Transparent
+            }
+
             Text(
                 "Workbook ${workbook.number}",
                 modifier = Modifier
                     .clickable {
-                        collectionVM.setWorkbook(workbook)
-                        navbarManager.setPage(0)
+                        navbarManager.onWorkbookChanged(workbook)
                         onClose()
                     }
                     .fillMaxWidth()
@@ -415,7 +417,7 @@ fun WorkbookButton(
         colors = ButtonDefaults.textButtonColors()
     ) {
         Icon(
-            imageVector = Icons.Filled.ArrowForwardIos,
+            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
             contentDescription = "Toggle workbooks",
             modifier = Modifier.rotate(rotation)
         )
