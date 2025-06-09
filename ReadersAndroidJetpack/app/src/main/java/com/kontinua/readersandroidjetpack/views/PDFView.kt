@@ -20,6 +20,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -178,6 +179,7 @@ fun PDFViewer(
         ) {
             Icon(
                 imageVector = if (isPageBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                tint = Color(0xFFD4A017),
                 contentDescription = if (isPageBookmarked) {
                     stringResource(R.string.remove_bookmark)
                 } else {

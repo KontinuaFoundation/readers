@@ -22,8 +22,14 @@ enum class AnnotationMode {
 }
 
 class AnnotationManager {
-    var mode: AnnotationMode = AnnotationMode.NONE
-    var prevMode: AnnotationMode = mode
+//    var mode: AnnotationMode = AnnotationMode.NONE
+//    var prevMode: AnnotationMode = mode
+
+    var mode: AnnotationMode by mutableStateOf(AnnotationMode.NONE)
+        private set
+
+    var prevMode: AnnotationMode by mutableStateOf(AnnotationMode.NONE)
+        private set
 
     var isFocused by mutableStateOf(false)
         private set
@@ -40,7 +46,14 @@ class AnnotationManager {
         isFocused = false
     }
 
+//    fun toggleTool(newMode: AnnotationMode) {
+//        mode = newMode
+//    }
+
     fun toggleTool(newMode: AnnotationMode) {
+        if (mode != newMode) {
+            prevMode = mode
+        }
         mode = newMode
     }
 
