@@ -20,12 +20,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,9 +38,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 import java.util.regex.Pattern
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.runtime.mutableFloatStateOf
-
 
 // Helper function to extract YouTube video ID from diff URL formats
 // tbh got this function from chat so it could be bad but it's working at least
@@ -220,7 +219,11 @@ fun ResourceOverlayView(
                                 when (loadStrategy) {
                                     is WebViewLoadStrategy.LoadUrl -> loadUrl(loadStrategy.url)
                                     is WebViewLoadStrategy.LoadHtml -> loadDataWithBaseURL(
-                                        loadStrategy.baseUrl, loadStrategy.htmlContent, "text/html", "UTF-8", null
+                                        loadStrategy.baseUrl,
+                                        loadStrategy.htmlContent,
+                                        "text/html",
+                                        "UTF-8",
+                                        null
                                     )
                                     WebViewLoadStrategy.None -> {}
                                 }
@@ -228,9 +231,22 @@ fun ResourceOverlayView(
                         },
                         update = { webView ->
                             when (loadStrategy) {
-                                is WebViewLoadStrategy.LoadUrl -> { if (webView.url != loadStrategy.url) { webView.loadUrl(loadStrategy.url) } }
-                                is WebViewLoadStrategy.LoadHtml -> { webView.loadDataWithBaseURL(
-                                    loadStrategy.baseUrl, loadStrategy.htmlContent, "text/html", "UTF-8", null) }
+                                is WebViewLoadStrategy.LoadUrl -> {
+                                    if (webView.url != loadStrategy.url) {
+                                        webView.loadUrl(
+                                            loadStrategy.url
+                                        )
+                                    }
+                                }
+                                is WebViewLoadStrategy.LoadHtml -> {
+                                    webView.loadDataWithBaseURL(
+                                        loadStrategy.baseUrl,
+                                        loadStrategy.htmlContent,
+                                        "text/html",
+                                        "UTF-8",
+                                        null
+                                    )
+                                }
                                 WebViewLoadStrategy.None -> {}
                             }
                         }
