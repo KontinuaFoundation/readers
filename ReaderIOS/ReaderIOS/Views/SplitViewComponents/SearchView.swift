@@ -112,9 +112,6 @@ struct SearchView: View {
                     .onAppear(perform: fetchWorkbookAndChapters)
             }
         }
-        .onAppear {
-            indexPDFDocument()
-        }
         .onChange(of: pdfDocument) { _, _ in
             indexPDFDocument()
         }
