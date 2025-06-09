@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-
 class NavbarManager {
     var isChapterVisible by mutableStateOf(false)
         private set
@@ -133,7 +132,8 @@ class NavbarManager {
     }
 
     fun getCurrentChapter(): Chapter? {
-        return if (currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex) else null
+        return if (currentChapterIndex >= 0) collectionVM?.chapters?.get(currentChapterIndex)
+        else null
     }
 
     fun getAdjustedPage(): String {
