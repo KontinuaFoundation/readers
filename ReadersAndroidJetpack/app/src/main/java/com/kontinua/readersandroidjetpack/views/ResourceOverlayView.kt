@@ -1,6 +1,7 @@
 package com.kontinua.readersandroidjetpack.views
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -35,6 +36,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.kontinua.readersandroidjetpack.serialization.Reference
 import com.kontinua.readersandroidjetpack.serialization.Video
 import java.util.regex.Pattern
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.runtime.mutableFloatStateOf
+
 
 // Helper function to extract YouTube video ID from diff URL formats
 // tbh got this function from chat so it could be bad but it's working at least
@@ -133,7 +137,11 @@ fun ResourceOverlayView(
             WebViewLoadStrategy.LoadUrl(originalUrl)
         }
     }
-    var webViewInstance: WebView? by remember { mutableStateOf(null) }
+
+    // loading bar on the top to track progress if it loads slowly
+    // aaron asked for this like two months ago oops
+    var isLoading by remember { mutableStateOf(true) }
+    var loadingProgress by remember { mutableFloatStateOf(0f) }
 
     Box(
         modifier =
@@ -176,57 +184,67 @@ fun ResourceOverlayView(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AndroidView(
+                        modifier = Modifier.fillMaxSize(),
+                        factory = { context ->
+                            WebView(context).apply {
+                                layoutParams =
+                                    ViewGroup.LayoutParams(
+                                        ViewGroup.LayoutParams.MATCH_PARENT,
+                                        ViewGroup.LayoutParams.MATCH_PARENT
+                                    )
 
-                AndroidView(
-                    modifier = Modifier.fillMaxSize(),
-                    factory = { context ->
-                        WebView(context).apply {
-                            webViewInstance = this // Store the instance to display
-                            layoutParams =
-                                ViewGroup.LayoutParams(
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT
-                                )
-                            webViewClient = object : WebViewClient() {
+                                webViewClient = object : WebViewClient() {
+                                    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                                        super.onPageStarted(view, url, favicon)
+                                        isLoading = true // Page started loading
+                                    }
+
+                                    override fun onPageFinished(view: WebView?, url: String?) {
+                                        super.onPageFinished(view, url)
+                                        isLoading = false // Page finished loading
+                                    }
+                                }
+                                webChromeClient = object : WebChromeClient() {
+                                    override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                                        super.onProgressChanged(view, newProgress)
+                                        loadingProgress = newProgress / 100f
+                                        if (newProgress == 100) {
+                                            isLoading = false
+                                        }
+                                    }
+                                }
+                                settings.javaScriptEnabled = true
+
+                                when (loadStrategy) {
+                                    is WebViewLoadStrategy.LoadUrl -> loadUrl(loadStrategy.url)
+                                    is WebViewLoadStrategy.LoadHtml -> loadDataWithBaseURL(
+                                        loadStrategy.baseUrl, loadStrategy.htmlContent, "text/html", "UTF-8", null
+                                    )
+                                    WebViewLoadStrategy.None -> {}
+                                }
                             }
-                            webChromeClient = WebChromeClient() // fullscreen stuff
-                            settings.javaScriptEnabled = true
-
-                            // do the load as we picked
+                        },
+                        update = { webView ->
                             when (loadStrategy) {
-                                is WebViewLoadStrategy.LoadUrl -> loadUrl(loadStrategy.url)
-                                is WebViewLoadStrategy.LoadHtml -> loadDataWithBaseURL(
-                                    loadStrategy.baseUrl,
-                                    loadStrategy.htmlContent,
-                                    "text/html",
-                                    "UTF-8",
-                                    null
-                                )
+                                is WebViewLoadStrategy.LoadUrl -> { if (webView.url != loadStrategy.url) { webView.loadUrl(loadStrategy.url) } }
+                                is WebViewLoadStrategy.LoadHtml -> { webView.loadDataWithBaseURL(
+                                    loadStrategy.baseUrl, loadStrategy.htmlContent, "text/html", "UTF-8", null) }
                                 WebViewLoadStrategy.None -> {}
                             }
                         }
-                    },
-                    update = { webView ->
-                        // calls if the load strat changes
-                        when (loadStrategy) {
-                            is WebViewLoadStrategy.LoadUrl -> {
-                                if (webView.url != loadStrategy.url) {
-                                    webView.loadUrl(loadStrategy.url)
-                                }
-                            }
-                            is WebViewLoadStrategy.LoadHtml -> {
-                                webView.loadDataWithBaseURL(
-                                    loadStrategy.baseUrl,
-                                    loadStrategy.htmlContent,
-                                    "text/html",
-                                    "UTF-8",
-                                    null
-                                )
-                            }
-                            WebViewLoadStrategy.None -> {}
-                        }
+                    )
+
+                    if (isLoading) {
+                        LinearProgressIndicator(
+                            progress = { loadingProgress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.TopCenter)
+                        )
                     }
-                )
+                }
             }
         }
     }
