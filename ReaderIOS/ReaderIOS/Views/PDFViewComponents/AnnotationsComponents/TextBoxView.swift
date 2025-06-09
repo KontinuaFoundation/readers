@@ -10,6 +10,7 @@ struct TextView: View {
     var height: CGFloat
     @Binding var textOpened: Bool
     @Binding var isHidden: Bool
+    let pageFrame: CGRect
 
     var body: some View {
         ZStack {
@@ -32,16 +33,9 @@ struct TextView: View {
                     }
                 }
             }
-            if textBoxes[key]?.count ?? 0 > 0 {
-                Image(systemName: isHidden ? "eye.slash" : "eye")
-                    .foregroundStyle(Color.blue)
-                    .font(.system(size: 25))
-                    .position(x: width - 111, y: height - 125)
-                    .onTapGesture(count: 1) {
-                        isHidden.toggle()
-                    }
-            }
         }
+        .frame(width: pageFrame.width, height: pageFrame.height)
+        .offset(x: pageFrame.origin.x, y: pageFrame.origin.y)
     }
 }
 
@@ -168,6 +162,7 @@ struct TextBox: View {
                     TapGesture()
                         .onEnded { _ in
                             deleteTextBox = true
+                            currentTextBoxIndex = index
                         }
                 )
                 .position(x: data.position.x + 100 * (data.size.width / 200),
