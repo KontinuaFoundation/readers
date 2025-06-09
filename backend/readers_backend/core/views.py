@@ -5,6 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from core.throttles import FeedbackThrottle
 from .utils import send_feedback_email
 from rest_framework.viewsets import GenericViewSet
 from django.utils import timezone
@@ -28,6 +30,7 @@ from core.serializers import (
 # Then lets display that here.
 class RootAPIView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = None
 
     def get(self, request):
         return Response({"message": f"Readers API v{settings.API_VERSION}"})
@@ -35,6 +38,7 @@ class RootAPIView(APIView):
 
 class DestroyAuthTokenView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = None
 
     def delete(self, request):
         Token.objects.filter(user=request.user).delete()
@@ -61,7 +65,9 @@ class CollectionViewSet(
         # TODO: Consider just returning the entire collection rather than the list representation...
         elif self.action == "latest":
             return CollectionListSerializer
-        return None
+
+        # drf-spectacular requires a default serializer.
+        return CollectionListSerializer
 
     def get_permissions(self):
         if self.action in ["list", "retrieve", "latest"]:
@@ -69,6 +75,10 @@ class CollectionViewSet(
         return [IsAuthenticated()]
 
     def get_queryset(self):
+        # drf-spectacular compatibility.
+        if getattr(self, "swagger_fake_view", False):
+            return Collection.objects.none()
+
         queryset = Collection.objects.all()
 
         # Unauthenticated users should never have access to unreleased collections.
@@ -151,6 +161,10 @@ class WorkbookViewSet(
     queryset = Workbook.objects.all()
 
     def get_queryset(self):
+        # drf-spectacular compatibility.
+        if getattr(self, "swagger_fake_view", False):
+            return Workbook.objects.none()
+
         queryset = super().get_queryset()
 
         # Only users can access unreleased workbooks.
@@ -164,7 +178,9 @@ class WorkbookViewSet(
             return WorkbookCreateSerializer
         if self.action == "retrieve":
             return WorkbookRetrieveSerializer
-        return None
+
+        # drf-spectacular requires a default serializer.
+        return WorkbookRetrieveSerializer
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
@@ -183,22 +199,18 @@ class FeedbackView(APIView):
     """
 
     permission_classes = [AllowAny]  # Allow unauthenticated users to submit feedback
+    serializer_class = FeedbackSerializer
+    throttle_classes = [FeedbackThrottle]
 
     def post(self, request):
         serializer = FeedbackSerializer(data=request.data)
 
         if serializer.is_valid():
-            # Save the feedback to the database
-            if not settings.DEBUG:
-                feedback = serializer.save()
-            else:
-                feedback = Feedback(**serializer.validated_data)
-                feedback.created_at = timezone.now()  # Only need this when not saving
-                print("DEBUG mode: Feedback not saved to database")
-
-            # Send email notification without saving to DB
-            email_sent = send_feedback_email(feedback)
-
+            feedback = serializer.save()
+            try:
+                email_sent = send_feedback_email(feedback)
+            except Exception as e:
+                email_sent = False
             return Response(
                 {
                     "message": "Feedback submitted successfully",
@@ -206,5 +218,4 @@ class FeedbackView(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

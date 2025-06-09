@@ -28,7 +28,7 @@ def get_required_env_var(key):
 
 load_dotenv()
 
-API_VERSION = "1.0"
+API_VERSION = "1.0.0"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -59,17 +59,18 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "core.apps.CoreConfig",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "readers_backend.middleware.HealthCheckMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "readers_backend.middleware.LoggingMiddleware",
 ]
 
 ROOT_URLCONF = "readers_backend.urls"
@@ -161,9 +162,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/minute",
-    },
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "feedback": "5/hour"},
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # Email Configuration for production
@@ -178,7 +178,7 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # App's email passw
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 FEEDBACK_EMAIL = os.environ.get(
     "FEEDBACK_EMAIL", EMAIL_HOST_USER
-)  # Where feedback should be sent
+)  # Where feedback should be sent 
 
 # The only template view is the index view.
 # Will display a basic page with the latest US collection.
@@ -197,3 +197,131 @@ TEMPLATES = [
         },
     },
 ]
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Readers API",
+    "DESCRIPTION": "API for the Readers project",
+    "VERSION": API_VERSION,
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
+
+# Logging for production...
+# The setup is simple: log requests, responses, and exceptions to files defined by env vars.
+SHOULD_LOG_TO_FILE = get_required_env_var("LOG_TO_FILE") == "True"
+if SHOULD_LOG_TO_FILE:
+
+    REQUESTS_LOG_FILE = get_required_env_var("REQUESTS_LOG_FILE")
+    RESPONSES_LOG_FILE = get_required_env_var("RESPONSES_LOG_FILE")
+    EXCEPTIONS_LOG_FILE = get_required_env_var("EXCEPTIONS_LOG_FILE")
+
+    for path in [REQUESTS_LOG_FILE, RESPONSES_LOG_FILE, EXCEPTIONS_LOG_FILE]:
+        if not os.path.exists(path):
+            with open(path, "a") as f:
+                pass
+
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": True,
+        "formatters": {
+            "simple_error": {
+                "format": "ERROR: {message}",
+                "style": "{",
+            },
+            "json": {
+                "format": "{message}",
+                "style": "{",
+            },
+        },
+        "handlers": {
+            "requests_file": {
+                "level": "INFO",
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": REQUESTS_LOG_FILE,
+                "maxBytes": 5 * 1024 * 1024, # 5MB
+                "backupCount": 5,
+                "formatter": "json",
+            },
+            "responses_file": {
+                "level": "INFO",
+                "class": "logging.handlers.RotatingFileHandler", 
+                "filename": RESPONSES_LOG_FILE,
+                "maxBytes": 5 * 1024 * 1024, # 5MB
+                "backupCount": 5,
+                "formatter": "json",
+            },
+            "exceptions_file": {
+                "level": "ERROR",
+                "class": "logging.handlers.RotatingFileHandler", 
+                "filename": EXCEPTIONS_LOG_FILE,
+                "maxBytes": 5 * 1024 * 1024, # 5MB
+                "backupCount": 5,
+                "formatter": "json",
+            },
+            "null": {
+                "class": "logging.NullHandler",
+            },
+        },
+        "loggers": {
+            "readers.requests": {
+                "handlers": ["requests_file"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "readers.responses": {
+                "handlers": ["responses_file"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "readers.exceptions": {
+                "handlers": ["exceptions_file"],
+                "level": "ERROR",
+                "propagate": False,
+            },
+            # Disable other logging...
+            # We're not using it anyway and clogs stdout.
+            "root": {
+                "handlers": ["null"],
+                "propagate": False,
+            },
+        },
+    }
+else:
+    # The default django logging when debug is True is fine for local development
+    # We just need to disable our custom loggers to avoid clogging stdout.
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "null": {
+                "class": "logging.NullHandler",
+            },
+            "console": {
+                "class": "logging.StreamHandler",
+            },
+        },
+        "loggers": {
+            # Lets disable our custom loggers for local development.
+            "readers.requests": {
+                "handlers": ["null"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "readers.responses": {
+                "handlers": ["null"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "readers.exceptions": {
+                "handlers": ["null"],
+                "level": "ERROR",
+                "propagate": False,
+            },
+            # All other logs should use the default handler
+            "root": {
+                "handlers": ["console"],
+                "propagate": False,
+                "level": "DEBUG",
+            },
+        },
+    }

@@ -16,30 +16,26 @@ import kotlinx.coroutines.launch
 class CollectionViewModel : ViewModel() {
 
     private val _collectionState = MutableStateFlow<Collection?>(null)
-    private val _workbookState = MutableStateFlow<Workbook?>(null)
-
     val collectionState: StateFlow<Collection?> = _collectionState.asStateFlow()
+
+    private val _workbookState = MutableStateFlow<Workbook?>(null)
     val workbookState: StateFlow<Workbook?> = _workbookState.asStateFlow()
     lateinit var currentWorkbook: WorkbookPreview
     var chapters: List<Chapter> = emptyList()
 
     init {
         viewModelScope.launch {
+            // no longer setting default workbook here
+            // navbar manager will tell it which workbook to load
             val latestCollection = APIManager.getLatestCollection()
 
+            // this should not happen but like just in case
             if (latestCollection == null) {
                 Log.e("Collection", "Fetching latest collection returned null.")
                 return@launch
             }
-
-            updateCollection(latestCollection)
-            // Default to the first workbook for now...
-            setWorkbook(latestCollection.workbooks.first())
+            _collectionState.value = latestCollection
         }
-    }
-
-    private fun updateCollection(newCollection: Collection) {
-        _collectionState.value = newCollection
     }
 
     private fun updateWorkbook(workbook: Workbook) {

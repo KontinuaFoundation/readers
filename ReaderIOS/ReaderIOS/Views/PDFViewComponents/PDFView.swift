@@ -1,6 +1,14 @@
 import PDFKit
 import SwiftUI
 
+enum AnnotationMode {
+    case pen
+    case highlight
+    case erase
+    case text
+    case none
+}
+
 struct PDFView: View {
     // MARK: - Bindings
 
@@ -20,7 +28,7 @@ struct PDFView: View {
     @State private var showDigitalResources = false
     @State private var showingFeedback = false
     // markup variables
-    @State private var selectedScribbleTool = ""
+    @State var mode: AnnotationMode = .none
     @State private var exitNotSelected = false
     @State private var pagePaths: [String: [(path: Path, color: Color)]] = [:]
     @State private var highlightPaths: [String: [(path: Path, color: Color)]] = [:]
@@ -69,7 +77,7 @@ struct PDFView: View {
                             AnnotationsView(
                                 pagePaths: $pagePaths,
                                 highlightPaths: $highlightPaths,
-                                selectedScribbleTool: $selectedScribbleTool,
+                                selectedScribbleTool: $mode,
                                 textOpened: $textOpened,
                                 key: uniqueKey(for: currentPage),
                                 nextPage: { goToNextPage() },
@@ -117,6 +125,7 @@ struct PDFView: View {
                                 }
                             }
                         }
+                        .ignoresSafeArea(.keyboard)
                         .toolbar {
                             ToolbarItemGroup(placement: .navigationBarLeading) {
                                 PageControlView(currentPage: $currentPage, totalPages: pdfDoc.pageCount)
@@ -126,7 +135,7 @@ struct PDFView: View {
                             ToolbarItemGroup(placement: .navigationBarTrailing) {
                                 TimerControlsView(timerManager: timerManager)
                                 MarkupMenu(
-                                    selectedScribbleTool: $selectedScribbleTool,
+                                    selectedScribbleTool: $mode,
                                     exitNotSelected: $exitNotSelected,
                                     showClearAlert: $showClearAlert,
                                     selectedPenColor: $selectedPenColor,
@@ -172,7 +181,7 @@ struct PDFView: View {
                                     HStack(spacing: 0) {
                                         TimerProgressView(timerManager: timerManager)
                                             .frame(maxWidth: .infinity)
-                                        FeedbackView.button(
+                                        FeedbackButton(
                                             feedbackManager: feedbackManager,
                                             workbook: currentWorkbook,
                                             currentPage: currentPage,

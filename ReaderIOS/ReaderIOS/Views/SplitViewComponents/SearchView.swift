@@ -65,7 +65,7 @@ struct SearchView: View {
                             }
                         }
                     )) {
-                        Section(header: Text("Chapters: ")) {
+                        Section(header: Text("Chapters")) {
                             if filteredChapters.isEmpty, !searchText.isEmpty {
                                 Text("No chapters found")
                                     .foregroundColor(.gray)
@@ -78,7 +78,7 @@ struct SearchView: View {
                         }
 
                         if searchText.count > 1 {
-                            Section(header: Text("Word Matches:")) {
+                            Section(header: Text("Word Matches")) {
                                 if wordSearchResults.isEmpty {
                                     Text("No word matches found")
                                         .foregroundColor(.gray)

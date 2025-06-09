@@ -1,0 +1,529 @@
+openapi: 3.0.3
+info:
+  title: Readers API
+  version: 1.0.0
+  description: API for the Readers project
+paths:
+  /api/:
+    get:
+      operationId: root_retrieve
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/collections/:
+    get:
+      operationId: collections_list
+      tags:
+      - collections
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectionList'
+          description: ''
+    post:
+      operationId: collections_create
+      tags:
+      - collections
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CollectionCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CollectionCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionCreate'
+          description: ''
+  /api/collections/{id}/:
+    get:
+      operationId: collections_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this collection.
+        required: true
+      tags:
+      - collections
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionRetrieve'
+          description: ''
+    delete:
+      operationId: collections_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this collection.
+        required: true
+      tags:
+      - collections
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/collections/{id}/release/:
+    patch:
+      operationId: collections_release_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this collection.
+        required: true
+      tags:
+      - collections
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCollectionList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCollectionList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCollectionList'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+          description: ''
+  /api/collections/{id}/unrelease/:
+    patch:
+      operationId: collections_unrelease_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this collection.
+        required: true
+      tags:
+      - collections
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCollectionList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCollectionList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCollectionList'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+          description: ''
+  /api/collections/latest/:
+    get:
+      operationId: collections_latest_retrieve
+      tags:
+      - collections
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+          description: ''
+  /api/feedback/:
+    post:
+      operationId: feedback_create
+      description: API endpoint that allows users to submit feedback.
+      tags:
+      - feedback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+          description: ''
+  /api/token/:
+    post:
+      operationId: token_create
+      tags:
+      - token
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+  /api/token/destroy/:
+    delete:
+      operationId: token_destroy_destroy
+      tags:
+      - token
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/workbooks/:
+    post:
+      operationId: workbooks_create
+      tags:
+      - workbooks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkbookCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkbookCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkbookCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkbookCreate'
+          description: ''
+  /api/workbooks/{id}/:
+    get:
+      operationId: workbooks_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this workbook.
+        required: true
+      tags:
+      - workbooks
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkbookRetrieve'
+          description: ''
+    delete:
+      operationId: workbooks_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this workbook.
+        required: true
+      tags:
+      - workbooks
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - password
+      - token
+      - username
+    CollectionCreate:
+      type: object
+      properties:
+        major_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        minor_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        localization:
+          type: string
+          maxLength: 5
+        id:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - localization
+      - major_version
+      - minor_version
+    CollectionList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        major_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        minor_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        localization:
+          type: string
+          maxLength: 5
+        is_released:
+          type: boolean
+        creation_date:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - creation_date
+      - id
+      - localization
+      - major_version
+      - minor_version
+    CollectionRetrieve:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        workbooks:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkbooksList'
+          readOnly: true
+        major_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        minor_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        localization:
+          type: string
+          maxLength: 5
+        is_released:
+          type: boolean
+        creation_date:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - creation_date
+      - id
+      - localization
+      - major_version
+      - minor_version
+      - workbooks
+    Feedback:
+      type: object
+      properties:
+        workbook_id:
+          type: integer
+        chapter_number:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        page_number:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        user_email:
+          type: string
+          format: email
+          maxLength: 254
+        description:
+          type: string
+        major_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        minor_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        localization:
+          type: string
+          maxLength: 5
+        logs:
+          nullable: true
+      required:
+      - chapter_number
+      - description
+      - localization
+      - major_version
+      - minor_version
+      - page_number
+      - user_email
+      - workbook_id
+    PatchedCollectionList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        major_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        minor_version:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        localization:
+          type: string
+          maxLength: 5
+        is_released:
+          type: boolean
+        creation_date:
+          type: string
+          format: date-time
+          readOnly: true
+    WorkbookCreate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        chapters: {}
+        pdf:
+          type: string
+          format: uri
+        collection:
+          type: integer
+      required:
+      - chapters
+      - collection
+      - id
+      - number
+      - pdf
+    WorkbookRetrieve:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        chapters: {}
+        pdf:
+          type: string
+          format: uri
+        collection:
+          type: integer
+      required:
+      - chapters
+      - collection
+      - id
+      - number
+      - pdf
+    WorkbooksList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+      required:
+      - id
+      - number
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
