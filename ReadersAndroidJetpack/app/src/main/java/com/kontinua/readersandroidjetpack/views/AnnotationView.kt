@@ -188,7 +188,7 @@ fun DrawingCanvas(
         val pageHeight = size.height
         canvasSize.value = Size(size.width.toFloat(), size.height.toFloat())
 
-        if (annotationManager.mode != AnnotationMode.HIDDEN){
+        if (annotationManager.mode != AnnotationMode.HIDDEN) {
             savedPaths.forEach {
                 drawPathLine(it, pageWidth, pageHeight, zoom)
             }
@@ -250,7 +250,7 @@ fun DrawingCanvas(
     if (hasAnnotations || annotationManager.mode == AnnotationMode.HIDDEN) {
         IconButton(
             onClick = {
-                if (annotationManager.mode == AnnotationMode.HIDDEN){
+                if (annotationManager.mode == AnnotationMode.HIDDEN) {
                     annotationManager.mode = annotationManager.hideMode
                     annotationManager.hideMode = AnnotationMode.NONE
                 } else {
@@ -264,7 +264,11 @@ fun DrawingCanvas(
                 .offset(0.dp, 1000.dp)
         ) {
             Icon(
-                imageVector = if (annotationManager.mode != AnnotationMode.HIDDEN) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                imageVector = if (annotationManager.mode != AnnotationMode.HIDDEN) {
+                    Icons.Default.Visibility
+                } else {
+                    Icons.Default.VisibilityOff
+                },
                 contentDescription = "Toggle Textbox Visibility",
                 modifier = Modifier.fillMaxSize()
             )
