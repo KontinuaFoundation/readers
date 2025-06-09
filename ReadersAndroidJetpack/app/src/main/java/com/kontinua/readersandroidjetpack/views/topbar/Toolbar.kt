@@ -35,6 +35,8 @@ import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.AnnotationMode
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
+import androidx.compose.material3.ButtonDefaults
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,6 +61,10 @@ fun Toolbar(
     // are there any resources? enables or disables the button
     val hasResources = references.isNotEmpty() || videos.isNotEmpty()
 
+    // for button display color and also possible future functionality
+    val isMarkupModeActive = annotationManager.mode != AnnotationMode.NONE
+
+
     TopAppBar(
         title = {
             // page navigation stuff in the title area
@@ -75,6 +81,7 @@ fun Toolbar(
         actions = {
             TextButton(onClick = { showTimerMenu = true }) {
                 Text("Timer")
+
             }
             DropdownMenu(
                 expanded = showTimerMenu,
@@ -92,8 +99,24 @@ fun Toolbar(
                     timerViewModel.setDurationAndReset(25 * 60 * 1000L)
                     showTimerMenu = false
                 })
+                // TODO: implement if i have time
+                DropdownMenuItem(text = { Text("Custom Minutes") }, onClick = {
+                    timerViewModel.setDurationAndReset(25 * 60 * 1000L)
+                    showTimerMenu = false
+                })
             }
-            TextButton(onClick = { showMarkupMenu = true }) { Text("Markup") }
+            TextButton(
+                onClick = { showMarkupMenu = true },
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = if (isMarkupModeActive) {
+                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 15f)
+                    } else {
+                        Color.Transparent
+                    }
+                )
+            ) {
+                Text("Markup")
+            }
             DropdownMenu(
                 expanded = showMarkupMenu,
                 onDismissRequest = { showMarkupMenu = false }
@@ -184,7 +207,7 @@ fun Toolbar(
                     showMarkupMenu = false
                 })
                 DropdownMenuItem(text = { Text("Clear Screen") }, onClick = {
-                    annotationManager.prevMode = annotationManager.mode
+//                    annotationManager.prevMode = annotationManager.mode
                     annotationManager.toggleTool(AnnotationMode.CLEAR)
                     showMarkupMenu = false
                 })
@@ -195,7 +218,6 @@ fun Toolbar(
                 })
             }
 
-            // Resources Button (Text Button)
             TextButton(
                 onClick = {
                     showResourcesMenu = true
@@ -203,8 +225,14 @@ fun Toolbar(
                 // only on if there are resources
                 enabled = hasResources
             ) {
-                Text("Digital Resources")
-            }
+                Text(
+                    "Digital Resources",
+                    color = if (hasResources) {
+                        Color(0xFFBB86FC)
+                    } else {
+                        Color.Unspecified
+                    }
+            ) }
             DropdownMenu(
                 expanded = showResourcesMenu,
                 onDismissRequest = { showResourcesMenu = false }
