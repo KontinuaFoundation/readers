@@ -95,7 +95,7 @@ struct SearchView: View {
                                             print("Highlighting \(result.snippet) on page \(result.page + 1)")
                                             searchHighlighter?.clearHighlights()
                                             searchHighlighter?.highlightSearchResult(
-                                                searchTerm: result.snippet,
+                                                searchTerm: searchText,
                                                 onPage: result.page
                                             )
                                             columnVisibility = .detailOnly
