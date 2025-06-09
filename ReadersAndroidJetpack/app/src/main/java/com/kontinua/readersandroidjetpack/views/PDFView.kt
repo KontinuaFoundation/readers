@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -31,7 +32,6 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
-import androidx.compose.ui.graphics.Color
 
 private const val PREV_PAGE_TAP_RATIO = 0.25f
 

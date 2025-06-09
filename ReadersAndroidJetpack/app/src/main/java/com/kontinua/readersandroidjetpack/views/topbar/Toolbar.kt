@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,8 +36,6 @@ import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.AnnotationMode
 import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.TimerViewModel
-import androidx.compose.material3.ButtonDefaults
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +63,6 @@ fun Toolbar(
     // for button display color and also possible future functionality
     val isMarkupModeActive = annotationManager.mode != AnnotationMode.NONE
 
-
     TopAppBar(
         title = {
             // page navigation stuff in the title area
@@ -81,7 +79,6 @@ fun Toolbar(
         actions = {
             TextButton(onClick = { showTimerMenu = true }) {
                 Text("Timer")
-
             }
             DropdownMenu(
                 expanded = showTimerMenu,
@@ -232,7 +229,8 @@ fun Toolbar(
                     } else {
                         Color.Unspecified
                     }
-            ) }
+                )
+            }
             DropdownMenu(
                 expanded = showResourcesMenu,
                 onDismissRequest = { showResourcesMenu = false }
