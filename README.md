@@ -37,7 +37,7 @@ To run SwiftFormat, In Xcode right click ReaderIOS root folder and select "Swift
 Ktlint is a tool that helps you format and lint your code. It is run automatically in the GitHub Actions workflow, and any errors will be displayed in the console.
 Ktlint is configured in the `.editorConfig` file where some defualt rules are set and might need to be modified.
 There is no need to download ktlint, as it is managed by Gradle, however you can install the android studio plugin for editor formatting.
-To run the Formatter, In the terminal, navigate to the `ReadersAndroidJetpack` folder and run `./gradlew ktlintFromat`, to check for linting errors or formatting errors run `./gradlew ktlintCheck`.
+To run the Formatter, In the terminal, navigate to the `ReadersAndroidJetpack` folder and run `./gradlew ktlintFormat`, to check for linting errors or formatting errors run `./gradlew ktlintCheck`.
 
 ### Documentation
 
