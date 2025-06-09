@@ -10,8 +10,8 @@ import Foundation
 
 final class BookmarkManager: ObservableObject {
     @Published var bookmarkLookup: [Int: Set<Int>]
-    
-    init(){
+
+    init() {
         bookmarkLookup = StateRestoreManager.shared.loadBookmarks()
     }
 
@@ -27,12 +27,12 @@ final class BookmarkManager: ObservableObject {
 
         var pages = bookmarkLookup[id] ?? []
         if pages.contains(currentPage) {
-          pages.remove(currentPage)
+            pages.remove(currentPage)
         } else {
-          pages.insert(currentPage)
+            pages.insert(currentPage)
         }
         bookmarkLookup[id] = pages
-        
+
         StateRestoreManager.shared.saveBookmarks(bookmarkLookup)
     }
 }
