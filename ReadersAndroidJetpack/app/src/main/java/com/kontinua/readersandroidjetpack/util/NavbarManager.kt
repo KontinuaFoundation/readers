@@ -49,9 +49,8 @@ class NavbarManager {
     private val scope = CoroutineScope(Dispatchers.Main)
     private var isInitialized = false
 
-
-     // new init for the manager async  using the saved
-     // preferences from the last time the app was used
+    // new init for the manager async  using the saved
+    // preferences from the last time the app was used
 
     fun initialize(context: Context, collectionViewModel: CollectionViewModel) {
         if (isInitialized) return
