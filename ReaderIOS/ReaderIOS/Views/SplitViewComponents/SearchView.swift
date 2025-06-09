@@ -92,10 +92,10 @@ struct SearchView: View {
                                         }
                                         .onTapGesture {
                                             currentPage = result.page
-                                            print("Highlighting \(result.snippet) on page \(result.page + 1)")
+                                            print("Highlighting '\(result.snippet)' on page \(result.page + 1)")
                                             searchHighlighter?.clearHighlights()
                                             searchHighlighter?.highlightSearchResult(
-                                                searchTerm: searchText,
+                                                searchTerm: result.snippet,
                                                 onPage: result.page
                                             )
                                             columnVisibility = .detailOnly
