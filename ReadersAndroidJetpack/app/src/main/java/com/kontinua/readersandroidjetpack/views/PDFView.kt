@@ -31,6 +31,7 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
+import androidx.compose.ui.graphics.Color
 
 private const val PREV_PAGE_TAP_RATIO = 0.25f
 
@@ -172,6 +173,7 @@ fun PDFViewer(
         ) {
             Icon(
                 imageVector = if (isPageBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                tint = Color(0xFFD4A017),
                 contentDescription = if (isPageBookmarked) "Remove Bookmark" else "Add Bookmark"
             )
         }
