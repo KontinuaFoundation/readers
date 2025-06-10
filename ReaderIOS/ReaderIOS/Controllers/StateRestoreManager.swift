@@ -72,14 +72,19 @@ final class StateRestoreManager {
     }
 
     func isCollectionCurrent(latestMajor: Int, latestMinor: Int) -> Bool {
-        guard let savedMajor = defaults.object(forKey: collectionMajorVersionKey) as? Int,
-              let savedMinor = defaults.object(forKey: collectionMinorVersionKey) as? Int
+        guard let savedMajor = defaults.object(
+            forKey: collectionMajorVersionKey
+        ) as? Int,
+            let savedMinor = defaults.object(
+                forKey: collectionMinorVersionKey
+            ) as? Int
         else {
             return false
         }
 
         return savedMajor == latestMajor && savedMinor <= latestMinor
-      
+    }
+
     /// Persist the in-memory bookmark lookup.
     func saveBookmarks(_ lookup: [Int: Set<Int>]) {
         // Convert [Int:Set<Int>] → [String:[Int]] so it's a plist-compatible value
