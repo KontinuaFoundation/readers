@@ -18,7 +18,7 @@ final class StateRestoreManager {
     private let workbookPagesKey = "workbookPages" // Dictionary key
     private let collectionMajorVersionKey = "collectionMajorVersion"
     private let collectionMinorVersionKey = "collectionMinorVersion"
-
+    private let bookmarksKey = "bookmarkLookup"
     private let defaults = UserDefaults.standard
 
     // Private initializer prevents external instantiation.
@@ -79,5 +79,29 @@ final class StateRestoreManager {
         }
 
         return savedMajor == latestMajor && savedMinor <= latestMinor
+      
+    /// Persist the in-memory bookmark lookup.
+    func saveBookmarks(_ lookup: [Int: Set<Int>]) {
+        // Convert [Int:Set<Int>] → [String:[Int]] so it's a plist-compatible value
+        let plistFriendly: [String: [Int]] = Dictionary(
+            uniqueKeysWithValues: lookup.map { workbookID, pages in
+                (String(workbookID), Array(pages))
+            }
+        )
+        defaults.set(plistFriendly, forKey: bookmarksKey)
+    }
+
+    func loadBookmarks() -> [Int: Set<Int>] {
+        guard let saved = defaults.dictionary(forKey: bookmarksKey) as? [String: [Int]] else {
+            return [:]
+        }
+
+        // Convert back to [Int: Set<Int>]
+        return Dictionary(
+            uniqueKeysWithValues: saved.compactMap { key, array in
+                guard let id = Int(key) else { return nil }
+                return (id, Set(array))
+            }
+        )
     }
 }

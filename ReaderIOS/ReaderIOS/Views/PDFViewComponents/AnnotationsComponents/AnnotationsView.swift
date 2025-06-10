@@ -31,6 +31,8 @@ struct AnnotationsView: View {
     // MARK: - Binding Data
 
     @Binding var textBoxes: [String: [TextBoxData]]
+    @Binding var isHidden: Bool
+    let pageFrame: CGRect
 
     // MARK: - Local State
 
@@ -42,102 +44,124 @@ struct AnnotationsView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            Canvas { context, _ in
-                // Draw saved paths
-                if let paths = pagePaths[key] {
-                    for pathInfo in paths {
-                        context.stroke(Path(pathInfo.path.cgPath),
-                                       with: .color(pathInfo.color),
-                                       lineWidth: 2)
-                    }
-                }
-                if let hPaths = highlightPaths[key] {
-                    for pathInfo in hPaths {
-                        context.stroke(pathInfo.path,
-                                       with: .color(pathInfo.color.opacity(0.2)),
-                                       lineWidth: 15)
-                    }
-                }
-                // Draw live drawing path
-                context.stroke(Path(liveDrawingPath.cgPath),
-                               with: selectedScribbleTool == .highlight ?
-                                   .color(selectedHighlighterColor.opacity(0.2)) :
-                                   .color(selectedColor),
-                               lineWidth: selectedScribbleTool == .highlight ? 15 : 2)
-            }
-            .gesture(
-                DragGesture(minimumDistance: 0.0001)
-                    .onChanged { value in
-                        if zoomManager.getZoomedIn(), selectedScribbleTool == .none {
-                            // Calculate the incremental translation since the last update.
-                            let delta = CGSize(
-                                width: value.translation.width - lastDragValue.width,
-                                height: value.translation.height - lastDragValue.height
-                            )
-                            zoomManager.panZoomCenter(by: delta, in: geometry.size)
-                            lastDragValue = value.translation
-                        } else {
-                            // Existing logic for drawing/erasing
-                            if selectedScribbleTool == .erase {
-                                erasePath(at: value.location)
-                            } else if selectedScribbleTool == .pen || selectedScribbleTool == .highlight {
-                                updateLivePath(with: value.location)
+            ZStack(alignment: .bottomLeading) {
+                Canvas { context, _ in
+                    if !isHidden {
+                        // Draw saved paths
+                        if let paths = pagePaths[key] {
+                            for pathInfo in paths {
+                                context.stroke(Path(pathInfo.path.cgPath),
+                                               with: .color(pathInfo.color),
+                                               lineWidth: 2)
                             }
                         }
+                        if let hPaths = highlightPaths[key] {
+                            for pathInfo in hPaths {
+                                context.stroke(pathInfo.path,
+                                               with: .color(pathInfo.color.opacity(0.2)),
+                                               lineWidth: 15)
+                            }
+                        }
+                        // Draw live drawing path
+                        context.stroke(Path(liveDrawingPath.cgPath),
+                                       with: selectedScribbleTool == .highlight ?
+                                           .color(selectedHighlighterColor.opacity(0.2)) :
+                                           .color(selectedColor),
+                                       lineWidth: selectedScribbleTool == .highlight ? 15 : 2)
                     }
-                    .onEnded { value in
-                        // Reset the incremental drag offset
-                        lastDragValue = .zero
-
-                        if !zoomManager.getZoomedIn() || selectedScribbleTool != .none {
-                            if selectedScribbleTool == .pen {
-                                finalizeCurrentPath(for: &pagePaths, using: selectedColor)
-                            } else if selectedScribbleTool == .highlight {
-                                finalizeCurrentPath(for: &highlightPaths, using: selectedHighlighterColor)
-                            } else if selectedScribbleTool == .none || selectedScribbleTool == .text {
-                                // Page change logic (swipe left/right) only when not zoomed in.
-                                if value.translation.width < 0 {
-                                    nextPage?()
-                                } else if value.translation.width > 0 {
-                                    previousPage?()
+                }
+                .gesture(
+                    DragGesture(minimumDistance: 0.0001)
+                        .onChanged { value in
+                            if zoomManager.getZoomedIn(), selectedScribbleTool == .none {
+                                // Calculate the incremental translation since the last update.
+                                let delta = CGSize(
+                                    width: value.translation.width - lastDragValue.width,
+                                    height: value.translation.height - lastDragValue.height
+                                )
+                                zoomManager.panZoomCenter(by: delta, in: geometry.size)
+                                lastDragValue = value.translation
+                            } else {
+                                // Existing logic for drawing/erasing
+                                if isHidden { return }
+                                if selectedScribbleTool == .erase {
+                                    erasePath(at: value.location)
+                                } else if selectedScribbleTool == .pen || selectedScribbleTool == .highlight {
+                                    updateLivePath(with: value.location)
                                 }
-                                textOpened = false
                             }
-                            annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
-                            textManager.saveTextBoxes(textBoxes: textBoxes)
+                        }
+                        .onEnded { value in
+                            // Reset the incremental drag offset
+                            lastDragValue = .zero
+
+                            if !zoomManager.getZoomedIn() || selectedScribbleTool != .none {
+                                if selectedScribbleTool == .none || selectedScribbleTool == .text || isHidden {
+                                    // Page change logic (swipe left/right) only when not zoomed in.
+                                    if value.translation.width < 0 {
+                                        nextPage?()
+                                    } else if value.translation.width > 0 {
+                                        previousPage?()
+                                    }
+                                    textOpened = false
+                                } else if selectedScribbleTool == .pen {
+                                    finalizeCurrentPath(for: &pagePaths, using: selectedColor)
+                                } else if selectedScribbleTool == .highlight {
+                                    finalizeCurrentPath(for: &highlightPaths, using: selectedHighlighterColor)
+                                }
+                                annotationManager.saveAnnotations(pagePaths: pagePaths, highlightPaths: highlightPaths)
+                                textManager.saveTextBoxes(textBoxes: textBoxes)
+                            }
+                        }
+                )
+                // Use the updated zoomManager gestures
+                .simultaneousGesture(zoomManager.zoomin())
+                .simultaneousGesture(zoomManager.zoomout())
+                .onTapGesture(count: 1, coordinateSpace: .local) { location in
+                    zoomManager.newZoomPoint(newPoint: location,
+                                             width: geometry.size.width,
+                                             height: geometry.size.height)
+
+                    if !textOpened, selectedScribbleTool == .text {
+                        textOpened = true
+                        textManager.addText(textBoxes: $textBoxes,
+                                            key: key,
+                                            width: geometry.size.width,
+                                            height: geometry.size.height)
+                        textManager.saveTextBoxes(textBoxes: textBoxes)
+                        return
+                    }
+                    // else
+                    if textOpened {
+                        textOpened = false
+                        return
+                    }
+
+                    // ——— PAGE TURNS ———
+                    guard selectedScribbleTool == .none else { return }
+                    if !zoomManager.getZoomedIn() {
+                        if location.x > geometry.size.width * TapConstants.prevPageTapRatio {
+                            nextPage?()
+                        } else {
+                            previousPage?()
                         }
                     }
-            )
-            // Use the updated zoomManager gestures
-            .simultaneousGesture(zoomManager.zoomin())
-            .simultaneousGesture(zoomManager.zoomout())
-            .onTapGesture(count: 1, coordinateSpace: .local) { location in
-                zoomManager.newZoomPoint(newPoint: location,
-                                         width: geometry.size.width,
-                                         height: geometry.size.height)
-
-                if !textOpened, selectedScribbleTool == .text {
-                    textOpened = true
-                    textManager.addText(textBoxes: $textBoxes,
-                                        key: key,
-                                        width: geometry.size.width,
-                                        height: geometry.size.height)
-                    textManager.saveTextBoxes(textBoxes: textBoxes)
-                    return
                 }
-                // else
-                textOpened = false
-
-                // ——— PAGE TURNS ———
-                guard selectedScribbleTool == .none else { return }
-                if !zoomManager.getZoomedIn() {
-                    if location.x > geometry.size.width * TapConstants.prevPageTapRatio {
-                        nextPage?()
-                    } else {
-                        previousPage?()
-                    }
+                if isHidden || textBoxes[key]?.count ?? 0 > 0 || pagePaths[key]?.count ?? 0 > 0 || highlightPaths[key]?
+                    .count ?? 0 > 0
+                {
+                    Image(systemName: isHidden ? "eye.slash" : "eye")
+                        .foregroundStyle(Color.blue)
+                        .font(.system(size: 25))
+                        .padding()
+                        .onTapGesture {
+                            isHidden.toggle()
+                        }
+                        .zIndex(999)
                 }
             }
+            .frame(width: pageFrame.width, height: pageFrame.height)
+            .offset(x: pageFrame.origin.x, y: pageFrame.origin.y)
         }
         // Listen for geometry changes to update zoom manager
         .background(GeometryReader { geometry in
@@ -149,6 +173,21 @@ struct AnnotationsView: View {
                     zoomManager.updateViewSize(newSize)
                 }
         })
+        .overlay(alignment: .bottomLeading) {
+            if textBoxes[key]?.count ?? 0 > 0 || isHidden
+                || pagePaths[key]?.count ?? 0 > 0
+                || highlightPaths[key]?.count ?? 0 > 0
+            {
+                Image(systemName: isHidden ? "eye.slash" : "eye")
+                    .foregroundStyle(Color.blue)
+                    .font(.system(size: 25))
+                    .padding()
+                    .onTapGesture {
+                        isHidden.toggle()
+                    }
+                    .zIndex(999)
+            }
+        }
     }
 
     // MARK: - Private Helpers

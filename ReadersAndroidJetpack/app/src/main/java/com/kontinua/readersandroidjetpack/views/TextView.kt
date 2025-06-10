@@ -71,7 +71,6 @@ fun MovableTextBox(
     LaunchedEffect(isFocused) {
         onFocusChange(isFocused)
     }
-    println("h: $height w: $width")
 
     Box(
         modifier = Modifier

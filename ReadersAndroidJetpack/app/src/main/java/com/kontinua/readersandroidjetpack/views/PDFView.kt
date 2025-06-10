@@ -20,6 +20,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -133,7 +134,10 @@ fun PDFViewer(
                             }
                             .onTap { event ->
                                 // if we’re zoomed or in annotation mode, don’t consume
-                                if (annotationManager.mode != AnnotationMode.NONE || pdfView.zoom != 1f) {
+                                if (annotationManager.mode != AnnotationMode.HIDDEN ||
+                                    annotationManager.mode != AnnotationMode.NONE ||
+                                    pdfView.zoom != 1f
+                                ) {
                                     false
                                 } else {
                                     if (event.x > pdfView.width.toFloat() * PREV_PAGE_TAP_RATIO) {
@@ -178,6 +182,7 @@ fun PDFViewer(
         ) {
             Icon(
                 imageVector = if (isPageBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                tint = Color(0xFFD4A017),
                 contentDescription = if (isPageBookmarked) {
                     stringResource(R.string.remove_bookmark)
                 } else {

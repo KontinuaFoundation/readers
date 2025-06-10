@@ -18,7 +18,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
@@ -61,50 +60,53 @@ fun DrawingCanvas(
     val canvasSize = remember { mutableStateOf(Size.Zero) }
     val textToDelete = remember { mutableStateOf<TextAnnotation?>(null) }
     val focusManager = LocalFocusManager.current
-    var areTextboxesVisible by rememberSaveable { mutableStateOf(true) }
-    var hasTextboxes by mutableStateOf(false)
+    var hasAnnotations by mutableStateOf(false)
 
     // Load drawing paths
     LaunchedEffect(workbookId, page) {
         val paths = DrawingStore.getPaths(context, workbookId, page)
         savedPaths = paths.toMutableStateList()
         annotationManager.getText(context, workbookId, page)
-        hasTextboxes = annotationManager.textAnnotations.isNotEmpty()
+        hasAnnotations = annotationManager.textAnnotations.isNotEmpty() || savedPaths.isNotEmpty()
     }
 
-    val gestureModifier = if (annotationManager.mode != AnnotationMode.NONE) {
+    val gestureModifier = if (annotationManager.mode == AnnotationMode.PEN ||
+        annotationManager.mode == AnnotationMode.HIGHLIGHT ||
+        annotationManager.mode == AnnotationMode.ERASE ||
+        annotationManager.mode == AnnotationMode.TEXT
+    ) {
         Modifier.pointerInput(
             workbookId,
             page,
             annotationManager.mode,
             annotationManager.textAnnotations,
             annotationManager.isFocused,
-            hasTextboxes,
-            areTextboxesVisible
+            hasAnnotations
         ) {
-            if (annotationManager.isFocused) {
-                focusManager.clearFocus()
-                annotationManager.toggleFocus(false)
-            } else if (annotationManager.mode == AnnotationMode.TEXT) {
-                detectTapGestures(
+            when (annotationManager.mode) {
+                AnnotationMode.TEXT -> detectTapGestures(
                     onTap = { offset ->
-                        val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
-                        val newAnnotation = TextAnnotation(
-                            text = "",
-                            position = normalized,
-                            size = OffsetSerializable(0.3f, 0.1f)
-                        )
-                        annotationManager.addTextAnnotation(newAnnotation)
-                        DrawingStore.saveTextAnnotations(
-                            context,
-                            workbookId,
-                            page,
-                            annotationManager.textAnnotations
-                        )
+                        if (annotationManager.isFocused) {
+                            focusManager.clearFocus()
+                            annotationManager.toggleFocus(false)
+                        } else {
+                            val normalized = OffsetSerializable(offset.x / size.width, offset.y / size.height)
+                            val newAnnotation = TextAnnotation(
+                                text = "",
+                                position = normalized,
+                                size = OffsetSerializable(0.3f, 0.1f)
+                            )
+                            annotationManager.addTextAnnotation(newAnnotation)
+                            DrawingStore.saveTextAnnotations(
+                                context,
+                                workbookId,
+                                page,
+                                annotationManager.textAnnotations
+                            )
+                        }
                     }
                 )
-            } else {
-                detectDragGestures(
+                AnnotationMode.PEN, AnnotationMode.HIGHLIGHT, AnnotationMode.ERASE -> detectDragGestures(
                     onDragStart = { offset ->
                         val normalized = Offset(offset.x / size.width, offset.y / size.height)
                         if (annotationManager.mode != AnnotationMode.ERASE) {
@@ -152,15 +154,19 @@ fun DrawingCanvas(
                         }
                     }
                 )
+                else ->
+                    if (annotationManager.isFocused) {
+                        focusManager.clearFocus()
+                        annotationManager.toggleFocus(false)
+                    }
             }
-        }
-    } else if (annotationManager.isFocused) {
-        Modifier.pointerInput(annotationManager.isFocused) {
-            focusManager.clearFocus()
-            annotationManager.toggleFocus(false)
         }
     } else {
         // allows gestures to pass through when annotations are disabled
+        if (annotationManager.isFocused) {
+            focusManager.clearFocus()
+            annotationManager.toggleFocus(false)
+        }
         Modifier
     }
 
@@ -182,26 +188,28 @@ fun DrawingCanvas(
         val pageHeight = size.height
         canvasSize.value = Size(size.width.toFloat(), size.height.toFloat())
 
-        savedPaths.forEach {
-            drawPathLine(it, pageWidth, pageHeight, zoom)
+        if (annotationManager.mode != AnnotationMode.HIDDEN) {
+            savedPaths.forEach {
+                drawPathLine(it, pageWidth, pageHeight, zoom)
+            }
+            drawPathLine(
+                DrawingPath(
+                    currentPath,
+                    isHighlight = annotationManager.mode == AnnotationMode.HIGHLIGHT,
+                    color = if (annotationManager.mode == AnnotationMode.HIGHLIGHT) {
+                        annotationManager.currentHighlightColor
+                    } else {
+                        annotationManager.currentPenColor
+                    }
+                ),
+                pageWidth,
+                pageHeight,
+                zoom
+            )
         }
-        drawPathLine(
-            DrawingPath(
-                currentPath,
-                isHighlight = annotationManager.mode == AnnotationMode.HIGHLIGHT,
-                color = if (annotationManager.mode == AnnotationMode.HIGHLIGHT) {
-                    annotationManager.currentHighlightColor
-                } else {
-                    annotationManager.currentPenColor
-                }
-            ),
-            pageWidth,
-            pageHeight,
-            zoom
-        )
     }
-    hasTextboxes = annotationManager.textAnnotations.isNotEmpty()
-    if (areTextboxesVisible) {
+    hasAnnotations = annotationManager.textAnnotations.isNotEmpty() || savedPaths.isNotEmpty()
+    if (annotationManager.mode != AnnotationMode.HIDDEN) {
         for (i in annotationManager.textAnnotations.indices) {
             val annotation = annotationManager.textAnnotations[i]
             MovableTextBox(
@@ -239,11 +247,16 @@ fun DrawingCanvas(
             )
         }
     }
-    if (hasTextboxes) {
+    if (hasAnnotations || annotationManager.mode == AnnotationMode.HIDDEN) {
         IconButton(
             onClick = {
-                areTextboxesVisible = !areTextboxesVisible
-                println(areTextboxesVisible)
+                if (annotationManager.mode == AnnotationMode.HIDDEN) {
+                    annotationManager.mode = annotationManager.hideMode
+                    annotationManager.hideMode = AnnotationMode.NONE
+                } else {
+                    annotationManager.hideMode = annotationManager.mode
+                    annotationManager.toggleTool(AnnotationMode.HIDDEN)
+                }
             },
             modifier = Modifier
                 .padding(16.dp)
@@ -251,7 +264,11 @@ fun DrawingCanvas(
                 .offset(0.dp, 1000.dp)
         ) {
             Icon(
-                imageVector = if (areTextboxesVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                imageVector = if (annotationManager.mode != AnnotationMode.HIDDEN) {
+                    Icons.Default.Visibility
+                } else {
+                    Icons.Default.VisibilityOff
+                },
                 contentDescription = "Toggle Textbox Visibility",
                 modifier = Modifier.fillMaxSize()
             )
