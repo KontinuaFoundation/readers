@@ -27,7 +27,7 @@ class AnnotationManager {
 
     var prevMode: AnnotationMode by mutableStateOf(AnnotationMode.NONE)
         private set
-  
+
     var hideMode: AnnotationMode by mutableStateOf(AnnotationMode.NONE)
         private set
 
@@ -51,7 +51,7 @@ class AnnotationManager {
             hideMode = newMode
         } else {
             if (mode != newMode) {
-              prevMode = mode
+                prevMode = mode
             }
             mode = newMode
         }
