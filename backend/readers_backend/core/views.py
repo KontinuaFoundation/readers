@@ -196,6 +196,7 @@ class WorkbookViewSet(
 class FeedbackView(APIView):
     """
     API endpoint that allows users to submit feedback.
+    Email sending can be controlled via SEND_FEEDBACK_EMAILS setting.
     """
 
     permission_classes = [AllowAny]  # Allow unauthenticated users to submit feedback
@@ -207,14 +208,20 @@ class FeedbackView(APIView):
 
         if serializer.is_valid():
             feedback = serializer.save()
-            try:
-                email_sent = send_feedback_email(feedback)
-            except Exception as e:
-                email_sent = False
+
+            email_sent = False
+            # Only send email if setting is enabled
+            if getattr(settings, "SEND_FEEDBACK_EMAILS", False):
+                try:
+                    email_sent = send_feedback_email(feedback)
+                except Exception as e:
+                    email_sent = False
+
             return Response(
                 {
                     "message": "Feedback submitted successfully",
                     "email_sent": email_sent,
+                    "id": feedback.id,
                 },
                 status=status.HTTP_201_CREATED,
             )

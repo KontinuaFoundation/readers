@@ -37,6 +37,7 @@ import com.kontinua.readersandroidjetpack.views.PDFViewer
 import com.kontinua.readersandroidjetpack.views.ResourceOverlayView
 import com.kontinua.readersandroidjetpack.views.UnifiedSidebar
 import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
+import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
@@ -55,12 +56,13 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MainScreen() {
-        val timerViewModel: TimerViewModel = viewModel()
+    fun MainScreen(
+        collectionViewModel: CollectionViewModel = viewModel(),
+        timerViewModel: TimerViewModel = viewModel()
+    ) {
         val navbarManager = remember { NavbarManager() }
         val annotationManager = remember { AnnotationManager() }
         val feedbackViewModel: FeedbackViewModel = viewModel(factory = FeedbackViewModelFactory(navbarManager))
-        val collectionViewModel: CollectionViewModel = viewModel()
         val chapterContentManager =
             remember(navbarManager) {
                 ChapterContentManager(
@@ -147,5 +149,6 @@ class MainActivity : ComponentActivity() {
                 onDismissRequest = dismissOverlay
             )
         }
+        FeedbackForm(viewModel = feedbackViewModel)
     }
 }
