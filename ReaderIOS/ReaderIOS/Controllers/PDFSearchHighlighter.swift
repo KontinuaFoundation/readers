@@ -14,11 +14,13 @@ class PDFSearchHighlighter: ObservableObject {
     init(pdfDoc: PDFDocument) {
         self.pdfDoc = pdfDoc
     }
+
     /// Highlight search result on a specific page
-    
+
     func highlightSearchResult(searchTerm: String,
                                onPage pageNumber: Int,
-                               color: UIColor = .yellow) {
+                               color: UIColor = .yellow)
+    {
         guard let page = pdfDoc.page(at: pageNumber),
               let text = page.string else { return }
 
@@ -31,8 +33,9 @@ class PDFSearchHighlighter: ObservableObject {
         // Build a pattern that matches any whitespace (including newline)
         let pattern = terms.joined(separator: "\\s+")
         guard let regex = try? NSRegularExpression(
-                pattern: pattern,
-                options: [.caseInsensitive]) else { return }
+            pattern: pattern,
+            options: [.caseInsensitive]
+        ) else { return }
 
         let nsText = text as NSString
         let fullRange = NSRange(location: 0, length: nsText.length)
@@ -46,7 +49,8 @@ class PDFSearchHighlighter: ObservableObject {
                     let highlight = PDFAnnotation(
                         bounds: lineSel.bounds(for: page),
                         forType: .highlight,
-                        withProperties: nil)
+                        withProperties: nil
+                    )
                     highlight.color = color.withAlphaComponent(0.7)
                     page.addAnnotation(highlight)
                     currentHighlights.append(highlight)

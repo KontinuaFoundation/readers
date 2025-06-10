@@ -4,6 +4,7 @@ enum PDFBoundsConstants {
     static let headerPct = 0.90 // pct of page (from bottom) at which headers are located
     static let footerPct = 0.10
 }
+
 class PDFWordsIndex: ObservableObject {
     // Dictionary mapping words to the pages they appear on
     @Published private var wordToPages: [String: Set<Int>] = [:]
@@ -23,7 +24,7 @@ class PDFWordsIndex: ObservableObject {
         pageTokens.removeAll()
         tokenRanges.removeAll()
 
-        for pageIndex in 0..<pdf.pageCount {
+        for pageIndex in 0 ..< pdf.pageCount {
             guard let page = pdf.page(at: pageIndex),
                   let pageContent = page.attributedString else { continue }
 
@@ -44,7 +45,7 @@ class PDFWordsIndex: ObservableObject {
                 if let token = scanner.scanCharacters(from: .alphanumerics) {
                     let endIndex = scanner.currentIndex
                     let startIndex = plainText.index(endIndex, offsetBy: -token.count)
-                    let strRange = startIndex..<endIndex
+                    let strRange = startIndex ..< endIndex
 
                     // Convert to NSRange so PDFKit can map it
                     let nsRange = NSRange(strRange, in: plainText)
@@ -53,7 +54,7 @@ class PDFWordsIndex: ObservableObject {
                         let midY = bounds.midY
 
                         // Skip tokens in header/footer regions
-                        guard midY < headerCutoff && midY > footerCutoff else {
+                        guard midY < headerCutoff, midY > footerCutoff else {
                             continue
                         }
 

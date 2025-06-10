@@ -92,7 +92,7 @@ struct SearchView: View {
                                         }
                                         .onTapGesture {
                                             currentPage = result.page
-                                            
+
                                             Logger.info("Highlighting '\(result.snippet)' on page \(result.page + 1)")
                                             searchHighlighter?.clearHighlights()
                                             searchHighlighter?.highlightSearchResult(
