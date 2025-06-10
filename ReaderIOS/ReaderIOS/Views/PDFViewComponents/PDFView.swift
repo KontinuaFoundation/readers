@@ -41,7 +41,7 @@ struct PDFView: View {
     @State private var textOpened = false
     @State private var isHidden = false
     @State private var showClearAlert = false
-    @State private var isLandscape = false
+    @State private var pdfPageFrame: CGRect = .zero
 
     // MARK: - StateObjects and Observed
 
@@ -61,7 +61,8 @@ struct PDFView: View {
                         ZStack {
                             DocumentView(
                                 pdfDocument: pdfDoc,
-                                currentPageIndex: $currentPage
+                                currentPageIndex: $currentPage,
+                                pageFrame: $pdfPageFrame
                             )
                             .edgesIgnoringSafeArea(.all)
                             .scaleEffect(zoomManager.newZoomLevel(),
@@ -88,11 +89,12 @@ struct PDFView: View {
                                 zoomManager: zoomManager,
                                 annotationManager: annotationStorageManager,
                                 textManager: textManager,
-                                textBoxes: $textBoxes
+                                textBoxes: $textBoxes,
+                                isHidden: $isHidden,
+                                pageFrame: pdfPageFrame
                             )
                             .scaleEffect(zoomManager.newZoomLevel(),
                                          anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
-
                             // Annotations Text Overlay
                             TextView(
                                 textManager: textManager,
@@ -103,7 +105,8 @@ struct PDFView: View {
                                 width: geometry.size.width,
                                 height: geometry.size.height,
                                 textOpened: $textOpened,
-                                isHidden: $isHidden
+                                isHidden: $isHidden,
+                                pageFrame: pdfPageFrame
                             )
                             .scaleEffect(zoomManager.newZoomLevel(),
                                          anchor: zoomManager.getZoomedIn() ? zoomManager.getZoomPoint() : .center)
