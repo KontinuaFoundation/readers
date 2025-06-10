@@ -1,3 +1,5 @@
+### Molly Sandler, Ethan Handelman, Devin Hadley, Luis Rodriguez, Jonas Schiessel | September 2024 - June 2025
+
 ### About the e-reader
 
 Readers is an educational platform that combines a backend API with iOS and Android mobile applications. The platform delivers the Kontinua Workbook Sequence, making STEM education accessible to children who might not have access to these learning resources through traditional means.
@@ -27,6 +29,8 @@ To run the development server that serves PDFs and metadata:
 ### Running the Project
 
 In XCode you can use the "preview" view, or the "simulator" view. Once you have the server up and running, both views will work and show you the current status of the app.
+In Android Studio you can use the "preview" view on the right hand side of the IDE.
+Please ensure you choose a tablet for both versions!!
 
 ### SwiftLint
 
@@ -57,3 +61,43 @@ API documentation for the backend is automatically generated with DRF-Spectacula
 To regenerate the documentation you will need to run `./backend/scripts/generate-openapi-schema.sh`
 
 To view it, use a swagger documentation editor like [this](https://editor.swagger.io/) or install a viewer in you code editor.
+
+
+### Features Available
+PDF Display
+
+Annotations (pen, highlight, text, erase, clear)
+
+Pomodoro timer (15, 20, 25, custom minutes)
+
+Feedback submissions
+
+Workbook + chapter navigation
+
+Sequence wide search functionality 
+
+Page bookmarking for future reading
+
+Workbook and page persistence
+
+Additional per chapter digital resources
+
+Local workbook caching
+
+Workbook updates via CLI tool 
+
+
+### Future Enhancements
+Phone and computer compatibility 
+
+Stylus compatibility 
+
+Split view landscape mode
+
+Enhanced local caching
+
+Enhanced annotations 
+
+Enhanced feedback submissions + user data
+
+
