@@ -1,5 +1,9 @@
 import PDFKit
 
+enum PDFBoundsConstants {
+    static let headerPct = 0.90 // pct of page (from bottom) at which headers are located
+    static let footerPct = 0.10
+}
 class PDFWordsIndex: ObservableObject {
     // Dictionary mapping words to the pages they appear on
     @Published private var wordToPages: [String: Set<Int>] = [:]
@@ -19,17 +23,17 @@ class PDFWordsIndex: ObservableObject {
         pageTokens.removeAll()
         tokenRanges.removeAll()
 
-        for pageIndex in 0 ..< pdf.pageCount {
-            guard let page = pdf.page(at: pageIndex) else { continue }
-            guard let pageContent = page.attributedString else { continue }
+        for pageIndex in 0..<pdf.pageCount {
+            guard let page = pdf.page(at: pageIndex),
+                  let pageContent = page.attributedString else { continue }
 
             let plainText = pageContent.string
-            let pageNumber = pageIndex
+            pageTexts[pageIndex] = plainText
 
-            // Store original page text
-            pageTexts[pageNumber] = plainText
+            let cropBox = page.bounds(for: .cropBox)
+            let headerCutoff = cropBox.height * PDFBoundsConstants.headerPct
+            let footerCutoff = cropBox.height * PDFBoundsConstants.footerPct
 
-            // Create scanner for tokenization while preserving ranges
             var ranges: [Range<String.Index>] = []
             var tokens: [String] = []
 
@@ -38,24 +42,35 @@ class PDFWordsIndex: ObservableObject {
 
             while !scanner.isAtEnd {
                 if let token = scanner.scanCharacters(from: .alphanumerics) {
-                    // Use scanner.currentIndex directly.
                     let endIndex = scanner.currentIndex
                     let startIndex = plainText.index(endIndex, offsetBy: -token.count)
-                    ranges.append(startIndex ..< endIndex)
-                    tokens.append(token.lowercased())
+                    let strRange = startIndex..<endIndex
+
+                    // Convert to NSRange so PDFKit can map it
+                    let nsRange = NSRange(strRange, in: plainText)
+                    if let sel = page.selection(for: nsRange) {
+                        let bounds = sel.bounds(for: page)
+                        let midY = bounds.midY
+
+                        // Skip tokens in header/footer regions
+                        guard midY < headerCutoff && midY > footerCutoff else {
+                            continue
+                        }
+
+                        ranges.append(strRange)
+                        tokens.append(token.lowercased())
+                    }
                 } else {
-                    // Skip non-alphanumeric character
                     _ = scanner.scanCharacter()
                 }
             }
 
-            // Store token ranges and lowercase tokens
-            tokenRanges[pageNumber] = ranges
-            pageTokens[pageNumber] = tokens
+            tokenRanges[pageIndex] = ranges
+            pageTokens[pageIndex] = tokens
 
-            // Index words
+            // Build word→pages index
             for token in tokens {
-                wordToPages[token, default: []].insert(pageNumber)
+                wordToPages[token, default: []].insert(pageIndex)
             }
         }
     }
