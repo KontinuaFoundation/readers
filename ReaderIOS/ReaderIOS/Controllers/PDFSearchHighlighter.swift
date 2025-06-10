@@ -16,62 +16,53 @@ class PDFSearchHighlighter: ObservableObject {
     }
 
     /// Highlight search result on a specific page
-    func highlightSearchResult(searchTerm: String, onPage pageNumber: Int, color: UIColor = .yellow) {
-        guard let page = pdfDoc.page(at: pageNumber) else { return }
 
-        // Get the full page text
-        guard let pageContent = page.string?.lowercased() else { return }
+    func highlightSearchResult(searchTerm: String,
+                               onPage pageNumber: Int,
+                               color: UIColor = .yellow)
+    {
+        guard let page = pdfDoc.page(at: pageNumber),
+              let text = page.string else { return }
 
-        // Get search terms
-        let searchTerms = searchTerm.lowercased()
+        // Split into terms, escape regex metacharacters
+        let terms = searchTerm
             .components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty }
+            .map { NSRegularExpression.escapedPattern(for: $0) }
 
-        // Find the location of the search terms in the page content
-        if let range = findSearchTermRange(searchTerms: searchTerms, in: pageContent) {
-            // Convert string range to PDF selection
-            if let selection = page.selection(for: range) {
-                // Create highlight annotation
-                let highlight = PDFAnnotation(bounds: selection.bounds(for: page),
-                                              forType: .highlight,
-                                              withProperties: nil)
+        // Build a pattern that matches any whitespace (including newline)
+        let pattern = terms.joined(separator: "\\s+")
+        guard let regex = try? NSRegularExpression(
+            pattern: pattern,
+            options: [.caseInsensitive]
+        ) else { return }
 
-                highlight.color = color.withAlphaComponent(0.7)
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
 
-                page.addAnnotation(highlight)
-
-                // Store reference to highlight for later removal
-                currentHighlights.append(highlight)
+        // Find all matches
+        let matches = regex.matches(in: text, options: [], range: fullRange)
+        for match in matches {
+            if let selection = page.selection(for: match.range) {
+                // Break into per-line pieces so highlights don't bleed across lines
+                for lineSel in selection.selectionsByLine() {
+                    let highlight = PDFAnnotation(
+                        bounds: lineSel.bounds(for: page),
+                        forType: .highlight,
+                        withProperties: nil
+                    )
+                    highlight.color = color.withAlphaComponent(0.7)
+                    page.addAnnotation(highlight)
+                    currentHighlights.append(highlight)
+                }
             }
         }
     }
 
-    /// Remove all current highlights
     func clearHighlights() {
-        for highlight in currentHighlights {
-            if let page = highlight.page {
-                page.removeAnnotation(highlight)
-            }
+        for cur in currentHighlights {
+            cur.page?.removeAnnotation(cur)
         }
         currentHighlights.removeAll()
-    }
-
-    /// Find the range of the search terms in the page content
-    private func findSearchTermRange(searchTerms: [String], in pageContent: String) -> NSRange? {
-        // For single term search
-        if searchTerms.count == 1 {
-            let searchTerm = searchTerms[0]
-            return (pageContent as NSString).range(
-                of: searchTerm,
-                options: .caseInsensitive
-            )
-        }
-
-        // For multi-term search
-        let searchPhrase = searchTerms.joined(separator: " ")
-        return (pageContent as NSString).range(
-            of: searchPhrase,
-            options: .caseInsensitive
-        )
     }
 }
