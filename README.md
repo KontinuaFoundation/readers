@@ -1,17 +1,28 @@
-readers
-Source code for the e-reader apps
-
 ### About the e-reader
 
-Kontinua is an app in Swift Native, for iOS deployment. It will be used on iPads to help children get a STEM education they may not otherwise have available to them.
+Readers is an educational platform that combines a backend API with iOS and Android mobile applications. The platform delivers the Kontinua Workbook Sequence, making STEM education accessible to children who might not have access to these learning resources through traditional means.
 
-### Start PDF Static Server For Development
+### Starting the Development Backend
 
-1. Ensure python3 is installed on your device
-2. Navigate to `readers/`
-3. Run `./serve_pdf.sh`
-4. PDFs and PDF metadata are now served on `localhost:8000`!
-5. In Xcode, preview should open up and you can navigate around the app using your mouse
+To run the development server that serves PDFs and metadata:
+
+1. Prerequisites:
+   - Install Docker or [Docker Desktop](https://docs.docker.com/get-started/introduction/get-docker-desktop/)
+   - Install Python 3.12
+
+2. Start the server:
+   - Open a terminal
+   - Navigate to `backend/scripts`
+   - Run `./start-backend-macos.sh`
+
+3. The server will start on your local machine:
+   - Access via your local IPv4 address
+   - Default port: 8000
+   - Serves PDFs and metadata
+
+4. Configure your app:
+   - Update the backend API URL in your app's constants file
+   - This connects your app to the development server
 
 ### Running the Project
 
@@ -37,8 +48,12 @@ To run SwiftFormat, In Xcode right click ReaderIOS root folder and select "Swift
 Ktlint is a tool that helps you format and lint your code. It is run automatically in the GitHub Actions workflow, and any errors will be displayed in the console.
 Ktlint is configured in the `.editorConfig` file where some defualt rules are set and might need to be modified.
 There is no need to download ktlint, as it is managed by Gradle, however you can install the android studio plugin for editor formatting.
-To run the Formatter, In the terminal, navigate to the `ReadersAndroidJetpack` folder and run `./gradlew ktlintFromat`, to check for linting errors or formatting errors run `./gradlew ktlintCheck`.
+To run the Formatter, In the terminal, navigate to the `ReadersAndroidJetpack` folder and run `./gradlew ktlintFormat`, to check for linting errors or formatting errors run `./gradlew ktlintCheck`.
 
 ### Documentation
 
-Documentation for both the backend and frontend client can be found in the [docs directory](docs/).
+API documentation for the backend is automatically generated with DRF-Spectacular and can be found in `docs/backend`.
+
+To regenerate the documentation you will need to run `./backend/scripts/generate-openapi-schema.sh`
+
+To view it, use a swagger documentation editor like [this](https://editor.swagger.io/) or install a viewer in you code editor.

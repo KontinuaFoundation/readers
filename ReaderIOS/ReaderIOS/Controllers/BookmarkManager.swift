@@ -9,7 +9,11 @@ import Combine
 import Foundation
 
 final class BookmarkManager: ObservableObject {
-    @Published var bookmarkLookup: [Int: Set<Int>] = [:]
+    @Published var bookmarkLookup: [Int: Set<Int>]
+
+    init() {
+        bookmarkLookup = StateRestoreManager.shared.loadBookmarks()
+    }
 
     /// Checks if the current page is bookmarked for the given file.
     func isBookmarked(workbook: Workbook?, currentPage: Int) -> Bool {
@@ -21,15 +25,14 @@ final class BookmarkManager: ObservableObject {
     func toggleBookmark(for workbook: Workbook?, currentPage: Int) {
         guard let id = workbook?.id else { return }
 
-        if var pages = bookmarkLookup[id] {
-            if pages.contains(currentPage) {
-                pages.remove(currentPage)
-            } else {
-                pages.insert(currentPage)
-            }
-            bookmarkLookup[id] = pages
+        var pages = bookmarkLookup[id] ?? []
+        if pages.contains(currentPage) {
+            pages.remove(currentPage)
         } else {
-            bookmarkLookup[id] = [currentPage]
+            pages.insert(currentPage)
         }
+        bookmarkLookup[id] = pages
+
+        StateRestoreManager.shared.saveBookmarks(bookmarkLookup)
     }
 }

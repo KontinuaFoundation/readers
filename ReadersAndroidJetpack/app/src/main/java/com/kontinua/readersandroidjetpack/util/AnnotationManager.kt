@@ -22,9 +22,14 @@ enum class AnnotationMode {
 }
 
 class AnnotationManager {
-    var mode by mutableStateOf(AnnotationMode.NONE)
-    var prevMode: AnnotationMode = mode
-    var hideMode: AnnotationMode = mode
+    var mode: AnnotationMode by mutableStateOf(AnnotationMode.NONE)
+        private set
+
+    var prevMode: AnnotationMode by mutableStateOf(AnnotationMode.NONE)
+        private set
+  
+    var hideMode: AnnotationMode by mutableStateOf(AnnotationMode.NONE)
+        private set
 
     var isFocused by mutableStateOf(false)
         private set
@@ -45,6 +50,9 @@ class AnnotationManager {
         if (mode == AnnotationMode.HIDDEN) {
             hideMode = newMode
         } else {
+            if (mode != newMode) {
+              prevMode = mode
+            }
             mode = newMode
         }
     }

@@ -14,7 +14,8 @@ struct BookmarkSearchView: View {
 
     var body: some View {
         if let currentWorkbook = currentWorkbook,
-           let bookmarks = bookmarkManager.bookmarkLookup[currentWorkbook.id]
+           let bookmarks = bookmarkManager.bookmarkLookup[currentWorkbook.id],
+           !bookmarks.isEmpty
         {
             List(Array(bookmarks).sorted(), id: \.self) { bookmark in
                 HStack {

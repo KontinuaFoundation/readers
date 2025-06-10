@@ -16,14 +16,18 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.barteksc.pdfviewer.PDFView
+import com.kontinua.readersandroidjetpack.R
 import com.kontinua.readersandroidjetpack.util.APIManager
 import com.kontinua.readersandroidjetpack.util.AnnotationManager
 import com.kontinua.readersandroidjetpack.util.AnnotationMode
@@ -31,6 +35,8 @@ import com.kontinua.readersandroidjetpack.util.NavbarManager
 import com.kontinua.readersandroidjetpack.viewmodels.BookmarkViewModel
 import com.kontinua.readersandroidjetpack.viewmodels.CollectionViewModel
 import java.io.File
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 
 private const val PREV_PAGE_TAP_RATIO = 0.25f
 
@@ -46,7 +52,6 @@ fun PDFViewer(
     var pdfFile by remember { mutableStateOf<File?>(null) }
     var lastLoadedFile by remember { mutableStateOf<File?>(null) }
     val workbook by collectionViewModel.workbookState.collectAsState()
-    val collectionViewModel: CollectionViewModel = viewModel()
     val currentZoom = remember { mutableFloatStateOf(1f) }
     val zoomPoint = remember { mutableStateOf(Offset.Zero) }
     val panOffset = remember { mutableStateOf(Offset.Zero) }
@@ -55,25 +60,27 @@ fun PDFViewer(
         allBookmarks[wbId]?.contains(navbarManager.pageNumber)
     } ?: false
 
-    navbarManager.setCollection(collectionViewModel)
-
-    LaunchedEffect(collectionViewModel) {
-        navbarManager.setCollection(collectionViewModel)
+    // init
+    LaunchedEffect(Unit) {
+        // wait until collection is loaded
+        snapshotFlow { collectionViewModel.collectionState.value }
+            .filterNotNull()
+            .first()
+        navbarManager.initialize(context, collectionViewModel)
     }
 
+    // when workbook changes
     LaunchedEffect(workbook) {
-        // whenever workbook switches, force reload
+        if (workbook == null) return@LaunchedEffect
+
+        navbarManager.onWorkbookChanged(collectionViewModel.currentWorkbook)
+
         pdfFile = null
         lastLoadedFile = null
+        APIManager.getPDFFromWorkbook(context, workbook!!)?.also { pdfFile = it }
     }
 
-    // only fetch new file when workbook changes
-    LaunchedEffect(workbook) {
-        workbook?.let {
-            APIManager.getPDFFromWorkbook(context, it)
-        }?.also { pdfFile = it }
-    }
-
+    // loads pdf into search
     LaunchedEffect(pdfFile) {
         pdfFile?.let { file ->
             navbarManager.searchManager.loadPdf(file)
@@ -175,7 +182,14 @@ fun PDFViewer(
         ) {
             Icon(
                 imageVector = if (isPageBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                contentDescription = if (isPageBookmarked) "Remove Bookmark" else "Add Bookmark"
+                tint = Color(0xFFD4A017),
+                contentDescription = if (isPageBookmarked) {
+                    stringResource(R.string.remove_bookmark)
+                } else {
+                    stringResource(
+                        R.string.add_bookmark
+                    )
+                }
             )
         }
     }
