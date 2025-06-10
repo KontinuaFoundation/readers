@@ -167,6 +167,7 @@ REST_FRAMEWORK = {
 }
 
 # Email Configuration for production
+SEND_FEEDBACK_EMAILS = False
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")  # Gmail's SMTP server
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))  # Gmail's SMTP port
@@ -178,7 +179,7 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # App's email passw
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 FEEDBACK_EMAIL = os.environ.get(
     "FEEDBACK_EMAIL", EMAIL_HOST_USER
-)  # Where feedback should be sent 
+)  # Where feedback should be sent
 
 # The only template view is the index view.
 # Will display a basic page with the latest US collection.
@@ -238,23 +239,23 @@ if SHOULD_LOG_TO_FILE:
                 "level": "INFO",
                 "class": "logging.handlers.RotatingFileHandler",
                 "filename": REQUESTS_LOG_FILE,
-                "maxBytes": 5 * 1024 * 1024, # 5MB
+                "maxBytes": 5 * 1024 * 1024,  # 5MB
                 "backupCount": 5,
                 "formatter": "json",
             },
             "responses_file": {
                 "level": "INFO",
-                "class": "logging.handlers.RotatingFileHandler", 
+                "class": "logging.handlers.RotatingFileHandler",
                 "filename": RESPONSES_LOG_FILE,
-                "maxBytes": 5 * 1024 * 1024, # 5MB
+                "maxBytes": 5 * 1024 * 1024,  # 5MB
                 "backupCount": 5,
                 "formatter": "json",
             },
             "exceptions_file": {
                 "level": "ERROR",
-                "class": "logging.handlers.RotatingFileHandler", 
+                "class": "logging.handlers.RotatingFileHandler",
                 "filename": EXCEPTIONS_LOG_FILE,
-                "maxBytes": 5 * 1024 * 1024, # 5MB
+                "maxBytes": 5 * 1024 * 1024,  # 5MB
                 "backupCount": 5,
                 "formatter": "json",
             },

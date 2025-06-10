@@ -37,6 +37,7 @@ import com.kontinua.readersandroidjetpack.views.PDFViewer
 import com.kontinua.readersandroidjetpack.views.ResourceOverlayView
 import com.kontinua.readersandroidjetpack.views.UnifiedSidebar
 import com.kontinua.readersandroidjetpack.views.bottombar.BottomBarComponent
+import com.kontinua.readersandroidjetpack.views.bottombar.feedback.FeedbackForm
 import com.kontinua.readersandroidjetpack.views.bottombar.timer.TimerProgressIndicator
 import com.kontinua.readersandroidjetpack.views.topbar.Toolbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
@@ -55,16 +56,17 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MainScreen() {
-        val timerViewModel: TimerViewModel = viewModel()
+    fun MainScreen(
+        collectionViewModel: CollectionViewModel = viewModel(),
+        timerViewModel: TimerViewModel = viewModel(),
+    ) {
         val navbarManager = remember { NavbarManager() }
         val annotationManager = remember { AnnotationManager() }
         val feedbackViewModel: FeedbackViewModel = viewModel(factory = FeedbackViewModelFactory(navbarManager))
-        val collectionViewModel: CollectionViewModel = viewModel()
         val chapterContentManager =
             remember(navbarManager) {
                 ChapterContentManager(
-                    navbarManager = navbarManager
+                    navbarManager = navbarManager,
                 )
             }
 
@@ -95,7 +97,7 @@ class MainActivity : ComponentActivity() {
                 // loading circle while it inits
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
@@ -110,7 +112,7 @@ class MainActivity : ComponentActivity() {
                             currentChapterVideos = currentChapterVideos,
                             onReferenceClick = handleReferenceClick,
                             onVideoClick = handleVideoClick,
-                            annotationManager = annotationManager
+                            annotationManager = annotationManager,
                         )
                     },
                     bottomBar = {
@@ -123,20 +125,20 @@ class MainActivity : ComponentActivity() {
                         Box(
                             Modifier
                                 .fillMaxSize()
-                                .padding(innerPadding)
+                                .padding(innerPadding),
                         ) {
                             PDFViewer(
                                 navbarManager = navbarManager,
                                 collectionViewModel = collectionViewModel,
-                                annotationManager = annotationManager
+                                annotationManager = annotationManager,
                             )
                         }
-                    }
+                    },
                 )
 
                 UnifiedSidebar(
                     navbarManager = navbarManager,
-                    collectionViewModel = collectionViewModel
+                    collectionViewModel = collectionViewModel,
                 )
             }
         }
@@ -144,8 +146,9 @@ class MainActivity : ComponentActivity() {
         if (overlayContent != null) {
             ResourceOverlayView(
                 content = overlayContent,
-                onDismissRequest = dismissOverlay
+                onDismissRequest = dismissOverlay,
             )
         }
+        FeedbackForm(viewModel = feedbackViewModel)
     }
 }
