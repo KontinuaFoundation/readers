@@ -241,7 +241,7 @@ struct PDFView: View {
             switch result {
             case let .success(document):
                 pdfDocument = document
-                Logger.info("PDF loaded successfully for workbook: \(currentWorkbook.id)", category: "PDF")
+                Logger.info("(PDFView) PDF loaded successfully for workbook: \(currentWorkbook.id)", category: "PDF")
             case let .failure(error):
                 Logger.error(
                     "Error fetching PDF for workbook \(currentWorkbook.id): \(error.localizedDescription)",
