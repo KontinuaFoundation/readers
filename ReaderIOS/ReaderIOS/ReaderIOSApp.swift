@@ -42,17 +42,5 @@ struct ReaderIOSApp: App {
                 SplashView(initManager: initManager)
             }
         }
-        .onChange(of: scenePhase) { _, newPhase in
-            switch newPhase {
-            case .active:
-                Logger.info("App became active", category: "AppLifecycle")
-            case .inactive:
-                Logger.info("App became inactive", category: "AppLifecycle")
-            case .background:
-                Logger.info("App entered background", category: "AppLifecycle")
-            @unknown default:
-                Logger.info("Unknown app phase: \(String(describing: newPhase))", category: "AppLifecycle")
-            }
-        }
     }
 }
