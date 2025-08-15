@@ -8,6 +8,12 @@
 import Foundation
 import PDFKit.PDFDocument
 
+enum CacheConstants {
+    static let mbInMem = 100
+    static let mbOnDisk = 200
+    static let cacheDirectory = "pdfCache"
+}
+
 enum NetworkError: Error {
     case invalidURL
     case noData
@@ -23,11 +29,17 @@ final class NetworkingService: ObservableObject {
 
     private init() {}
 
-    // Configure a URLSession with no caching.
     private let session: URLSession = {
+        let cache = URLCache(
+            memoryCapacity: CacheConstants.mbInMem * 1024 * 1024,
+            diskCapacity: CacheConstants.mbOnDisk * 1024 * 1024,
+            diskPath: CacheConstants.cacheDirectory
+        )
+
         let config = URLSessionConfiguration.default
-        config.urlCache = nil
-        config.requestCachePolicy = .reloadIgnoringLocalCacheData
+        config.urlCache = cache
+        config.requestCachePolicy = .useProtocolCachePolicy
+
         return URLSession(configuration: config)
     }()
 
@@ -215,11 +227,28 @@ final class NetworkingService: ObservableObject {
             completion(.failure(NetworkError.invalidURL))
             return
         }
-        Logger.info("Downloading PDF for workbook: \(workbook.id)", category: "Network")
+
         Logger.Network.request(url.absoluteString)
         startLoading()
 
-        let task = session.dataTask(with: url) { data, response, error in
+        // build request
+        var request = URLRequest(url: url)
+        request.cachePolicy = .useProtocolCachePolicy
+
+        // check if in URLCache
+        if let cached = session.configuration.urlCache?
+            .cachedResponse(for: request),
+            let doc = PDFDocument(data: cached.data)
+        {
+            Logger.info("Loaded PDF (\(workbook.id)) from URLCache", category: "Network")
+            DispatchQueue.main.async { completion(.success(doc)) }
+            stopLoading()
+            return
+        }
+
+        Logger.info("Downloading PDF (\(workbook.id)) from network", category: "Network")
+
+        let task = session.dataTask(with: request) { data, response, error in
             defer { self.stopLoading() }
 
             if let error = error {

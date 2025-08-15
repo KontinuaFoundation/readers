@@ -41,6 +41,10 @@ final class InitializationManager: ObservableObject {
             case let .success(collection):
                 DispatchQueue.main.async {
                     self?.latestCollection = collection
+                    StateRestoreManager.shared.saveCollectionVersion(
+                        major: collection.majorVersion,
+                        minor: collection.minorVersion
+                    )
                     self?.fetchWorkbookList(collection: collection)
                 }
             case let .failure(error):
