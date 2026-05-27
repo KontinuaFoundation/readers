@@ -52,15 +52,18 @@ jobs:
             "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip"
           unzip -o swiftformat.zip swiftformat
           chmod +x swiftformat
-          sudo mv swiftformat /usr/local/bin/swiftformat
-          swiftformat --version
+          # Install to a dedicated dir; call by absolute path so the runner's
+          # preinstalled (newer) swiftformat on PATH cannot shadow it.
+          mkdir -p "$RUNNER_TEMP/swiftformat-bin"
+          mv swiftformat "$RUNNER_TEMP/swiftformat-bin/swiftformat"
+          "$RUNNER_TEMP/swiftformat-bin/swiftformat" --version
 
       # Step 5: Run SwiftFormat
       - name: Check SwiftFormat
         if: steps.cache-format.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         working-directory: ./ReaderIOS
         run: |
-          swiftformat . --lint --swiftversion 16.1 --config ./.swiftformat
+          "$RUNNER_TEMP/swiftformat-bin/swiftformat" . --lint --swiftversion 16.1 --config ./.swiftformat
           mkdir -p ../.cache/iOS-format
           echo "Format check passed at $(date)" > ../.cache/iOS-format/result
 
