@@ -68,7 +68,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.moshi)
     implementation(libs.moshi.kotlin)
-    implementation(libs.androidx.lifecycle.viewmodel.compose.v270alpha02)
     ksp(libs.moshi.kotlin.codegen)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.pdfbox.android)
@@ -85,6 +84,6 @@ dependencies {
 
     // for saving bookmarks
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.kotlinx.serialization.json.v160)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }

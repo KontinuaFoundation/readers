@@ -28,29 +28,29 @@ To run the development server that serves PDFs and metadata:
 
 ### Running the Project
 
-In XCode you can use the "preview" view, or the "simulator" view. Once you have the server up and running, both views will work and show you the current status of the app.
+In Xcode you can use the "preview" view, or the "simulator" view. Once you have the server up and running, both views will work and show you the current status of the app.
 In Android Studio you can use the "preview" view on the right hand side of the IDE.
 Please ensure you choose a tablet for both versions!!
 
 ### SwiftLint
 
-SwiftLint is a tool that helps you write clean code. It is run automatically when you build the project in XCode, and any errors will be displayed in the console.
+SwiftLint is a tool that helps you write clean code. It is run automatically when you build the project in Xcode, and any errors will be displayed in the console.
 It is also run automatically in the GitHub Actions workflow, and any errors will be displayed in the console.
-Swiftlint is configured in the `.swiftlint.yml` file where some defualt rules are set and might need to be modified.
+SwiftLint is configured in the `.swiftlint.yml` file where some default rules are set and might need to be modified.
 There is no need to download SwiftLint, as it is automatically installed in Xcode as a Swift Package Dependency.
-To run SwiftLint, simply build the project in XCode, and the SwiftLint will run automatically, any errors will be displayed in the console.
+To run SwiftLint, simply build the project in Xcode, and SwiftLint will run automatically, any errors will be displayed in the console.
 
 ### SwiftFormat
 
 SwiftFormat is a tool that helps you format your code. It is run automatically in the GitHub Actions workflow, and any errors will be displayed in the console.
-SwiftFormat is configured in the `.swiftformat` file where some defualt rules are set and might need to be modified.
+SwiftFormat is configured in the `.swiftformat` file where some default rules are set and might need to be modified.
 There is no need to download SwiftFormat, as it is automatically installed in Xcode as a Swift Package Dependency.
 To run SwiftFormat, In Xcode right click ReaderIOS root folder and select "SwiftFormatPlugin" from the context menu. This will open a new window with options on Directories and/ or files to format. Skip the test directories for now unless you want to format them.
 
 ### Android Format & Lint
 
-Ktlint is a tool that helps you format and lint your code. It is run automatically in the GitHub Actions workflow, and any errors will be displayed in the console.
-Ktlint is configured in the `.editorConfig` file where some defualt rules are set and might need to be modified.
+ktlint is a tool that helps you format and lint your code. It is run automatically in the GitHub Actions workflow, and any errors will be displayed in the console.
+ktlint is configured in the `.editorConfig` file where some default rules are set and might need to be modified.
 There is no need to download ktlint, as it is managed by Gradle, however you can install the android studio plugin for editor formatting.
 To run the Formatter, In the terminal, navigate to the `ReadersAndroidJetpack` folder and run `./gradlew ktlintFormat`, to check for linting errors or formatting errors run `./gradlew ktlintCheck`.
 
@@ -99,5 +99,3 @@ Enhanced local caching
 Enhanced annotations 
 
 Enhanced feedback submissions + user data
-
-
