@@ -85,4 +85,5 @@ dependencies {
     // for saving bookmarks
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }
