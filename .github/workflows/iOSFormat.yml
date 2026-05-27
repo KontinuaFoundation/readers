@@ -42,18 +42,28 @@ jobs:
           path: .cache/iOS-format
           key: iOS-format-${{ steps.iOS-hash.outputs.hash }}
 
-      # Step 4: Install SwiftFormat or upgrade version
+      # Step 4: Install SwiftFormat (pinned to match the SPM-resolved version)
       - name: Install SwiftFormat
         if: steps.cache-format.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
+        env:
+          SWIFTFORMAT_VERSION: 0.55.3
         run: |
-          brew install swiftformat || brew upgrade swiftformat
+          curl -fsSL -o swiftformat.zip \
+            "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip"
+          unzip -o swiftformat.zip swiftformat
+          chmod +x swiftformat
+          # Install to a dedicated dir; call by absolute path so the runner's
+          # preinstalled (newer) swiftformat on PATH cannot shadow it.
+          mkdir -p "$RUNNER_TEMP/swiftformat-bin"
+          mv swiftformat "$RUNNER_TEMP/swiftformat-bin/swiftformat"
+          "$RUNNER_TEMP/swiftformat-bin/swiftformat" --version
 
       # Step 5: Run SwiftFormat
       - name: Check SwiftFormat
         if: steps.cache-format.outputs.cache-hit != 'true' && steps.iOS-hash.outputs.hash != 'no-iOS-files'
         working-directory: ./ReaderIOS
         run: |
-          swiftformat . --lint --swiftversion 16.1 --config ./.swiftformat
+          "$RUNNER_TEMP/swiftformat-bin/swiftformat" . --lint --swiftversion 16.1 --config ./.swiftformat
           mkdir -p ../.cache/iOS-format
           echo "Format check passed at $(date)" > ../.cache/iOS-format/result
 

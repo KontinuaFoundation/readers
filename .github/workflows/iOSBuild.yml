@@ -9,7 +9,9 @@ on:
 jobs:
   build:
     name: Run iOS Build
-    runs-on: macos-latest
+    # Pinned: ships Xcode 16.1 + iOS 18.x simulator runtimes. macos-latest
+    # rolled forward and no longer installs the iOS 18.1 runtime.
+    runs-on: macos-14
 
     steps:
       # Step 1: Checkout the repository
